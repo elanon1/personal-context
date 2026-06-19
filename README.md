@@ -3,7 +3,7 @@
 A second brain operated by an AI personal agent. The agent **captures** thoughts and
 decisions into this vault and **reads** context back out when helping create things.
 
-**Start here:** [`AGENTS.md`](AGENTS.md) — the rulebook the agent reads first.
+**Start here:** [`CLAUDE.md`](CLAUDE.md) — the compact operating guide the agent reads first.
 
 ## Layout
 
