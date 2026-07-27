@@ -1,4 +1,6 @@
 [
   "terminal",
-  "show-hidden-files"
+  "show-hidden-files",
+  "obsidian-style-settings",
+  "obsidian-minimal-settings"
 ]

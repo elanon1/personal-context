@@ -7,15 +7,15 @@ decisions into this vault and **reads** context back out when helping create thi
 
 ## Layout
 
-| Folder | What lives here |
-|--------|-----------------|
-| `_Inbox/` | Raw captures, filed later. |
-| `_Templates/` | Note templates (one per type). |
-| `00_Identity/` | Your living profile: who you are, voice, goals, people. **Fill this first** — see [`00_Identity/_onboarding.md`](00_Identity/_onboarding.md). |
-| `10_Projects/` | One folder per project, each with a `_state.md`. |
-| `20_Knowledge/` | Atomic evergreen notes, tagged by domain. |
-| `30_Periodic/` | Daily → Weekly → Monthly → Yearly summaries. |
-| `99_Archive/` | Retired notes & finished projects. |
+| Folder          | What lives here                                                                                                                               |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `_Inbox/`       | Raw captures, filed later.                                                                                                                    |
+| `_Templates/`   | Note templates (one per type).                                                                                                                |
+| `00_Identity/`  | Your living profile: who you are, voice, goals, people. **Fill this first** — see [`00_Identity/_onboarding.md`](00_Identity/_onboarding.md). |
+| `10_Projects/`  | One folder per project, each with a `_state.md`.                                                                                              |
+| `20_Knowledge/` | Atomic evergreen notes, tagged by domain.                                                                                                     |
+| `30_Periodic/`  | Daily → Weekly → Monthly → Yearly summaries.                                                                                                  |
+| `99_Archive/`   | Retired notes & finished projects.                                                                                                            |
 
 ## First steps
 1. Open Claude Code in this folder (or point your Obsidian MCP agent at it).
