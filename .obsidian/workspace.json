@@ -183,6 +183,9 @@
   },
   "active": "111b7bc93f46ae6d",
   "lastOpenFiles": [
+    "00_Identity/NOW.md.1785218188310.backup",
+    "10_Projects/cluster-agent/_state.md",
+    "10_Projects/cluster-agent",
     "_Inbox/modele-llm-w-n8n.md",
     "10_Projects/agent-workforce/_state.md",
     "10_Projects/agent-workforce",
@@ -214,10 +217,7 @@
     "10_Projects/example-project/_state.md",
     "10_Projects/example-project",
     "00_Identity/_onboarding.md",
-    "00_Identity/tools-stack.md",
-    "00_Identity/goals.md",
     "30_Periodic/Monthly",
-    "30_Periodic/Yearly",
-    "30_Periodic/Weekly"
+    "30_Periodic/Yearly"
   ]
 }
