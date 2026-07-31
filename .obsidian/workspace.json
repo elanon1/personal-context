@@ -183,6 +183,8 @@
   },
   "active": "111b7bc93f46ae6d",
   "lastOpenFiles": [
+    "10_Projects/english-c1/_state.md",
+    "10_Projects/english-c1",
     "20_Knowledge/pomysl-na-artykul-o-architekturze-n8n.md",
     "20_Knowledge/modele-llm-w-n8n.md",
     "_Inbox/pomysl-na-artykul-o-architekturze-n8n.md",
@@ -216,8 +218,6 @@
     "CLAUDE.md",
     "README.md",
     "AGENTS.md",
-    "20_Knowledge/open-banking-sca.md",
-    "10_Projects/example-project",
-    "30_Periodic/Monthly"
+    "10_Projects/example-project"
   ]
 }

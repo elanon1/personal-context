@@ -3,7 +3,7 @@ type: identity
 domain: [personal-life, work]
 status: active
 created: 2026-06-19
-updated: 2026-07-27
+updated: 2026-07-31
 tags: [goals]
 aliases: [goals]
 ---
@@ -19,6 +19,7 @@ aliases: [goals]
 - Skalibrować aktualny poziom techniczny i uzupełnić najważniejsze elementy z [[identity-gaps]].
 - Przełożyć profil na CV, narrację rekrutacyjną i konkretne kryteria oceny ofert.
 - Walidować [[10_Projects/mapa-ludzkich-historii/_state|Mapę Ludzkich Historii]] bez przedwczesnego budowania kodu.
+- Wejść na poziom bliski **C1 w mówionym angielskim do końca stycznia 2027** — priorytet: rozmowy rekrutacyjne i small talk. Program i stan: [[10_Projects/english-c1/_state|English C1]].
 
 ## Medium-term — około 1–3 lat
 
