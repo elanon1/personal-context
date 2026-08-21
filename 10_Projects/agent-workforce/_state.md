@@ -3,10 +3,10 @@ type: project
 project: Agent Workforce
 domain: [projects, creative]
 status: active
-state: planning
+state: active
 repo: https://github.com/elanonix/argocd
 created: 2026-07-27
-updated: 2026-07-27
+updated: 2026-08-21
 tags: [agents, n8n, automation, side-income]
 aliases: [agent-workforce, agenci-pracownicy, zaloga-agentow]
 ---
@@ -73,3 +73,34 @@ Cel finansowy to **pocket money, bez horyzontu czasowego**. Realna ścieżka pie
 - [[tools-stack]] — n8n, Kubernetes, Claude Code
 - Repo GitOps: `github.com/elanonix/argocd` (n8n, Postgres, Obsidian, STT)
 - `Personal Assistant (Master)` — n8n `eiuCVFO2GySjtEUB`
+
+## 2026-08-21 — Nocna Fabryka: zwiad i wycena działają na produkcji
+
+Filip zlecił (goal): system, w którym agenty nocą wymyślają i wyceniają pomysły dochodowe,
+a on rano dostaje karty do decyzji (zarys, wdrożenie, godziny człowieka, prognoza PLN, zwrot).
+Pełny plan: artefakt „Nocna Fabryka" (link w repo `contexts/2026-08-21-nocna-fabryka.md`).
+
+**Zbudowane i opublikowane (tydzień 1 roadmapy):**
+- Tabele `ideas` / `experiments` / `revenue` w agent_db (lejek raw→scored→approved→building→launched→earning; SQL też w gitops jako initdb `02-venture-factory.sql`).
+- `Venture Scout (Nightly)` — 23:00 PL: HN Ask/front + Lemmy (asklemmy, nostupidquestions) + Stack Exchange Lifehacks → agent wybiera 3–8 ludzkich problemów → ideas(raw). Gate: dyrektywa `pause_factory`.
+- `Venture Analyst (Nightly)` — 00:30 PL: do 6 pomysłów/noc, karta pomysłu w PLN (P10/P50/P90, kill criteria, zakaz zmyślania liczb rynkowych) → scored/rejected.
+- `Venture Daily` — 07:30 PL: deterministyczny digest na Telegram (max 4 karty, eksperymenty, przychód 7 dni).
+- Master: toole `decide_idea` („bierz #14" / „ubij #12") i `list_ideas`.
+- Test na żywo: Scout znalazł 6 sygnałów, Analyst odrzucił wszystkie z konkretnymi powodami — selektywność zgodna z budżetem recenzji 30 min/dzień.
+
+### Decyzje (2026-08-21)
+
+- **Scout i Analyst jednak budowane teraz, przed Shipperem** — świadoma zmiana decyzji z 2026-07-27 („Scout trzeci"). Powód: Filip wprost zlecił autonomiczne generowanie pomysłów pod dochód pasywny; tamta decyzja zakładała inny cel (dowód kompetencji przez artefakty z własnego backlogu). Reszta ustaleń z 27.07 (kolejka = PR-y, 30 min/dzień, Shipper async i niszowo-obojętny) pozostaje w mocy i jest wpisana w plan fabryki.
+- **Scenariusz inwestycyjny B**: ~1000 zł/mies. (API + testy walidacyjne ads 150–200 zł/pomysł). Wybrany zamiast bootstrap (A) i agresywnego (C).
+- **Digest fabryki osobno** (07:30, bot Personal Agent), nie w Garmin Morning Briefing.
+- **LLM nocny: CLIProxyAPI / claude-sonnet-5** — koszt nocnych runów ~0.
+- **Czysty zwiad zamiast pomysłów z półki** — estate-digest/arXiv/Nakama odrzucone jako pierwszy wsad („potrzebujemy czegoś świeżego").
+- **Źródła = ludzkie problemy, nie biznes-talk** — subreddity r/SaaS itp. odrzucone przez Filipa; docelowo codzienne frustracje ludzi. Wymuszone też technicznie: Reddit blokuje anonimowy JSON (403 nawet z domowego IP) → Lemmy + Stack Exchange Lifehacks; powrót Reddita tylko przez OAuth.
+
+### Następne kroki
+
+1. Obserwacja 2–3 nocy (jakość kart, czy Lemmy/SE konkurują z HN w wyborach Scouta).
+2. Shipper (tydzień 3): kontrakt „karta approved → PR z PoC", SSH na Maca, `Propose Change`; przy „bierz" wiersz w `experiments`.
+3. Publicist (tydzień 4) + pierwszy launch (Paddle/Lemon Squeezy — KYC Filipa). Przedtem: scope `business` w facts.
+
+Uwaga operacyjna: harmonogramy instancji liczą w UTC (triggery = PL−2, latem) — po zmianie czasu w październiku przesunąć o godzinę.
