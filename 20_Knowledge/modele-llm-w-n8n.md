@@ -24,7 +24,6 @@ Od 2026-07-28 agenci w n8n nie używają płatnego API per token. Wszystkie wywo
 | Workflow | Model | Powód |
 |---|---|---|
 | Personal Assistant (Master) | `gpt-5.5` | orkiestracja + tool-calling, najczęstsze wywołania |
-| Budget Agent | `gpt-5.5` | operacje na pieniądzach — precyzja > koszt |
 | Obsidian Agent | `gemini-3.6-flash-high` | lekki capture notatek, szybki, rozkłada limity |
 | English Coach | `claude-sonnet-5` | jakość języka, naturalna proza (czytana TTS-em) |
 | English Daily | — | bez własnego LLM, woła English Coach |

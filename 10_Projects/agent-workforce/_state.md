@@ -15,7 +15,7 @@ aliases: [agent-workforce, agenci-pracownicy, zaloga-agentow]
 
 ## Summary
 
-Rozszerzenie osobistych agentów n8n z **asystentów** (oszczędzają czas) w **pracowników** (wytwarzają artefakty i docelowo przynoszą pieniądze). Fundament już stoi: `Personal Assistant (Master)` na Telegramie z pamięcią w Postgresie, plus bezstanowe sub-agenty `budget_agent` i `obsidian_agent`. Ten projekt dokłada do tego załogę produkcyjną: Shipper → Publicist → Scout → Analyst.
+Rozszerzenie osobistych agentów n8n z **asystentów** (oszczędzają czas) w **pracowników** (wytwarzają artefakty i docelowo przynoszą pieniądze). Fundament już stoi: `Personal Assistant (Master)` na Telegramie z pamięcią w Postgresie, plus bezstanowe sub-agenty, m.in. `obsidian_agent` (`budget_agent` usunięty 2026-08-30 razem z Actual Budget i Grocery MCP). Ten projekt dokłada do tego załogę produkcyjną: Shipper → Publicist → Scout → Analyst.
 
 Cel finansowy to **pocket money, bez horyzontu czasowego**. Realna ścieżka pieniądza nie prowadzi przez bezpośrednią sprzedaż narzędzi, tylko: artefakty → widoczność → przychodzące zlecenia usługowe. Uzgodnione, że to perspektywa 6–12 miesięcy i że to jest akceptowalne.
 

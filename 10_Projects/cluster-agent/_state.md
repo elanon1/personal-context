@@ -55,7 +55,7 @@ Spec i plan wdrożenia leżą w repo: `docs/superpowers/specs/2026-07-27-n8n-clu
 
 - **2026-07-28 — Wyjątek od zasady „granicą jest RBAC, nie flagi MCP".** Token ServiceAccountu to **plik na dysku poda, nie obiekt API** — RBAC nie ma języka, żeby powiedzieć „nie ujawniaj własnego poświadczenia". To jedyne miejsce, gdzie flaga serwera jest jedyną dostępną granicą, i dlatego nie jest cofnięciem zasady.
 
-- **2026-07-28 — NetworkPolicy: ingress do `mcp` wyłącznie z namespace `n8n`.** **Why:** `mcp-k8s` nie ma żadnego uwierzytelniania, więc bez polityki jego tożsamość ServiceAccountu była dostępna dla dowolnego poda w klastrze. Bez tego wszystkie powyższe ograniczenia byłyby granicą wyłącznie dla agenta, a nie dla czegokolwiek innego, co w klastrze działa. (`mcp-actual` idzie inną drogą — bramkuje żądania bearer tokenem, dlatego polityki nie potrzebuje.)
+- **2026-07-28 — NetworkPolicy: ingress do `mcp` wyłącznie z namespace `n8n`.** **Why:** `mcp-k8s` nie ma żadnego uwierzytelniania, więc bez polityki jego tożsamość ServiceAccountu była dostępna dla dowolnego poda w klastrze. Bez tego wszystkie powyższe ograniczenia byłyby granicą wyłącznie dla agenta, a nie dla czegokolwiek innego, co w klastrze działa. (`mcp-actual` szedł inną drogą — bramkował żądania bearer tokenem, dlatego polityki nie potrzebował; 2026-08-30 usunięty z klastra razem z całym Actual.)
 
 ## Open questions
 
@@ -73,4 +73,4 @@ Spec i plan wdrożenia leżą w repo: `docs/superpowers/specs/2026-07-27-n8n-clu
 - [[tools-stack]] — n8n, Kubernetes, Claude Code
 - Repo GitOps: `github.com/elanonix/argocd`
 - `Personal Assistant (Master)` — n8n `eiuCVFO2GySjtEUB`
-- `Budget Agent (Sub-workflow)` — n8n `gFkVVmWKW4Goik05`, wzorzec kształtu sub-agenta
+- `Budget Agent (Sub-workflow)` — n8n `gFkVVmWKW4Goik05`, wzorzec kształtu sub-agenta (zarchiwizowany 2026-08-30 — Actual Budget usunięty z klastra i z mastera)
