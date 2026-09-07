@@ -2,12 +2,17 @@
 type: project
 project: Hexbane
 domain: [projects, creative]
-status: active
+status: archived
 created: 2026-08-31
-updated: 2026-08-31
+updated: 2026-09-07
+archived: 2026-09-07
+original-path: 10_Projects/hexbane/zasady-gry.md
+superseded-by: "[[_index]] (10_Projects/hexbane/docs/)"
 tags: [hexbane, game-design, balance, progression, spells]
 aliases: [hexbane-rules, hexbane-balance]
 ---
+
+> [!warning] Zarchiwizowane 2026-09-07 — opis sprzed przeprojektowania duel_v2. Aktualna dokumentacja: `10_Projects/hexbane/docs/` (patrz `[[_index]]`). Audyt rozbieżności: `[[2026-09-07-vault-notes-audit]]`.
 
 # Hexbane — zasady gry i liczby balansu
 

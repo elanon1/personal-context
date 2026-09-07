@@ -6,74 +6,149 @@ status: active
 state: active
 repo: https://github.com/elanon1/hexbane
 created: 2026-08-31
-updated: 2026-08-31
+updated: 2026-09-07
 tags: [hexbane, gamedev, godot, csharp, nakama, go, kubernetes, ai-art]
 aliases: [hexbane, hexbane-server]
 ---
 
 # Hexbane — State
 
+> **Dokumentacja techniczna projektu (klient, serwer, protokół, infra, plany) jest tylko tutaj:
+> [[_index]] → `10_Projects/hexbane/docs/`.** Repozytoria nie mają własnych docs (sztywna reguła w ich
+> `CLAUDE.md` / `AGENTS.md`). Dziennik pracy: [[dziennik]].
+
 ## Summary
 
-**Hexbane** to gra mobilna/desktop 1v1: pojedynek magów w czasie rzeczywistym, bez ruchu — liczy się wybór zaklęć, timing rzucania (cast time, brak cooldownów) i medytacja (regeneracja many). Dwa repozytoria:
+**Hexbane** to gra 1v1 (desktop + Android): pojedynek magów w czasie rzeczywistym, bez ruchu — liczy
+się wybór zaklęć, kolejkowanie akcji (cast time + recovery, brak cooldownów) i medytacja
+(regeneracja many). Dwa repozytoria, oba w trakcie **niezacommitowanego** przeprojektowania
+„duel_v2” (wrzesień 2026):
 
-- **Klient** — `~/RiderProjects/hexbane` (`elanon1/hexbane`, branch `master`): Godot 4.5 + C# .NET 9, Nakama SDK 3.16, warstwy `Game → Application → Core`, DI + własny CQRS. → [[10_Projects/hexbane/architektura-klienta|architektura klienta]]
-- **Serwer** — `~/GolandProjects/hexbane-server` (`elanon1/hexbane-server`, branch `main`): plugin Go do Nakama 3.27 (`backend.so`), Postgres 17, autorytatywne mecze fazowe 10 tick/s, 63 zaklęcia w YAML, system progresji RPG (35 ras, STR/INT/DEX, 3 skille, XP/poziomy/magic points). → [[10_Projects/hexbane/architektura-serwera|architektura serwera]]
+- **Klient** — `~/RiderProjects/hexbane` (`elanon1/hexbane`, branch `feat/duel-v2-client` = `master`
+  + niezacommitowana praca): Godot 4.5.2 + C# .NET 9, Nakama SDK 3.16, warstwy
+  `Game → Application → Core`, DI + własny CQRS. → [[client-architecture]], [[duel-v2-client]]
+- **Serwer** — `~/GolandProjects/hexbane-server` (`elanon1/hexbane-server`, branch
+  `feat/spell-system-redesign` = `main` + niezacommitowana praca): plugin Go do Nakama 3.27
+  (`backend.so`), Postgres 17. → [[server-architecture]], [[dev-setup]]
+- **Reguły gry (stan duel_v2):** 6 ras, 14 zaklęć (2 standardowe zawsze dostępne + 6 starterów, z
+  których przy tworzeniu postaci wybiera się 3, Human 4), stałe 200 HP / 100 many, staty/skille/
+  bonusy rasowe **nieaktywne** w walce, sloty draftu 3→6 (Human 4→7), tick 100 ms, mecz 180 s.
+  → [[progression]], [[spell-system]], [[combat-v2]]
+- **Protokół:** opcode’y 0–10, 16, 70, 50, 199 bez zmian; walka to 29 (komenda) → 30 (prywatny
+  wynik) / 31 (zdarzenia) / 32 (snapshot). Opcode’y 11–15 i 21–28 **wycofane**. → [[opcodes]], [[rpcs]]
+- **Infra:** obecnie **tylko lokalnie** (docker compose, `NAKAMA_SERVER=local`); chart Helm + Argo CD
+  na własny k8s (`hexbane.elanon.pl`) istnieją, ale nie są celem prac. → [[infra-and-deploy]]
 
-Prod stoi na własnym klastrze k8s przez Helm + Argo CD: `hexbane.elanon.pl` (API) i `hexbane-console.elanon.pl`. → [[10_Projects/hexbane/infra-i-deploy|infra i deploy]]
-
-Decyzja fundamentalna (26.06.2025): klient przepisany z GDScript na C# — łatwiej o ludzi, możliwa migracja poza Godota.
-
-Pozostałe notatki projektu: [[10_Projects/hexbane/protokol-klient-serwer|protokół klient↔serwer]] · [[10_Projects/hexbane/zasady-gry|zasady gry (liczby)]] · [[10_Projects/hexbane/assety-i-pipeline|assety i pipeline AI-art]].
+Decyzja fundamentalna (26.06.2025): klient przepisany z GDScript na C#.
 
 ## Status
 
-`active`, ale w **dwóch różnych tempach**:
+`active`. Pętla rdzeniowa działa end-to-end na lokalnym stacku: logowanie (Google przez przeglądarkę
+lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 starterów) → matchmaking
+(PvP `normal` / bot `ai_duel`) → lobby z draftem (35 s/tura) → pojedynek duel_v2 na scenie
+`ReferenceDuel/MainReference.tscn` z prawdziwymi sprite’ami ras → game over z XP/level-upem.
 
-- **Kod gry (klient + serwer)**: pętla rdzeniowa działa end-to-end — auth → tworzenie postaci → matchmaking (PvP / bot) → lobby z draftem zaklęć (35 s/tura, naprzemiennie) → 5-minutowy pojedynek → game over z XP/level-upem. Ostatnie wpisy devlogu: 31.12.2025; ostatnie commity serwera: bonusy żywiołowe ras + „fix effect phase”; klient: SDK 4.5.2, assety ras, ekran logowania.
-- **Art / content**: 2026-06 masowa produkcja 35 ras skillem `race-maker`; **2026-08-31 cały roster wycofany** — będzie nowy od zera (patrz decisions log). `Resources/Races/` jest puste (zostały tylko `_tools/`), stara sztuka w archiwum `~/hexbane-archive/Races-2026-08-31/` (922 MB). Pełny rekonesans 2026-08-31: `thoughts/shared/research/2026-08-31-hexbane-client-server-recon.md` w repo klienta.
+**Największe ryzyko:** cała praca z 2026-09 w obu repo jest niezacommitowana (serwer: ~276 wpisów w
+`git status`, w tym skasowana stara historia migracji `000001..000016` zastąpiona świeżym baseline
+`000001..000003`). Snapshot repo: [[repos-and-branches]].
 
-**Do zrobienia ręcznie (blokada klasyfikatora Claude Code, 2026-08-31):** plik `hexbane-server/db/migrations/000011_clear_races.up.sql` (`DELETE FROM characters; DELETE FROM races; ALTER TABLE characters ALTER COLUMN race_id DROP DEFAULT;`) + odpowiadający `down.sql` (re-insert 35 ras z `000010`). Kod i docs serwera już zakładają tę migrację. **Uwaga:** push tej migracji na `main` = Argo CD auto-sync + initContainer `migrate-custom` → **wyczyszczenie postaci na prodzie**.
-
-**Kluczowe fakty przed planowaniem (stan na 2026-08-31):**
-
-1. **Pojedynek nie renderuje ras.** W meczu gracz to generyczny rig `Skeleton2D` z `Resources/Chars/Concept1`. Podgląd rasy przy tworzeniu postaci (`RaceAnimationPreview`) czyta `Resources/Races/<id>/animation/frames.tres` — nowe rasy muszą dostarczać ten plik.
-2. **4 z 11 typów efektów serwera nie mają handlera** (`stun`, `slowdown`, `absorb`, `mana_drain`) → ~18 z 63 zaklęć jest częściowo martwych (błąd tylko w logu).
-3. **VFX po stronie klienta istnieje dla 9 zaklęć**, z czego 3 to id ze starego prototypu (`magic_sparkle`, `heal`, `flamestrike`), których serwer nie zna. 54 zaklęcia serwera nie mają żadnego VFX.
-4. **Docs są za kodem**: `GUIDE-v2` (mecz + zaklęcia) opisuje archiwalny prototyp i błędne czasy; `docs/opcodes` mówi `GameCountdown=9`, kod ma `16`; `RPCs.md` nieaktualny; docs ras mówią „36”, migracja ma 35.
-5. **Sekrety w repo**: serwer `.env.dist` (klucz OpenAI), `helm/hexbane/values.yaml` (GitHub PAT), klient `.env` (dev login/hasło, pakowane do builda jako `Content`).
-6. Endless Story / AI-tworzenie postaci: kod OpenAI usunięty w working tree serwera; klient nadal woła `start_story` (na serwerze zakomentowane).
-7. `deploy.sh` i `StartProgram` w csproj wskazują ścieżki Windows/WSL2 — nie z tego Maca.
+**Content:** ikony/VFX/SFX istnieją dla 2 z 14 zaklęć (`magic_arrow`, `mirror_reflection`) + presety
+wizualne dla 4 id; 21 folderów `Resources/Spells/` to stare id prototypu. → [[spell-vfx-configuration]]
 
 ## Decisions log
 
-- **2026-08-31 — Ekran logowania przerobiony 1:1 pod referencję `reference/auth screen/full.png`.** Pływająca karta z poświatą zamiast pełnej ciemnej połowy, ornament + tytuł serif (Cinzel Decorative Regular + `FontVariation` spacing), pola z ikonami i podglądem hasła, 9-patchowy pomarańczowy przycisk, divider SERVER, dropdown z globusem, link w stopce. Nowy theme `_Themes/m_auth_card_theme.tres` (type variations) nakładany na `m_auth_theme`; assety w `Resources/Images/Auth/` wycięte z referencji (luminancja → alfa). **Why:** referencja powstała z tego samego tła, więc taniej było wyciąć z niej elementy niż generować od nowa; `DESIGN_SYSTEM.md` uzupełniony. Gotcha: tekstura przycisku wycięta z mocka miała wypalony napis — 9-patch rozciągał go pod prawdziwym tekstem (wyglądało jak zepsuty font).
-- **2026-08-31 — Wycofany cały roster 35 ras; nowe rasy od zera.** Klient: `Resources/Races/*` (nigdy niezacommitowane, 922 MB) **przeniesione** do `~/hexbane-archive/Races-2026-08-31/` zamiast skasowane — jedyna forma odwracalności; zostało `_tools/`; sceny dev zaszyte na stare rasy (`Game/ScenesV3/Dev/VitraelPreview.*`, `Game/ScenesV3/RaceTest/*`) `git rm`. Serwer: hardcode `"glassvein"` (×4) zastąpiony stałą `race.DefaultRaceId` (`modules/race/types.go`, dziś `""` — `NewCharacter` bez rasy używa bazowych statów); `docs/progression/race.md` przepisany (sekcja „Roster” z checklistą dla nowej migracji); stare bible z `docs/client/races/` do archiwum. Migracja `000011_clear_races` **do dopisania ręcznie** (blokada klasyfikatora). **Why:** Filip: „powywalaj istniejące rasy, będziemy robić nowe”. Nic nie zacommitowane.
-- **2026-08-31 — Rekonesans obu repo zapisany jako mapa techniczna + notatki w vaultcie.** Why: przed planowaniem kolejnych kroków potrzebny był jeden spójny obraz klienta, serwera, kontraktu między nimi i realnego stanu contentu, bo dokumentacja w repo rozjechała się z kodem w kilku miejscach (opcode 16 vs 9, czasy faz, katalog zaklęć).
-- **2026-06 — Produkcja ras zautomatyzowana (skill `race-maker`, w pełni autonomiczny).** Solid chroma tło per rasa, zero malowanych efektów (VFX dodaje silnik), 6 animacji 3×3. Why: ręczne generowanie było wąskim gardłem; chroma zamiast alpha, bo ChatGPT nierzetelnie oddaje przezroczystość. (Szczegóły: pamięć Claude Code projektu hexbane.)
-- **2026-06-18 — Klient: animacje ras jako sprite-sheety, nie rig kostny.** Rig z części (`RaceTest/TumbloamRig.tscn`) przetestowany i odłożony; pipeline docelowo daje `SpriteFrames`. Why: rig wymagał generowania kompletnych części ciała per rasa; sheety skalują się na 35+ ras.
-- **2026-01-30 — Serwer: docs v2 (`DOCUMENTATION-INDEX`, `QUICKSTART-v2`, `API-REFERENCE-v2`, `GUIDE-v2`).** Od tego czasu kod poszedł dalej (63 zaklęcia, żywioły ras), docs nie.
-- **2025-08-12 — Serwer: model „mecz prowadzony przez jednego gracza” zamiast czystych RPC dla tworzenia postaci (Endless Story).** Why: zarządzanie sesją/pamięcią przez Nakama match zamiast trzymać stan w RPC.
-- **2025-07-29 — `PlayerState` pod mutexem, atomowy `TryCastSpell`.** Why: prawie równoczesne casty psuły animacje i zaklęcia (race condition).
-- **2025-07-27 — Efekty: brak stackowania tego samego zaklęcia (recast odświeża czas).** Dziś: kolejka per mecz z kluczem `spellID/effectType` — różne zaklęcia tego samego typu stackują się obok siebie.
-- **2025-06-26 — Klient przepisany z GDScript na C#.** Why: GDScript to nisza (trudno o ludzi), C# daje perspektywę migracji na inne silniki.
+- **2026-09-07 — Jedno źródło prawdy dla dokumentacji: vault Obsidian, nie repozytoria.** Oba drzewa
+  `docs/` (klient 45 plików + kopie docs serwera, serwer 75 plików + `RPCs.md`) zweryfikowane z kodem
+  przez 8 agentów, scalone do `10_Projects/hexbane/docs/{protocol,server,client,infra,plans,audits}`,
+  usunięte z repo (kopia w `~/hexbane-archive/docs-2026-09-07/`). Sztywna reguła READ/WRITE/LOG/NEVER
+  w `CLAUDE.md` i `AGENTS.md` obu repo; `.claude/commands/opcodes.md`, `.claude/agents/ui-designer.md`
+  i serwerowy `opcode-docs.md` przepięte na ścieżki vaulta. Zrzuty weryfikacyjne (804 MB PNG/GIF)
+  przeniesione z `docs/client/` do `verification/` (gitignore), 7 skryptów `Verify*.cs` zaktualizowanych.
+  Stare polskie notatki z 2026-08-31 → `99_Archive/Projects/hexbane-notes-2026-08-31/`. Raporty
+  rozbieżności → `docs/audits/` ([[2026-09-07-server-match-audit]] i sąsiednie). **Why:** dwie
+  dokumentacje rozjechały się z kodem i ze sobą (serwer zredukował docs do stubów „superseded”,
+  klient trzymał stare pełne wersje; GameCountdown 9 vs 16; 63 vs 14 zaklęć; 35 vs 6 ras). Vault jest
+  repo gitowym, więc docs są wersjonowane; Codex i Claude Code piszą tam zwykłymi narzędziami
+  plikowymi, MCP Obsidian jest opcjonalny.
+- **2026-09-06 — Tutorial lokalny w kliencie, bez meczu tutorialowego.** RPC `tutorial`
+  (`status` / `complete_training` / `complete_progression`) trzyma flagi w `account_tutorials`;
+  szkolenie nie daje XP/MP; stare `set_tutorial_completed` zawsze błąd. → [[server-tutorial]],
+  [[client-tutorial]]. **Why:** prościej i bez kosztu meczu na serwerze.
+- **2026-09-05/06 — Przeprojektowanie systemu zaklęć i walki: `duel_v2`, protokół 2, katalog
+  `duel_v2.2`.** 14 zaklęć w płaskim `data/spells/*.yaml` (zamiast 63 w szkołach/tierach), stałe
+  200 HP / 100 many, kolejka jednej akcji, automatyczne release + recovery, tick 100 ms, mecz 180 s,
+  remis po czasie; opcode’y 29–32; snapshot co 2 ticki. Tworzenie postaci wymaga wyboru 3 starterów
+  (Human 4) z 6; reszta po 5 MP. Baza zresetowana do baseline `000001..000003`. → [[spell-system]],
+  [[combat-v2]], [[database]]. **Why:** stary system (63 zaklęć, formuły ze statów, 4 typy efektów bez
+  handlerów) był niebalansowalny i częściowo martwy; nowy jest deterministyczny i testowalny
+  (`cmd/duel-sim`, testy scenariuszowe, `scripts/test_combat_runtime.mjs`).
+- **2026-09-05 — Logowanie: tylko konto Google (+ e-mail), Play Games porzucone.** Jeden przepływ
+  przeglądarkowy (RFC 8252 loopback + PKCE) na PC i Androidzie, token do wbudowanego
+  `AuthenticateGoogleAsync` Nakamy, bez własnego RPC. Sekret klienta typu Desktop app **świadomie**
+  w `project.godot` (Google go i tak dystrybuuje; PKCE zabezpiecza wymianę). → [[google-auth]],
+  [[social-sign-in]]. **Why:** Nakama nie sprawdza `aud`; Play Games wymagało osobnej konfiguracji i
+  psuło build APK.
+- **2026-09-04 — Zaklęcia standardowe + drabinka slotów 3–6.** `magic_arrow` i `mirror_reflection`
+  zawsze dostępne poza draftem; sloty odblokowywane na poziomach 4/8/12; Human +1 slot. **Why:** każdy
+  gracz ma zawsze atak i obronę, a draft nie skaluje się do 10 slotów.
+- **2026-09-02 — Nowy roster: 6 ras (human, elf, dark_elf, shadow, gnome, orc)** z widełkami statów
+  efektywnych (min/max, 0 = brak limitu) i traitami; domyślna rasa `human`. Sztuka: modele Tripo →
+  Mixamo → Blender → sprite sheety HD/SD (`build_races.sh`), 13 klipów + 3 medytacyjne. → [[progression]],
+  [[assets-pipeline]]. **Why:** mały, czytelny roster zamiast 35 ras AI-artu; traity poza slotem Human
+  są dziś **martwe** (walka bez bonusów).
+- **2026-08-31 — Ekran logowania przerobiony 1:1 pod referencję** (karta z poświatą, Cinzel
+  Decorative, 9-patch przycisk). Gotcha: 9-patch z wypalonym napisem. Później (09-01..09-02)
+  tak samo przebudowane: kreator postaci, dashboard, lobby, szczegóły postaci, news/settings/social.
+- **2026-08-31 — Wycofany cały roster 35 ras; nowe rasy od zera.** Stara sztuka w
+  `~/hexbane-archive/Races-2026-08-31/` (922 MB, nigdy w gicie). **Why:** „powywalaj istniejące rasy,
+  będziemy robić nowe”. Migracja `000011_clear_races` nigdy nie powstała — zastąpiona resetem bazy 09-05.
+- **2026-08-31 — „Na razie działamy tylko na lokalu.”** Prod/Argo/Synology poza zakresem; migracje
+  muszą być bezpieczne tylko lokalnie.
+- **2026-06 — Produkcja ras zautomatyzowana (skill `race-maker`).** Skill istnieje, ale shipowany
+  roster powstał w pipeline Blender/Mixamo, nie z chroma-sheetów ChatGPT.
+- **2026-06-18 — Animacje ras jako sprite-sheety, nie rig kostny.** Potwierdzone i rozszerzone:
+  `frames.tres` ma 16 klipów, plus `hand_tracks.tres` / `meditation_tracks.tres` do kotwiczenia VFX.
+- **2026-01-30 — Serwer: docs v2.** Zastąpione 2026-09-07 przez vault.
+- **2025-08-12 — Serwer: „mecz prowadzony przez jednego gracza” dla tworzenia postaci (Endless
+  Story).** Why: stan sesji w meczu Nakamy zamiast w RPC. Dziś martwe (patrz Open questions).
+- **2025-07-29 — `PlayerState` pod mutexem, atomowy `TryCastSpell`.** Dziś: Nakama serializuje
+  handlery per mecz, mutexy są „defensywne”; walka ma jedną kolejkę akcji.
+- **2025-07-27 — Efekty: brak stackowania tego samego zaklęcia.** Zastąpione kolejką efektów duel_v2.
+- **2025-06-26 — Klient przepisany z GDScript na C#.** Why: GDScript to nisza; C# daje perspektywę
+  migracji na inne silniki.
 
 ## Open questions
 
-- Który zestaw zaklęć jest kanoniczny dla produkcji ikon/VFX/SFX: 63 z YAML serwera czy 19 folderów w `Resources/Spells/` (głównie stare id)?
-- Nowy roster ras: ile, jaki styl, jaka rasa domyślna (`race.DefaultRaceId` + default kolumny `race_id`), jakie żywioły (muszą pasować do szkół serwera: air/earth/fire/ice/lightning/mind/neutral/toxic/water) i odporności (klucze = żywe id zaklęć)?
-- Czy pojedynek ma renderować rasy — i którą drogą: `SpriteFrames` (`frames.tres`) czy rig?
-- `stun`/`slowdown`/`absorb`/`mana_drain`: dopisać handlery czy wyciąć z katalogu?
-- Endless Story: porzucone czy przepisywane bez OpenAI?
-- Element ras (`docs/progression/race.md`) odwołuje się do szkół, których serwerowe zaklęcia nie mają → bonusy żywiołowe w praktyce martwe poza pokrywającymi się nazwami. Które szkoły są docelowe?
-- Sekrety w repo — do rotacji i usunięcia z historii (nie zrobione, tylko odnotowane).
-- Deploy z Maca: brak działającej ścieżki (skrypty pod Windows/WSL2).
+- **Commit pracy z 2026-09** w obu repo (branch `feat/duel-v2-client`, `feat/spell-system-redesign`)
+  — kiedy i jak (jeden PR? squash?). Push serwera na `main` = Argo auto-sync + `migrate-custom` na
+  bazie z historią `000016` → nie ma ścieżki upgrade’u, tylko reset.
+- **Endless Story**: moduł `endless_story` wciąż zarejestrowany (mecz `v2_create_character`, RPC
+  `create_character_match_story` woła nieistniejący mecz `create_character`), `start_story`
+  zakomentowane, klient nadal je woła. Usunąć razem z `OPENAI_*` w `.env.dist`?
+- **Martwy kod po redesignie**: traity ras (7 z 8 kluczy), `modules/combat` (formuły), `modules/skills`
+  (gain), `get_progression` (zła matematyka), `set_tutorial_completed` (zawsze błąd), `MatchLog`
+  zapisywany i wyrzucany co tick, `get_users` wołane przez klienta bez RPC na serwerze; w kliencie
+  foldery handlerów wycofanych opcode’ów, stary `GameHud/**`, martwe trasy `SceneManager`, autoload
+  GTweens bez użyć. Usunąć czy zostawić pod przyszły ruleset? Klient pokazuje traity ras, choć nie działają.
+- **Bezpieczeństwo protokołu**: opcode 2 w `game_countdown`/`lobby` ufa `user_id` z payloadu; opcode
+  10 wysyła listę zaklęć przeciwnika jako „prywatny” widok. Błąd czy akceptowalne w 1v1?
+- **Sekrety w repo** (serwer `.env.dist` klucz OpenAI, `helm/hexbane/values.yaml` PAT GitHub,
+  klient `.env` pakowany do builda) — nadal obecne, nie rotowane.
+- **Content dla 12 zaklęć** bez ikon/VFX/SFX; 21 starych folderów w `Resources/Spells/` do
+  wyczyszczenia; preset `fireball.tres` vs id `firebolt`. Pipeline n8n (`prompt.md`, `vfx.md`,
+  `spell_output.md` w root klienta) — czy jeszcze działa? → [[legacy-and-tooling]]
+- **`visual_key`** — klient czyta, serwer nie wysyła (backend do zrobienia). → [[spell-visual-key]]
+- **Baseline balansu** `balance-v2.json` opisuje `duel_v2.1`, kod ma `duel_v2.2` — przeliczyć?
+- Czy prod na k8s ma żyć (chart + Argo istnieją, nic ich nie opisuje poza [[infra-and-deploy]])?
+- Elementy/szkoły: wszystkie 14 zaklęć ma `school: neutral`; kolumny żywiołów ras są historyczne.
+  Wracają czy do usunięcia z kontraktu?
 
 ## Links
 
-- [[NOW]] · [[tools-stack]] (Godot, C#, Go, Nakama, k8s, Argo CD)
-- [[10_Projects/cluster-agent/_state|Cluster Agent]] — ten sam klaster k8s, na którym stoi hexbane (Argo CD w `elanonix/argocd`)
+- [[_index]] — mapa dokumentacji · [[dziennik]] — dziennik pracy · [[NOW]] · [[tools-stack]]
+- [[10_Projects/cluster-agent/_state|Cluster Agent]] — ten sam klaster k8s
 - Repo klient: `github.com/elanon1/hexbane` · serwer: `github.com/elanon1/hexbane-server`
-- Obraz: `ghcr.io/elanon1/hexbane-server:latest` · prod: `https://hexbane.elanon.pl`
-- Mapa techniczna (pełna, z odnośnikami do linii): `hexbane/thoughts/shared/research/2026-08-31-hexbane-client-server-recon.md`
-- Docs w repo: klient `docs/DESIGN_SYSTEM.md`, `docs/opcodes/`; serwer `docs/DOCUMENTATION-INDEX.md`, `docs/progression/*`, `docs/devlog.md`
+- Obraz: `ghcr.io/elanon1/hexbane-server:latest` · prod (nieużywany): `https://hexbane.elanon.pl`
+- Archiwa: `~/hexbane-archive/Races-2026-08-31/` (stara sztuka ras), `~/hexbane-archive/docs-2026-09-07/`
+  (usunięte drzewa docs obu repo + `thoughts/`), `99_Archive/Projects/hexbane-notes-2026-08-31/`
+  (stare notatki vaulta)

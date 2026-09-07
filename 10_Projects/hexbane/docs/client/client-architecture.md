@@ -8,7 +8,7 @@ created: 2026-09-07
 updated: 2026-09-07
 verified: 2026-09-07
 tags: [hexbane, client, architecture, godot]
-sources: ["client:CLAUDE.md", "client:AGENTS.md", "client:Application/CQRS/README.md", "client:project.godot", "client:Game/Autoloads/SceneManager.cs", "client:Game/DI/ServiceBootstrapper.cs"]
+sources: ["client:CLAUDE.md", "client:AGENTS.md", "client:project.godot", "client:Game/Autoloads/SceneManager.cs", "client:Game/DI/ServiceBootstrapper.cs"]
 ---
 
 # Client architecture (Godot 4.5.2 + C# .NET 9)
@@ -70,7 +70,7 @@ var r = await dispatcher.DispatchAsync<Cmd, Result>(cmd);            // ICommand
 var q = await dispatcher.QueryAsync<GetSpellsQuery, List<Spell>>(q); // IQuery<Result>
 await dispatcher.PublishAsync(new PlayerCreatedEvent(...));          // IEvent, many handlers
 ```
-The full pattern (interfaces, examples, logging) is in `client:Application/CQRS/README.md`; it is accurate.
+The full pattern (interfaces, examples, logging) is in [[cqrs]] (the old `Application/CQRS/README.md` was removed on 2026-09-07; its examples did not compile).
 
 ## Nakama message flow
 
@@ -144,3 +144,21 @@ Four-space indent, file-scoped namespaces, `_camelCase` private fields, PascalCa
 - `client:Application/Match/Incoming/MatchMessageHandler.cs` — opcode routing and retired-opcode filter
 - `client:Game/Autoloads/SceneManager.cs` — route table, tutorial gating, Back handling
 - `client:Application/Nakama/NakamaClientManager.cs`, `Application/Authentication/AuthConfig.cs`, `Game/Autoloads/EnvLoader.cs` — configuration resolution
+
+## Autoload and signal conventions (from the GDScript → C# migration)
+
+- `project.godot` registers autoloads by **script** (`*res://Game/DI/DIHost.cs` …); the leftover
+  `Game/Autoloads/*.tscn` and `Game/DI/DIHost.tscn` scene files are not what runs.
+- Signals: `[Signal] public delegate void <Name>EventHandler(...)`, emitted with
+  `EmitSignal(GameEvents.SignalName.<Name>, …)`. `GameEvents.UserAuthenticated` carries a single
+  `string userId` (`client:Game/Autoloads/GameEvents.cs:155`).
+- Cross-autoload access: `GetNode<GameEvents>("/root/GameEvents")` or the static `GameEvents.Instance`;
+  scene changes only through `SceneManager.ChangeScene(sceneKey, transition)`.
+- `DIHost` builds the `ServiceProvider` once at startup (`ServiceBootstrapper.Build()`), emits
+  `ServicesInitialized`, and disposes it in `_ExitTree` (`client:Game/DI/DIHost.cs:12-39`). There is no
+  second "session services" phase; every service is a singleton.
+- `SessionContext` (`client:Core/Auth/SessionContext.cs`, DI singleton) owns the Nakama `ISession` /
+  `ISocket` (`GetSession/SetSession`, `GetSocket/SetSocket`, `IsAuthenticated()`, `GetUserId()`,
+  `ClearSession()`); `GameContext` holds only user/character state, no services.
+- Auth services are `ILoginService`, `IRegisterService`, `ISocialSignIn`, `ISocialAuthGateway`
+  (`client:Game/DI/ServiceBootstrapper.cs:74-98`); playstyles are `ICharacterPlaystyleService`.

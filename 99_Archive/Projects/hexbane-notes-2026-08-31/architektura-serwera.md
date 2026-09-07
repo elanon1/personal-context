@@ -2,12 +2,17 @@
 type: project
 project: Hexbane
 domain: projects
-status: active
+status: archived
 created: 2026-08-31
-updated: 2026-08-31
+updated: 2026-09-07
+archived: 2026-09-07
+original-path: 10_Projects/hexbane/architektura-serwera.md
+superseded-by: "[[_index]] (10_Projects/hexbane/docs/)"
 tags: [hexbane, nakama, go, architecture, match-engine]
 aliases: [hexbane-server-arch]
 ---
+
+> [!warning] Zarchiwizowane 2026-09-07 — opis sprzed przeprojektowania duel_v2. Aktualna dokumentacja: `10_Projects/hexbane/docs/` (patrz `[[_index]]`). Audyt rozbieżności: `[[2026-09-07-vault-notes-audit]]`.
 
 # Hexbane — architektura serwera (Nakama / Go)
 
