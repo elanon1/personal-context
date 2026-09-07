@@ -50,5 +50,7 @@ co zrobione — notatki/pliki — co zostało**. Decyzje z uzasadnieniem idą do
   serwera mapowane aliasami; stare foldery handlerów 11–15/21–28 wciąż kompilowane; martwe trasy
   `SceneManager`; `docs/client/reference-duel` bez `.gdignore` importowało 53 MB PNG do `.godot/`.
 
+- Usunięte komendy `.claude/commands/create_spell_{icon,sfx,sounds,textures,vfx}.md` (stary pipeline generowania zaklęć; `old_create_spell.md` zostawiony).
+
 **Zostało / do decyzji** — lista *Open questions* w [[10_Projects/hexbane/_state|_state]]; nic nie
 zacommitowane (ani repo, ani vault).

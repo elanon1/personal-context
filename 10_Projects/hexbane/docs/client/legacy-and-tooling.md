@@ -55,7 +55,7 @@ Root files `prompt.md` (spell description → JSON with icon and audio prompts),
 `spell.json`) are prompts for an n8n workflow that produced the 10 old-prototype folders in
 `Resources/Spells/<id>/` (`spell.json`, `manifest.generated.json`, `primitives/textures/motions/references`,
 Google Drive links). Whether the workflow still runs is unknown; none of the 14 current spell ids went
-through it. `spell_output.md` is still listed as csproj `Content`. Related commands:
+through it. `spell_output.md` is still listed as csproj `Content`. Related command: `old_create_spell` (the five `.claude/commands/create_spell_*` commands were removed on 2026-09-07). Formerly also:
 `.claude/commands/create_spell_*` and `old_create_spell`.
 
 ## Race art history
@@ -75,7 +75,7 @@ through it. `spell_output.md` is still listed as csproj `Content`. Related comma
 - Addons: `godot_mcp` (Godot MCP Pro, WebSocket :6505, Node server in `mcp_server/`; version
   *(unverified)*), `ColorPreview`, `rider-plugin`, `hexbane_android` (**must stay enabled**, declares the
   `hexbane://` scheme), `GodotPlayGameServices` (**disabled**, see [[social-sign-in]]).
-- `.claude/`: 7 agents, 34 commands, 3 skills (`race-maker`, `env-concept`, `env-maker`);
+- `.claude/`: 7 agents, 29 commands, 3 skills (`race-maker`, `env-concept`, `env-maker`);
   `MAX_THINKING_TOKENS=32000` in `.claude/settings.json`.
 - Godot MCP gotchas (stale `get_game_screenshot`, dead `click_button_by_text` on ScenesV3 buttons, use
   `execute_game_script` + `force_draw`/`save_png` and `emit_signal("pressed")`) live in Claude Code's
