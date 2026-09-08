@@ -152,6 +152,10 @@ User correction is explicit: **Human starts at4**, other races at3. Preserve the
 
 The two primary spells are carried on top at every level. Primary development does not occupy optional slots. New packs expand the owned spell pool, not the maximum slot count. Human's extra starter and match slot are available from creation; the earlier proposed shared3-slot start is withdrawn.
 
+## XP and ranked progression clarification
+
+See [[2026-09-08-xp-ranked-progression]]. The user explicitly states that unfinished skills and Magic Points must not block ranked games. Skills continue to their individual caps after character level30; MP needs an earning source beyond level-ups. Proposed primary milestones1/5/10/16/23/30 are provisional and do not require all primary points to be spent for ranked eligibility. No automatic skill maximization or normalization is approved.
+
 ## 5. Delivery sequence and validation gates
 
 ### Phase A — isolate the primary utility role
