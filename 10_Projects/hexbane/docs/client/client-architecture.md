@@ -5,15 +5,15 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, client, architecture, godot]
 sources: ["client:CLAUDE.md", "client:AGENTS.md", "client:project.godot", "client:Game/Autoloads/SceneManager.cs", "client:Game/DI/ServiceBootstrapper.cs"]
 ---
 
 # Client architecture (Godot 4.5.2 + C# .NET 9)
 
-Repo: `/Users/elanon/RiderProjects/hexbane`. Godot.NET.Sdk **4.5.2** (`hexbane.csproj:1`), project features `4.5, C#, Mobile` (`project.godot:20`). Backend: Nakama via `NakamaClient 3.16.0`, DI via `Microsoft.Extensions.DependencyInjection 9.0.7`, `Newtonsoft.Json 13.0.3` (`hexbane.csproj:46-50`). Tween library: GTweensGodot under `Plugins/`.
+Repo: `/Users/elanon/RiderProjects/hexbane`. Godot.NET.Sdk **4.5.2** (`hexbane.csproj:1`), project features `4.5, C#, Mobile` (`project.godot:20`). Backend: Nakama via `NakamaClient 3.16.0`, DI via `Microsoft.Extensions.DependencyInjection 9.0.7`, `Newtonsoft.Json 13.0.3` (`hexbane.csproj:46-50`). The unused GTweens/Godot tween plugin and autoload were removed on 2026-09-08; animations use Godot Tween.
 
 ## Layers
 
@@ -36,11 +36,10 @@ Dependencies flow `Game → Application → Core`. Tests live in `Tests/` and ar
 | 6 | MatchContext | `Game/Autoloads/MatchContext.cs` | `MatchId`, `IsAiMatch`, `Combat` (`DuelState`), `Me`/`Enemy`, `SpellSlotOrder` |
 | 7 | SceneManager | `Game/Autoloads/SceneManager.cs` | route table, history, Android Back handling |
 | 8 | MainThreadInvoker | `Game/Autoloads/MainThreadInvoker.cs` | marshals socket callbacks to the main thread |
-| 9 | GodotGTweensContextNode | `Plugins/Godot/Source/Contexts/...` | tween context |
-| 10 | NotificationManager | `Game/Autoloads/NotificationManager.cs` | Nakama notifications |
-| 11 | MenuPlayer | `Game/Autoloads/MenuPlayer.cs` | menu/battle music |
-| 12 | DevAutoLogin | `Game/Autoloads/DevAutoLogin.cs` | `DEV_AUTO_LOGIN=true` + `DEV_AUTO_LOGIN_MODE=existing|new_character` (`DevAutoLogin.cs:21-29`) |
-| 13–15 | MCPScreenshot, MCPInputService, MCPGameInspector | `addons/godot_mcp/*.gd` | editor MCP tooling only |
+| 9 | NotificationManager | `Game/Autoloads/NotificationManager.cs` | Nakama notifications |
+| 10 | MenuPlayer | `Game/Autoloads/MenuPlayer.cs` | menu/battle music |
+| 11 | DevAutoLogin | `Game/Autoloads/DevAutoLogin.cs` | `DEV_AUTO_LOGIN=true` + `DEV_AUTO_LOGIN_MODE=existing|new_character` (`DevAutoLogin.cs:21-29`) |
+| 12–14 | MCPScreenshot, MCPInputService, MCPGameInspector | `addons/godot_mcp/*.gd` | editor MCP tooling only |
 
 CLAUDE.md lists only six autoloads; the table above is the real set.
 
@@ -54,7 +53,6 @@ Keyed `IMatchManager` (lines 107-110):
 |---|---|
 | `ad_normal` | `Application/ArcaneDuel/Normal/MatchManager` (PvP matchmaker) |
 | `ad_ai` | `Application/ArcaneDuel/Bot/BotMatchManager` |
-| `create_character` | `Application/EndlessStory/CreateCharacter/MatchManager` (story mode, server RPC is broken, see [[rpcs]]) |
 | unkeyed | `MatchManager` |
 
 Access: `DIHost.Services.GetService<T>()` / `GetRequiredKeyedService<IMatchManager>("ad_ai")`.
@@ -86,7 +84,7 @@ ISocket.ReceivedMatchState
 ```
 Opcode enum: `Core/Common/Enums/Opcodes.cs` (still declares the retired 11–15/21–28 names). Protocol details: [[opcodes]], [[combat-v2]], client side [[duel-v2-client]].
 
-Outgoing commands: `Application/Match/Outgoing/{CastSpell,ClientReady,Meditate,Quit,SpellSelection,EndlessStory}`. `ClientReadyCommand.ToPayload()` sends `{combat_protocol:2, user_id, event_name}` (`ClientReadyCommand.cs:17-21`).
+Outgoing commands: `Application/Match/Outgoing/{CastSpell,ClientReady,Meditate,Quit,SpellSelection}`. `ClientReadyCommand.ToPayload()` sends `{combat_protocol:2, user_id, event_name}` (`ClientReadyCommand.cs:17-21`).
 
 ## Scene routes (`Game/Autoloads/SceneManager.cs:14-36`)
 
@@ -162,3 +160,11 @@ Four-space indent, file-scoped namespaces, `_camelCase` private fields, PascalCa
   `ClearSession()`); `GameContext` holds only user/character state, no services.
 - Auth services are `ILoginService`, `IRegisterService`, `ISocialSignIn`, `ISocialAuthGateway`
   (`client:Game/DI/ServiceBootstrapper.cs:74-98`); playstyles are `ICharacterPlaystyleService`.
+
+## 2026-09-08 cleanup
+
+Client storytelling was removed: `Application/EndlessStory`, `Application/Modules/Story`, incoming/outgoing `EndlessStory`, DI key `create_character`, `NarrationUpdated` and client opcode constants 100/101. The current character creation/tutorial flow remains. No server repository was changed in this client task.
+
+Retired combat handlers (11–15, 21–28) and unused DTOs were removed. Casting/accepted/failed DTOs remain because current development previews and HUD compatibility code still consume them; their old network handlers are gone. The dispatcher still drops the retired numeric ranges.
+
+Spell VFX now consists only of MirrorWard (formation/shatter audio restored at the user’s request); new cast/gesture/meditation effects and current catalog icons remain. See [[spell-effect-system]].

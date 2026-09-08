@@ -13,7 +13,7 @@ sources: ["server:docs/match/GUIDE-v2.md", "server:docs/match/README.md", "serve
 
 # Server architecture: Nakama plugin and match engine
 
-Hexbane's backend is one Go plugin (`backend.so`) loaded by **Nakama 3.27.0**. It registers RPCs, auth hooks and two real-time match handlers. Combat runs ruleset `duel_v2`, catalog `duel_v2.2`, protocol 2, at **100 ms per tick** (`server:modules/spell_system/version.go:3-8`). Payload shapes for opcodes are in [[combat-v2]] and [[opcodes]]; RPCs in [[rpcs]]. Build and run workflow: [[dev-setup]].
+Hexbane's backend is one Go plugin (`backend.so`) loaded by **Nakama 3.27.0**. It registers RPCs, auth hooks and two real-time match handlers. Combat runs ruleset `duel_v2`, catalog `duel_v2.3`, protocol 2, at **100 ms per tick** (`server:modules/spell_system/version.go:3-8`). Payload shapes for opcodes are in [[combat-v2]] and [[opcodes]]; RPCs in [[rpcs]]. Build and run workflow: [[dev-setup]].
 
 ## Plugin entry and module map
 
@@ -107,9 +107,11 @@ Phase transitions: `MatchState.TransitionTo` is documented as the single entry p
 
 ### Combat phase internals (`server:modules/match/engine/phase/game/`)
 
-- **Logical clock.** `Elapsed` counts ticks; `now()` is `Elapsed × 100 ms` from the Unix epoch, not wall time (`phase.go:84-86`). All deadlines in payloads are `UnixMilli/100` of that clock (`deadlineTick`, `phase.go:374-379`). The simulator `cmd/duel-sim` drives the same `Advance` (`phase.go:138`).
+Restored stat/race/skill calculations, random-stream ownership and client metadata: [[combat-stat-rules]]. The fixed-resource assumptions below are superseded wherever historical line descriptions remain.
+
+- **Logical clock.** `Elapsed` counts ticks; `now()` is `Elapsed × 100 ms` from the Unix epoch, not wall time (`phase.go:84-86`). All deadlines in payloads are ceiling to the first authoritative tick of that clock (`deadlineTick`, `phase.go:374-379`). The simulator `cmd/duel-sim` drives the same `Advance` (`phase.go:138`).
 - **Command intake** (`HandleMessage` `phase.go:352-372`): only opcode 29; body ≤ 1024 bytes, unknown fields and trailing JSON rejected. `Submit` (`phase.go:93-133`) validates `client_seq` (0 invalid, equal = duplicate ignored, lower = `stale_command`), kind `cast | meditate | clear_queue`, spell ownership and mana, paralysis, meditation availability. Rejections are emitted as `action_rejected` with reasons from `reasons.go:8-19`. One pending command per player; the last one wins within a tick.
-- **Advance order per tick** (`phase.go:138-304`): AI every 4 ticks (`:149-151`) → `Elapsed++` → effect expiry → release every finished cast (`cast_released`, impact scheduled at `EndsAt + travel_time`, `:159-190`) → `EffectQueue.Process` with `DeferDeath` so a whole impact batch resolves before deaths commit (`:191-201`) → end check → per player: regeneration (`RegenerateAt`, 1 mana/s plus 10/s while meditating after an 800 ms ramp, `state/actions.go:39-85`), pending → queued (`action_queued` / `queue_cleared`), queued command executed once the player is neither casting nor in recovery (`:244-303`).
+- **Advance order per tick** (`phase.go:138-304`): AI every 4 ticks (`:149-151`) → `Elapsed++` → effect expiry → release every finished cast (`cast_released`, impact scheduled at `EndsAt + travel_time`, `:159-190`) → `EffectQueue.Process` with `DeferDeath` so a whole impact batch resolves before deaths commit (`:191-201`) → end check → per player: regeneration (`RegenerateAt`, profile-derived passive/active mana and passive unpoisoned HP after an 800 ms meditation ramp, `state/actions.go:39-85`), pending → queued (`action_queued` / `queue_cleared`), queued command executed once the player is neither casting nor in recovery (`:244-303`).
 - **Casting** (`state/actions.go:10-37`): mana is spent at cast start; `RecoveryUntil = EndsAt + recovery_time`; starting a cast stops meditation. Paralysis interrupts a cast in flight and keeps the mana (`InterruptCastAt`, `actions.go:87-98`).
 - **Impact** (`apply_spell_effect.go:11-39`): target is the opponent if any effect targets the enemy, otherwise self; a hostile spell hitting a target with `reflection` swaps caster and target and consumes the effect (`spell_reflected`), then `spell_effects.ApplyEffects` runs the handlers and `spell_impact` is emitted.
 - **Broadcasts** (`Tick` `phase.go:305-335`): every event is sent every tick; `action_queued`, `queue_cleared`, `action_rejected` go only to the acting player on opcode 30, everything else to all on opcode 31. Snapshots (opcode 32) go per player every 2 ticks (200 ms) and on the final tick; each contains only the recipient's `queued` command (`Snapshot` `:336-351`).
@@ -134,10 +136,10 @@ Cleanup 2026-09-08 retains `MatchLog` and its current lifecycle. The old `CastIn
 | Group | Fields | Notes |
 |---|---|---|
 | identity | `UserId`, `Username`, `RaceId`, `IsBot` | |
-| resources | `Health/MaxHealth = 200`, `Mana/MaxMana = 100`, `Shield`, `IsAlive`, `DiedTimestamp` | fixed for every character and the bot (`player_setup.go:33-34`, `ai_match/bot.go:90-91`); stats do not scale them |
-| stats and skills | `Strength`, `Intelligence`, `Dexterity`, `SkillMeditation`, `SkillSpellResistance`, `SkillMagery`, `SkillGains` | loaded from the character but **not used by duel_v2 combat**; `SkillGains` is `nil`, so no skill gain is ever recorded (`player_setup.go:77`) |
+| resources | `Health/MaxHealth`, `Mana/MaxMana`, `Shield`, `IsAlive`, `DiedTimestamp` | derived from the shared combat profile for humans and bots; see [[combat-stat-rules]] |
+| stats and skills | `Strength`, `Intelligence`, `Dexterity`, `SkillMeditation`, `SkillSpellResistance`, `SkillMagery`, `SkillGains` | active in combat; humans initialize a gain tracker, bots do not persist gains |
 | spells | `SpellSlots` (draft slots this match, clamped to learned spells), `MaxSpellSlots` (character entitlement), `SpellBook` (learned + standard), `StandardSpells`, `SelectedSpells` (standard + drafted, castable) | standard spells are carried, never drafted (`player_setup.go:44-54`, `DraftableSpells` `player_state.go:426-436`) |
-| combat | `CastingSpell`, `IsMeditating`, `Effects`, `RecoveryUntil`, `MeditationReadyAt`, `ParalyzeImmuneUntil`, `ResourceMillis`, `MeditationMillis`, `DeferDeath` | deadlines on the phase's logical clock (`player_state.go:13-19`) |
+| combat | `CastingSpell`, `IsMeditating`, `Effects`, `RecoveryUntil`, `MeditationReadyAt`, `ParalyzeImmuneUntil`, private fractional regeneration carries, `DeferDeath` | deadlines on the phase's logical clock (`player_state.go:13-19`) |
 
 `GetSnapshot` (`player_state.go:69-83`) is the `state` object inside opcode 32: `hp`, `hp_max`, `mana`, `mana_max`, `shield`, `casting`, `meditating`, `paralyzed`, `poisoned`, `effects`. `ToPrivateView` / `ToPublicView` (`player_state.go:241-266`, `player_state/types.go:8-41`) feed opcodes 0 and 10.
 

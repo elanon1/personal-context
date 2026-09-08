@@ -23,20 +23,20 @@ registered from `server:modules/main.go` via each module's `InitModule`. Unless 
   `learn_spell`). Only `tutorial` and the two match RPCs return real gRPC errors. The gRPC error-code
   table in the old API-REFERENCE-v2 does not describe any other RPC.
 - **Version stamp**: spell RPCs and `get_character_details`/`tutorial` embed
-  `{"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.2"}`
-  (`server:modules/spell_system/version.go:3-19`). The client rejects other values
+  `{"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.3"}`
+  (`server:modules/spell_system/version.go:3-19`). The client supports server2.3 and local tutorial2.2; it rejects other values
   (`client:Core/Match/DuelV2.cs:8-12`) in `get_player_spells` and `tutorial` only.
 
 ## Client ↔ server coverage
 
 | Client calls | Server registers | Status |
 |---|---|---|
-| `create_character`, `get_my_character`, `get_character_by_id`, `allocate_stat_points`, `get_character_details`, `get_progression`, `tutorial`, `set_tutorial_completed`, `get_starter_spells`, `get_player_spells`, `get_spellbook`, `get_spell`, `learn_spell`, `get_races`, `find_friend`, `remove_friend`, `decline_match`, `create_ai_arcane_duel`, `create_character_match_story` | yes | OK (see per-RPC notes; `create_character_match_story` is broken server-side) |
+| `create_character`, `get_my_character`, `get_character_by_id`, `allocate_stat_points`, `get_character_details`, `get_progression`, `tutorial`, `set_tutorial_completed`, `get_starter_spells`, `get_player_spells`, `get_spellbook`, `get_spell`, `learn_spell`, `get_races`, `find_friend`, `remove_friend`, `decline_match`, `create_ai_arcane_duel` | yes | OK (see per-RPC notes; `create_character_match_story` is broken server-side) |
 | `get_users` (`client:Application/Modules/Social/Queries/GetUsers/GetUsersQueryHandler.cs:44`) | **no** | dead client code, query never dispatched |
-| `start_story` (`client:Application/Modules/Story/Query/StartStory/GetSpellQueryHandler.cs:36`) | **no** (commented out in `server:modules/endless_story/init.go:13`) | dead client code |
+| `start_story` (client removed 2026-09-08) | **no** (commented out in `server:modules/endless_story/init.go:13`) | client removed 2026-09-08 |
 | — | `debug_create_character`, `get_available_spells`, `get_entry_spells`, `get_my_spells`, `get_spell_lore`, `get_spell_details_yaml`, `get_race`, `create_playstyle`, `get_playstyles`, `update_playstyle`, `delete_playstyle`, `healthcheck`, `notifications_list`, `notifications_delete` | server-only (client uses Nakama SDK built-ins for friends/notifications) |
 
-`RpcAsync` on the socket is used for `decline_match`, `create_ai_arcane_duel`, `create_character_match_story`; everything else goes through `client.RpcAsync(session, id, payload)`.
+`RpcAsync` on the socket is used for `decline_match`, `create_ai_arcane_duel`; everything else goes through `client.RpcAsync(session, id, payload)`.
 
 ## Character module (`server:modules/character/init.go`)
 
@@ -120,9 +120,9 @@ Client DTO `client:Application/Modules/Character/Dto/CharacterResponse.cs` expec
 
 ### `get_starter_spells`
 - `init.go:33`, handler `rpc.go:375`. Client: `client:Application/Modules/Spell/Queries/GetEntrySpells/GetEntrySpellsQueryHandler.cs:39`.
-- Request ignored. Returns every catalog spell with `starter: true` (6 in `duel_v2.2`: barrier, cleanse, firebolt, heavy_bolt, mend, poison):
+- Request ignored. Returns every catalog spell with `starter: true` (6 in `duel_v2.3`: barrier, cleanse, firebolt, heavy_bolt, mend, poison):
   ```json
-  {"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.2","success":true,
+  {"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.3","success":true,
    "message":"Starter spells retrieved successfully",
    "spells":[{"nature":"ember","incantation":["Tal","Rath"],"id":"firebolt","name":"Firebolt",
               "description":"...","school":"Fire","mana_cost":20,"cast_time":1.5,"icon_path":"firebolt"}]}
@@ -135,7 +135,7 @@ Client DTO `client:Application/Modules/Character/Dto/CharacterResponse.cs` expec
 - Request: ignored (client sends `character_id`/`category`; server uses the session user).
 - Response:
   ```json
-  {"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.2","success":true,"message":"...",
+  {"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.3","success":true,"message":"...",
    "spells":[{"nature","incantation","standard":false,"starter":true,"recovery_time":1.0,"travel_time":0.4,
               "id","name","description","school","mana_cost":20,"cast_time":1.5,"icon_path",
               "is_learned":true,"magic_points_cost":5,"level_requirement":1}],
@@ -189,8 +189,8 @@ The catalog is loaded from `/nakama/spells` at startup (`init.go:36`), 14 spells
 - `server:modules/match/normal_match/init.go:31-53`. Client: `client:Application/ArcaneDuel/Normal/MatchManager.cs:158-159`.
 - `{"match_id":"..."}` → signals the match with `"decline"`; response `{"success":true,"message":"Match declined","data":null}`. gRPC errors `match_id is required`, `failed to decline match`. See [[matchmaking]].
 
-### `create_character_match_story` (broken)
-- `server:modules/endless_story/create_character/init.go:30`. Client: `client:Application/EndlessStory/CreateCharacter/MatchManager.cs:60` (registered as keyed `IMatchManager` `"create_character"`, `client:Game/DI/ServiceBootstrapper.cs:109`, never resolved).
+### `create_character_match_story` (server prototype; client removed 2026-09-08)
+- `server:modules/endless_story/create_character/init.go:30`. Client manager and keyed DI registration were removed on 2026-09-08.
 - Calls `nk.MatchCreate(ctx, "create_character", …)` but the match handler is registered as `"v2_create_character"` (`init.go:25`), so the call fails at runtime. Story RPCs `start_story`, `create_character_story`, `continue_character_story` are commented out (`server:modules/endless_story/init.go:13-23`).
 
 ## Social module (`server:modules/social/init.go`)

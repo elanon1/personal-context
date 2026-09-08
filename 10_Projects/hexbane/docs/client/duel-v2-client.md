@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, client, duel-v2, combat, hud]
 sources: ["client:docs/opcodes/duel-v2.md", "client:docs/opcodes/duel-v2-verification.md", "client:docs/client/reference-duel/README.md"]
 ---
@@ -14,6 +14,10 @@ sources: ["client:docs/opcodes/duel-v2.md", "client:docs/opcodes/duel-v2-verific
 # Duel v2 on the client
 
 Wire contract: [[combat-v2]] (opcodes 29–32) and [[opcodes]]. This note covers only what the Godot client does with it.
+
+## Server stat restoration compatibility (2026-09-08)
+
+`DuelVersion.Supported` accepts `duel_v2.3` server rules as well as2.2 for existing local tutorial/preview fixtures. Server spell views provide effective cost/cast time, and snapshots carry each player's maxima. No new opcode/event kind is required; dodge/passive healing use existing impact/heal events with reasons. Combat formulas: [[combat-stat-rules]]. Client build was checked; local tutorial retains its own fixed-value training model.
 
 ## Scene and versions
 

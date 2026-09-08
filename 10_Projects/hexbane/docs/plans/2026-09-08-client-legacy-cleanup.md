@@ -2,7 +2,7 @@
 type: project
 project: Hexbane
 area: plans
-status: active
+status: complete
 created: 2026-09-08
 updated: 2026-09-08
 verified: 2026-09-08
@@ -23,3 +23,13 @@ User-approved scope: remove old spell VFX, sound effects, storytelling and verif
 - client:Application/Modules/Spell/Effects/
 - client:Game/ScenesV3/Components/
 - client:Application/EndlessStory/ (removed)
+
+## Verification results
+
+- `dotnet build hexbane.csproj --no-restore`: 0 errors, 9 warnings (baseline: 37 warnings).
+- `VerifyMirrorWard.tscn`: 60 checks, 0 failures, including absence of legacy projectile/impact VFX.
+- `VerifyGestureVfx.tscn`: 8899 checks, 0 failures. Corrected an outdated test that expected generic hand charge even with a custom cast preset; runtime casting code was preserved.
+- `DuelV2Preview.tscn` with `HEXBANE_TEST_REFERENCE=1`: passed active HUD layout/state/reconnect UI and all 14 icons. Offline startup still logs a NotificationModule null-reference and ObjectDB exit leaks; no live Nakama match or Android run was performed.
+- Resource-reference scan: no remaining literal resource references to any of the 863 removed files (287.5 MiB).
+- Recovery copies (including untracked files): `/tmp/hexbane-removed-legacy.tar.gz`, `/tmp/hexbane-removed-code.tar.gz`, `/tmp/hexbane-removed-pipeline.tar.gz`; pre-task tracked diff: `/tmp/hexbane-before-cleanup.patch`.
+- Client repository only: backend storytelling removal is not part of these code changes.

@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, client, tooling, legacy, gotchas]
 sources: ["vault:10_Projects/hexbane/architektura-klienta.md (2026-08-31)", "vault:10_Projects/hexbane/assety-i-pipeline.md (2026-08-31)", "vault:10_Projects/hexbane/protokol-klient-serwer.md (2026-08-31)"]
 ---
@@ -18,10 +18,7 @@ Facts preserved from the 2026-08-31 reconnaissance that no other note covers. Ve
 
 ## Dead or legacy code
 
-- `SceneManager` still declares route keys `startup`, `autoload`, `debug_rpcs` pointing at
-  `Game/Scenes/…`, a folder that no longer exists (`client:Game/Autoloads/SceneManager.cs:32`).
-- `GodotGTweensContextNode` is an autoload with **zero users** — every animation uses the native
-  `Tween`. Safe to remove together with `Plugins/GTweens/`.
+- Removed on 2026-09-08: missing-scene routes `startup`, `autoload`, `debug_rpcs`, their unused navigation methods, and the unused GTweens/Godot tween plugin/autoload.
 - `Game/ScenesV3/GameHud/Main.tscn` and `GameHud/ArcaneDuel/Main.tscn` are orphans: the live match
   scene is `ReferenceDuel/MainReference.tscn` (see [[duel-v2-client]]); only `Dev/HudPreview.cs`
   references the old HUD.
@@ -31,8 +28,7 @@ Facts preserved from the 2026-08-31 reconnaissance that no other note covers. Ve
   `heavy_bolt → flamestrike` as legacy asset aliases; `Core/Spells/StandardSpells.cs` cites a YAML path
   that no longer exists on the server.
 - `Core/Characters/Character.cs` hard-codes `MaxSpellSlots = 6` until the server value arrives.
-- The client calls RPCs the server does not register: `start_story` (commented out on the server) and
-  `get_users` (never existed). See [[rpcs]].
+- The client call to unregistered `start_story` and the entire storytelling path were removed on 2026-09-08. `get_users` remains a separate pre-existing issue; see [[rpcs]].
 - Socket `Closed` → reset + logout; there is **no automatic socket reconnect** outside the duel
   rejoin path described in [[duel-v2-client]]. *(GameContext 30 s session/socket timer: unverified)*
 
@@ -50,13 +46,7 @@ Server presets are hard-coded in `Application/Nakama/NakamaClientManager.cs`: `l
 
 ## n8n spell pipeline (legacy)
 
-Root files `prompt.md` (spell description → JSON with icon and audio prompts), `vfx.md` (definition
-→ `vfxBlueprint`; calls the server RPC `get_spell_details_yaml`) and `spell_output.md` (schema of
-`spell.json`) are prompts for an n8n workflow that produced the 10 old-prototype folders in
-`Resources/Spells/<id>/` (`spell.json`, `manifest.generated.json`, `primitives/textures/motions/references`,
-Google Drive links). Whether the workflow still runs is unknown; none of the 14 current spell ids went
-through it. `spell_output.md` is still listed as csproj `Content`. Related command: `old_create_spell` (the five `.claude/commands/create_spell_*` commands were removed on 2026-09-07). Formerly also:
-`.claude/commands/create_spell_*` and `old_create_spell`.
+Removed on 2026-09-08: `prompt.md`, `vfx.md`, `spell_output.md`, root `magic_sparkle.png`, sample images in `Scripts/workflow`, and generated primitives/textures/motions/references/JSON under `Resources/Spells`. Background-removal tools remain available for current artwork.
 
 ## Race art history
 
@@ -67,8 +57,7 @@ through it. `spell_output.md` is still listed as csproj `Content`. Related comma
   margin, frame 1 = idle, one ChatGPT thread per race). Its helper scripts `extract_grid.py`,
   `slice_sheet_alpha.py`, `upscale_frames.jsx` are untracked in git. The shipped six races were built
   with the Blender/Mixamo pipeline instead — see [[assets-pipeline]].
-- `Resources/Icons/` holds 31 legacy SVG icons; spell audio is nearly absent
-  (`Resources/Sound/{fireball.wav,heal.mp3}` plus the ElevenLabs set for `mirror_reflection`).
+- `Resources/Icons/` holds 31 legacy SVG icons; old spell and UI SFX libraries were removed on 2026-09-08; Mirror Reflection formation/shatter audio was restored afterwards; menu/battle music remains.
 
 ## Editor tooling
 

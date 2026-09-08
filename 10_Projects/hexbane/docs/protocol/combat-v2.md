@@ -5,15 +5,15 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, protocol, combat, duel_v2]
 sources: ["server:docs/client/combat-v2.md", "server:docs/client/effect-sync.md", "client:docs/opcodes/duel-v2.md", "server:docs/match/communication.md"]
 ---
 
-# Combat protocol 2 (`duel_v2`, catalog `duel_v2.2`)
+# Combat protocol 2 (`duel_v2`, catalog `duel_v2.3`)
 
-Server-authoritative duel at **100 ms ticks** (`server:modules/match/engine/state/state.go:12`, `spell_system/version.go:7`). Opcodes 29–32 replace the retired 11–15/21–28. Client and server must ship together; the only supported tuple is `combat_protocol 2 / duel_v2 / duel_v2.2`.
+Server-authoritative duel at **100 ms ticks** (`server:modules/match/engine/state/state.go:12`, `spell_system/version.go:7`). Opcodes 29–32 replace the retired 11–15/21–28. Client and server must ship together; the server tuple is `combat_protocol 2 / duel_v2 / duel_v2.3`.
 
 ## Handshake and loadout
 
@@ -25,7 +25,7 @@ Loadout rules (`server:modules/match/engine/core/player_setup.go:33-55`, `state/
 
 | Rule | Value |
 |---|---|
-| HP / mana | fixed 200 / 100, no stat, skill or race modifiers in combat |
+| HP / mana | stat/race-derived maxima; combat formulas and growth in [[combat-stat-rules]] |
 | `spell_slots` | min(learned non-standard spells, `max_spell_slots`) — what can actually be drafted |
 | `max_spell_slots` | character entitlement (6, Human 7 per race rules; verify in [[progression]]) |
 | standard spells | `magic_arrow`, `mirror_reflection`: always in `me.spells` and `me.standard_spells`, never draftable, no slot |
@@ -47,7 +47,7 @@ Tick semantics (`Advance`, `server:modules/match/engine/phase/game/phase.go:138-
 - The queued action executes when the player is neither casting nor in recovery. `cast` re-checks the spell and mana at that moment; mana is spent at cast start (`mana_spent`, then `cast_started` with `cast_end_tick` and `recovery_end_tick`). Starting a cast stops meditation.
 - Casts release automatically at `cast_end_tick` (`cast_released`); the impact lands `travel_time` later (public `pending_impacts` in the snapshot, `spell_impact` event). There is no manual release, no cancel of the active cast, no cooldowns, no auto-repeat.
 - Recovery: `recovery_end_tick = cast_end + recovery_time`. Paralysis (`paralyze` effect) is the only cast interrupt (`cast_interrupted`, reason `paralyzed`); mana is not refunded; recovery is re-applied from the interrupt time (`state/actions.go:87-98`). While paralyzed the queue and pending command are cleared every tick (`phase.go:255-259`), and 3 s of immunity follow (`immune_until_tick`).
-- Meditation: needs alive, not paralyzed, not poisoned, not casting/recovering, mana < max. 0.8 s warm-up (`meditation_ready_tick`), then +10 mana/s on top of the +1 mana/s base regen (`state/actions.go:39-85`). Stops on cast start, on poison/paralysis, or at full mana (`meditation_stopped`).
+- Meditation: needs alive, not paralyzed, not poisoned, not casting/recovering, mana < max. 0.8 s warm-up (`meditation_ready_tick`), then scaled additional mana on top of scaled passive regeneration (see [[combat-stat-rules]]) (`state/actions.go:39-85`). Stops on cast start, on poison/paralysis, or at full mana (`meditation_stopped`).
 - Bots submit the same commands through the same `Submit` path every 4th tick (`phase/game/ai.go`).
 - Death is committed after the full impact batch of a tick (`DeferDeath`), so simultaneous kills are a draw.
 
@@ -63,6 +63,8 @@ Tick semantics (`Advance`, `server:modules/match/engine/phase/game/phase.go:138-
 Both 30 and 31 share one `event_seq` counter, so gaps in the public stream are normal. Ticks in `*_tick` fields are match-relative (`server_tick` units); 0 = no deadline. Effects' `started_at`/`remove_after` are logical-clock timestamps (1970-based) and must not be compared with the device clock.
 
 ### Event kinds (31)
+
+`duel_v2.3` retains existing kinds: `spell_impact` may carry `reason=dodged`; passive HP recovery emits `heal` with `reason=passive_regeneration`. Deadlines round up to the first processing tick. Private spell metadata already includes player cost/cast bonuses. Client accepts2.3 and retains2.2 for local tutorial/preview.
 
 `cast_started`, `cast_released`, `cast_interrupted`, `spell_impact`, `spell_reflected`, `effect_applied`, `effect_removed`, `damage`, `heal`, `meditation_started`, `meditation_stopped`, `mana_spent`, `mana_regenerated`, `match_ended`. `spell_reflected`: `player_id` = reflector (new owner), `target_id` = original caster; the mirror is removed with reason `consumed` and the reflected spell then impacts with the swapped owner/target. `damage.amount` = HP actually lost, `absorbed` = shield consumed; `heal.amount` = HP restored, `overheal` = wasted. Effect kinds use engine names: `shield` (Barrier), `reflection` (Mirror), `paralyze` (Paralysis), `poison`, `regeneration`, `delayed_hex`.
 

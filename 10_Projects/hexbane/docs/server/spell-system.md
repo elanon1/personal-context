@@ -11,7 +11,7 @@ tags: [hexbane, server, spells, effects, balance]
 sources: ["server:docs/spell_system/GUIDE-v2.md", "server:docs/spell_system/spells.md", "server:docs/spell_system/balance-v2.md", "server:docs/spell_system/balance-v2.json", "server:docs/spell_system/verification-v2.md", "server:docs/superpowers/specs/2026-09-05-spell-system-redesign.md", "server:docs/superpowers/plans/2026-09-05-spell-system-redesign.md", "client:docs/Plans/2026-09-04-standard-spells-6-slot-draft.md"]
 ---
 
-# Spell system (catalog duel_v2.2)
+# Spell system (catalog duel_v2.3)
 
 `data/spells/*.yaml` is the only spell definition source. The whole directory is loaded atomically at plugin start; any invalid file fails startup. PostgreSQL stores ownership and saved loadouts only (see [[database]]). Combat rules that consume these definitions are in [[progression]] (section "Combat rules"); the wire protocol is in [[combat-v2]].
 
@@ -21,7 +21,7 @@ Version constants (`server:modules/spell_system/version.go:3-8`):
 |---|---|
 | `CombatProtocol` | 2 |
 | `RulesetID` | `duel_v2` |
-| `CatalogVersion` | `duel_v2.2` |
+| `CatalogVersion` | `duel_v2.3` |
 | `TickMillis` | 100 |
 
 Every spell RPC response, character details and the tutorial RPC embed `combat_protocol`, `ruleset_id`, `catalog_version` (`server:modules/spell_system/rpc.go:159-167`).
@@ -97,12 +97,14 @@ RPCs registered by the module (`server:modules/spell_system/init.go`): `get_spel
 
 ## Effect kinds and handlers
 
+Since 2026-09-08 these are base catalog values: all damaging/healing handlers route through shared scaling, and paralysis duration uses the final target race. Details: [[combat-stat-rules]].
+
 Registered in `server:modules/spell_system/spell_effects/effect_handlers/registry.go:5-17`; all 11 kinds have a handler. Interface: `OnStart`, `OnTick`, `OnEnd` (`server:modules/spell_system/spell_effects/engine.go:9-13`).
 
 | Kind | Handler file | Behaviour |
 |---|---|---|
-| `damage` | `damage.go` | instant: `value` damage at impact (no scaling, `calculateDamage` returns the raw value) |
-| `heal` | `heal.go` | instant: heal caster by `value`, capped at max HP; periodic path skipped while poisoned |
+| `damage` | `damage.go` | instant: scaled `value` damage at impact |
+| `heal` | `heal.go` | instant: heal caster by scaled `value`, capped at max HP; periodic path skipped while poisoned |
 | `poison` | `poison.go` | status; stops meditation on apply; each pulse deals `value` |
 | `regeneration` | `tactical.go` | status; each pulse heals `value` unless target is poisoned (blocked pulses are lost) |
 | `shield` | `shield.go` | status; sets `Shield = value`; cleared on end; depleted when damage exceeds it |
@@ -152,7 +154,7 @@ CI runs the last two before building the image (`server:.github/workflows/docker
 
 `cmd/duel-sim` runs the production `GamePhaseState.Advance` without Nakama or SQL (`server:cmd/duel-sim/main.go`). Flags: `-catalog` (default `data/spells`), `-seed` (42), `-matches` (100; 1–100000), `-out`. `make test-balance` runs 1000 matches with seed 42 (`server:Makefile:263-264`).
 
-Simulation setup: both seats are bots at 200 HP / 100 mana; races rotate through the six ids; a Human seat gets 7 random non-standard spells, others 6, plus both standards; policies rotate `pressure`, `sustain`, `control` (`server:modules/match/engine/phase/game/ai.go`), which react only to casts/effects visible for at least 400 ms. Timeouts are counted at 1800 ticks (180 s). Invariants HP ∈ [0,200], mana ∈ [0,100] are asserted every tick.
+Simulation setup: both seats are bots with race/stat-derived HP/mana; races rotate through the six ids; a Human seat gets 7 random non-standard spells, others 6, plus both standards; policies rotate `pressure`, `sustain`, `control` (`server:modules/match/engine/phase/game/ai.go`), which react only to casts/effects visible for at least 400 ms. Timeouts are counted at 1800 ticks (180 s). Invariants HP ∈ [0,MaxHealth], mana ∈ [0,MaxMana] are asserted every tick.
 
 Recorded run (catalog `duel_v2.1`, 2026-09-06, seed 42, 1000 duels, from `balance-v2.json`):
 
@@ -165,7 +167,7 @@ Recorded run (catalog `duel_v2.1`, 2026-09-06, seed 42, 1000 duels, from `balanc
 | Timeouts | 404 |
 | Interrupted casts | 2082 |
 
-All 14 spells were cast. The `duel_v2.2` amendment changed only creation rules, not any catalog value, so the numbers still describe the current values; the run was not repeated for `duel_v2.2` (unverified). The 40% timeout rate is an open balance concern; bot results do not establish competitive balance. Remaining balance work is tracked in [[2026-09-05-spell-system-redesign]].
+All 14 spells were cast. The historical `duel_v2.1` run above is not a balance baseline for restored `duel_v2.3`; formulas and race resources now differ. The 40% timeout rate is an open balance concern; bot results do not establish competitive balance. Remaining balance work is tracked in [[2026-09-05-spell-system-redesign]].
 
 ## Source of truth in code
 

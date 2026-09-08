@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, client, races, animation, vfx, arena]
 sources: ["client:Resources/Races/_tools/blender/README.md", "client:docs/client/arena-maps/README.md", "client:docs/client/cast-charge/README.md", "client:docs/client/gesture-occlusion/README.md", "client:docs/client/gesture-vfx/README.md", "client:docs/client/meditation/README.md", "client:docs/client/mirror-reflection/README.md", "client:docs/client/reference-duel/README.md", "client:Resources/SpellVisuals/README.md", "client:CLAUDE.md"]
 ---
@@ -38,9 +38,9 @@ Node2D owned by `Player.tscn` and every dev scene. Constants: fallback race `hum
 - **Meditation**: `SetMeditating` plays enter → loop → exit, reverses mid-transition, yields to casts, resumes after recovery, falls back to idle when clips are missing. `Player._Process` feeds it the authoritative snapshot state for both duelists; paralysis, poison, death and match end stop it.
 - **Gesture VFX**: 11 variants, one per `attack_*/cast_*/area_*` clip (`Impulse, Spiral, Discharge, Double weave, Energy crescent, Singularity, Embers, Gust, Seal, Ascent, Pressure wave`), 66 race×clip combinations; the shader clock derives from the current frame, so server-driven scrubbing, slow casts and mirroring stay in sync. Hand trails use the two previous poses. Effects clear on idle, interruption or race change.
 - **Occlusion**: hand energy behind the body is hidden using the depth atlas and the sprite alpha; ground rings use a fixed support level from the idle pose and render under the sprite.
-- **Mirror Reflection ward** (`Game/FX/MirrorWard.cs`): translucent shell around the silhouette; lifetime from the reflection status end tick (3 s in previews); consumption tears it into trails over 0.28 s away from the incoming spell; sounds `formation.wav` / `shatter.wav`.
+- **Mirror Reflection ward** (`Game/FX/MirrorWard.cs`): translucent shell around the silhouette; lifetime from the reflection status end tick (3 s in previews); consumption tears it into trails over 0.28 s away from the incoming spell; formation/shatter audio restored after the 2026-09-08 cleanup at the user’s request.
 
-Spell-specific overrides of the gesture (presets, `visual_key`) are described in [[spell-vfx-configuration]].
+Spell-specific overrides of the gesture (presets, `visual_key`) are described in [[spell-vfx-configuration]]. A configured preset/key is the complete casting effect: `BeginCast` keeps its gesture and suppresses the generic `CastCharge`; spells without a visual configuration use the generic hand charge. The gesture verifier now tests these two paths separately.
 
 ## Living arena (`Game/ScenesV3/ReferenceDuel/`)
 
@@ -81,7 +81,7 @@ Verifier scenes write evidence into the repo (all under `.gdignore` except `refe
 | `ArenaMaps/VerifyGestureOcclusion.tscn` | `gesture-occlusion/` | `VerifyGestureOcclusion.cs:22,84,127,132` |
 | `ArenaMaps/VerifyMirrorWard.tscn` | `mirror-reflection/` (`burst-NN.png`, layouts) | `VerifyMirrorWard.cs:25,94` |
 | `MeditationVfxPreview.tscn --capture` | `meditation/energy-preview.png` | `MeditationVfxPreview.cs:37` |
-| `ArenaMaps/VerifyRaceGrounding`, `VerifyReflectionPreset`, `VerifySpellVisualKeys`, `VerifySpellVisualPresets`, `VerifyWardAudio` | console only | — |
+| `ArenaMaps/VerifyRaceGrounding`, `VerifyReflectionPreset`, `VerifySpellVisualKeys`, `VerifySpellVisualPresets` | console only | — |
 
 Last recorded results (README claims, Godot 4.5.2 Compatibility on macOS, not re-run 2026-09-07): reference-duel 88/88, arena maps 44/44, gesture VFX 8898/0 failures, occlusion 12398/0, mirror ward 57/0, meditation 12/12 combos. None measured Android hardware performance or a live Nakama match. Headless runs also log the pre-existing missing `signal_lens` autoload and an unresolved theme UID. The generated PNG/GIF/JSON (≈ 800 MB across the seven folders) are evidence, not documentation.
 
@@ -90,7 +90,7 @@ Last recorded results (README claims, Godot 4.5.2 Compatibility on macOS, not re
 - `client:Resources/Races/<race>/animation/` — `frames.tres`, `frames_sd.tres`, track and depth resources
 - `client:Game/ScenesV3/Components/RaceAnimationPreview.cs` — HD/SD selection
 - `client:Game/ScenesV3/Components/RaceSpriteAnimator.cs`, `CastCharge.cs`, `GestureVfx.cs`, `MeditationVfx.cs`, `PoseOcclusion.cs`, `CastAnimationResolver.cs`, `HandTrackData.cs` — runtime animation and effects
-- `client:Game/FX/MirrorWard.cs`, `WardAudio.cs` — reflection ward
+- `client:Game/FX/MirrorWard.cs` — reflection ward
 - `client:Game/ScenesV3/ReferenceDuel/ArenaCatalog.cs`, `ArenaMatch.cs`, `LivingArena.cs`, `ArcaneMotes.cs`, `*.gdshader` — arena
 - `client:Game/ScenesV3/Dev/**`, `ReferenceDuel/VerifyPreview.cs` — dev scenes and verifiers
 - `client:export_presets.cfg` — per-platform sprite set exclusion

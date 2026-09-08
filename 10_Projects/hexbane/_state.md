@@ -52,10 +52,16 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 `git status`, w tym skasowana stara historia migracji `000001..000016` zastąpiona świeżym baseline
 `000001..000003`). Snapshot repo: [[repos-and-branches]].
 
-**Content:** ikony/VFX/SFX istnieją dla 2 z 14 zaklęć (`magic_arrow`, `mirror_reflection`) + presety
-wizualne dla 4 id; 21 folderów `Resources/Spells/` to stare id prototypu. → [[spell-vfx-configuration]]
+**Content:** 13 zachowanych ikon pokrywa 14 obecnych zaklęć; jedyny VFX samego zaklęcia to nowy Mirror Reflection z przywróconymi dźwiękami tworzenia i rozbicia. Nowe animacje castingu i presety zachowane. Stare VFX/SFX i assety generatora usunięte 2026-09-08. → [[spell-vfx-configuration]]
 
 ## Decisions log
+
+- **2026-09-08 — Przywrócenie SFX Mirror Reflection.** Przywrócono oryginalne formation.wav/shatter.wav i WardAudio; reszta usuniętych SFX pozostaje wycofana. **Why:** użytkownik doprecyzował wyjątek od czyszczenia dźwięków.
+
+
+- **2026-09-08 — Czyszczenie klienta: zachowujemy nowy casting i Mirror Reflection.** Usunięto stare VFX, wszystkie SFX (również bariery), klientowy storytelling, nieużywane handlery starej walki i GTweens. Zachowano aktualny katalog mechanik, ikony używane przez HUD, animacje ras, gesty, medytację i muzykę.
+  **Why:** użytkownik chce przygotować czystą bazę pod nowe efekty zaklęć; obecne ikony i mechaniki są nadal używane, a storytelling jest osobnym wycofanym prototypem. Zakres tej sesji to repo klienta; nie zmieniano serwera.
+
 
 - **2026-09-08 — Zakres czyszczenia serwera po audycie.** Usuwamy nieużywane helpery/walidatory,
   stare `CastInterruptions` oraz niepodłączone helpery powiadomień; `MatchLog` zostaje.
@@ -136,15 +142,12 @@ wizualne dla 4 id; 21 folderów `Resources/Spells/` to stare id prototypu. → [
 - **Martwy kod po redesignie**: traity ras (7 z 8 kluczy), `modules/combat` (formuły), `modules/skills`
   (gain), `get_progression` (zła matematyka), `set_tutorial_completed` (zawsze błąd), `MatchLog`
   zapisywany i wyrzucany co tick, `get_users` wołane przez klienta bez RPC na serwerze; w kliencie
-  foldery handlerów wycofanych opcode’ów, stary `GameHud/**`, martwe trasy `SceneManager`, autoload
-  GTweens bez użyć. Usunąć czy zostawić pod przyszły ruleset? Klient pokazuje traity ras, choć nie działają.
+  stary `GameHud/**` i lokalne kompatybilne DTO castingu. Handlery wycofanych opcode’ów, martwe trasy i GTweens usunięto 2026-09-08. Klient pokazuje traity ras, choć nie działają.
 - **Bezpieczeństwo protokołu**: opcode 2 w `game_countdown`/`lobby` ufa `user_id` z payloadu; opcode
   10 wysyła listę zaklęć przeciwnika jako „prywatny” widok. Błąd czy akceptowalne w 1v1?
 - **Sekrety w repo** (serwer `.env.dist` klucz OpenAI, `helm/hexbane/values.yaml` PAT GitHub,
   klient `.env` pakowany do builda) — nadal obecne, nie rotowane.
-- **Content dla 12 zaklęć** bez ikon/VFX/SFX; 21 starych folderów w `Resources/Spells/` do
-  wyczyszczenia; preset `fireball.tres` vs id `firebolt`. Pipeline n8n (`prompt.md`, `vfx.md`,
-  `spell_output.md` w root klienta) — czy jeszcze działa? → [[legacy-and-tooling]]
+- **Nowe VFX dla pozostałych zaklęć**: aktualne ikony są zachowane, stare VFX/SFX i generator n8n usunięte. Przyszłe efekty wymagają nowych implementacji. Preset `fireball.tres` nadal dotyczy castingu starego aliasu, a aktualne id to `firebolt`. → [[spell-vfx-configuration]]
 - **`visual_key`** — klient czyta, serwer nie wysyła (backend do zrobienia). → [[spell-visual-key]]
 - **Baseline balansu** `balance-v2.json` opisuje `duel_v2.1`, kod ma `duel_v2.2` — przeliczyć?
 - Czy prod na k8s ma żyć (chart + Argo istnieją, nic ich nie opisuje poza [[infra-and-deploy]])?

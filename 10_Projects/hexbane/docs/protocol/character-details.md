@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, protocol, character-details, menu]
 sources: ["server:docs/API-REFERENCE-v2.md", "server:docs/progression/client/menu-rpc-requirements.md", "client:docs/Server/rpc_get_character_details.md", "client:docs/Server/progression/menu-rpc-requirements.md"]
 ---
@@ -30,9 +30,9 @@ that trio only when this RPC is unreachable (`client:Game/ScenesV3/CharacterDeta
 
 ```json
 {
-  "combat_protocol": 2, "ruleset_id": "duel_v2", "catalog_version": "duel_v2.2",
+  "combat_protocol": 2, "ruleset_id": "duel_v2", "catalog_version": "duel_v2.3",
   "combat_ruleset": "duel_v2",
-  "stat_bonuses_active": false,
+  "stat_bonuses_active": true,
   "success": true, "message": "",
   "character":   {"id","name","avatar","race_id","race_name","level","wins","losses","win_rate"},
   "progression": {"experience","experience_to_next_level","experience_total_for_level",
@@ -40,8 +40,8 @@ that trio only when this RPC is unreachable (`client:Game/ScenesV3/CharacterDeta
                   "spell_slots","next_spell_slot_level"},
   "stats":       {"strength":{"base","racial","effective","min","max"}, "intelligence":{...}, "dexterity":{...}},
   "skills":      {"meditation":{"value","tier","group"}, "spell_resistance":{...}, "magery":{...}},
-  "attributes":  {"max_health":200,"max_mana":100,"mana_regen":1,"health_regen":0},
-  "modifiers":   [],
+  "attributes":  {"max_health":200,"max_mana":140,"mana_regen":1.8,"health_regen":0.33},
+  "modifiers":   [{"id":"dodge","name":"Dodge chance","value":2.25,"unit":"percent"}, "..."],
   "racial_traits": [{"id":"spell_slot_bonus","name":"Additional spell slots","value":1,"unit":"slots"}],
   "spellbook":   {"spell_slots_used","spells_learned","spell_slots_unlocked","spell_slots_max",
                   "spells":[{"nature","incantation","recovery_time","travel_time","id","name","school",
@@ -59,7 +59,7 @@ Errors come back as `{"success":false,"message":"…","modifiers":[],"racial_tra
 
 | Field | Verified behaviour |
 |---|---|
-| `stat_bonuses_active` | Always `false` (`details.go:215`). Stats, skills and race traits do not affect combat in `duel_v2`; the client must not compute bonuses locally. |
+| `stat_bonuses_active` | `true`; restored server combat profile is active. Client uses authoritative derived values. |
 | `character.win_rate` | `round(wins/(wins+losses)*100)`, `0` with no matches (`details.go:234-237`). |
 | `progression.experience_to_next_level` | `progression.XPToNextLevel` — `XPForLevel(level+1) − experience`, `0` at level 30 (`server:modules/progression/xp.go:20-27`). |
 | `progression.experience_total_for_level` | `XPForLevel(level+1)` = `100·1.5^(level−1)`; at level 30 the level-30 threshold so the bar renders full (`details.go:255-258`). |
@@ -68,11 +68,11 @@ Errors come back as `{"success":false,"message":"…","modifiers":[],"racial_tra
 | `stats.*.racial` | Race modifier alone, so the UI can show `133 + 20 = 153`. |
 | `stats.*.min` / `max` | Race floor/ceiling on the **effective** value; `0` = no limit. Enforced by `create_character` and `allocate_stat_points` at every level (`server:modules/character/validate.go:134-162`, `character.go:160-169`). |
 | `skills.*.value` | Rounded to 2 decimals. `tier` = `ceil(value/10)`, `0` at 0. `group` = `core` (meditation, magery) or `defense` (spell_resistance). |
-| `attributes` | Constants: `max_health 200`, `max_mana 100`, `mana_regen 1`, `health_regen 0` (`details.go:306-308`). |
-| `modifiers` | Always `[]` (`details.go:310-312`). The old ids (`cast_speed`, `spell_power`, `dodge`, …) are gone. |
-| `racial_traits` | Only `spell_slot_bonus` is emitted, and only when non-zero (`details.go:314-320`) — i.e. one row for Human, none for the others. Element bonuses, `casting_speed`, per-spell resistances are **not** emitted. |
+| `attributes` | Derived max HP/mana and passive mana/HP per second, rounded for display; formulas in [[combat-stat-rules]]. |
+| `modifiers` | `cast_speed`, `dodge`, `spell_power`, `flat_damage`, `healing`, skill/kinetic/mind resistance and `meditation_regen`; typed resistance is conditional on spell metadata. |
+| `racial_traits` | Non-neutral slot, cast, school, multiplier, dodge and damage-stat traits plus per-spell resistances, derived from race. |
 | `spellbook.spells` | The whole 14-spell catalogue, sorted by school → level requirement → id (`details.go:325-336`), so locked entries render. |
-| `spellbook.spells[].cast_time`, `recovery_time`, `travel_time` | **Milliseconds** (`CastTimeMillis` etc., `server:modules/spell_system/spell.go:42-52`). Every other spell RPC reports seconds. |
+| `spellbook.spells[].cast_time`, `recovery_time`, `travel_time` | Milliseconds. Cost and cast time are personalized from the combat profile; recovery/travel remain base. Public catalog RPCs expose base values. |
 | `spellbook.spells[].is_learned` | From `character_spells`; **standard spells are forced `true`** (`details.go:344-346`). `is_equipped` mirrors `is_learned`: there is no loadout outside a match. |
 | `spellbook.spells[].magic_points_cost` | `magic_point_cost` from YAML verbatim (`EffectiveMagicPointCost`, `spell.go:36-38`): 5 for every non-standard spell, 0 for standards. The old "5 when unset" fallback no longer exists. |
 | `spellbook.spells[].learned_at_level` | Character level when learned; `0` if not learned. |

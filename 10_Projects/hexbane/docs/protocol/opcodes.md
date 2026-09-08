@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, protocol, opcodes, index]
 sources: ["client:docs/opcodes/README.md", "server:docs/opcodes/README.md", "server:docs/match/communication.md"]
 ---
@@ -58,8 +58,8 @@ Status `live` = sent or accepted by server code today. `retired` = tombstone: th
 | 32 | `OpCombatSnapshot` | `COMBAT_SNAPSHOT` | S→C unicast, reliable | combat (every 2 ticks), rejoin, combat end | authoritative state → [[op_32_combat_snapshot]] | live |
 | 50 | `OpGameOver` | `GAMEOVER` | S→C unicast | combat_end | personalized result + progression → [[op_50_game_over]] | live |
 | 70 | `OpLobbySpellbookSpells` | `LOBBY_SPELLBOK_SPELLS` (sic) | S→C unicast | lobby_picking | draftable spellbook → [[op_70_lobby_spellbook_spells]] | live |
-| 100 | `OpStoryUpdate` | `ENDLESS_STORY_UPDATE` | S→C unicast | story match | narration + question → [[op_100_story_update]] | live, separate feature (WIP) |
-| 101 | `OpStoryChoiceSelected` | `ENDLESS_STORY_CHOICE` | C→S | story match | `choice_id`; server only logs → [[op_101_story_choice_selected]] | live, WIP |
+| 100 | `OpStoryUpdate` | removed from client | S→C unicast | story match | narration + question → [[op_100_story_update]] | server WIP; client removed 2026-09-08 |
+| 101 | `OpStoryChoiceSelected` | removed from client | C→S | story match | `choice_id`; server only logs → [[op_101_story_choice_selected]] | server WIP; client removed 2026-09-08 |
 | 199 | `OpQuitGame` | `QuitGame` | C→S | combat_end | terminate match (already terminating, see doc) → [[op_199_quit_game]] | live |
 | 11 | – | `GAME_TIME_UPDATE` | – | – | old game clock | retired |
 | 12 | – | `GAMEPLAY_UPDATE_PLAYERS_UPDATE` | – | – | old player sync | retired |
@@ -79,7 +79,7 @@ Notes:
 
 - **Opcode 9 is not shared.** Both old doc trees said 9 was reused for the game countdown. Code says `OpGameCountdown = 16` (`server:.../op_codes.go:24`, `server:.../phase/game_countdown/phase.go:17`, `client:Core/Common/Enums/Opcodes.cs:24`). 9 is only `OP_MATCH_CANCELED`.
 - **Retired opcodes 11–15 / 21–28** have no server constant at all; all old combat payload docs (`SpellCastingStatus`, `SpellStatus`, `SpellReason`, `OpGamePlayLog` types) describe code that no longer exists. The client's `SpellStatus`/`SpellCastingReason` enums in `client:Core/Spells/Spell.cs:113-129` survive only as dead types.
-- The client `Opcodes` enum keeps the retired numbers and the `Application/Match/Incoming/Gameplay*` handlers exist but are never registered (dispatcher skips them).
+- The client `Opcodes` enum keeps the retired numbers but their old handlers and unused DTOs were removed on 2026-09-08. Three casting DTOs remain for local preview/HUD consumers, without network handlers.
 
 ## Server dispatch rules (`server:modules/match/engine/core/loop.go`)
 
@@ -94,7 +94,7 @@ Notes:
 - Opcodes 30–32 → `DuelProtocol.Receive` (`client:Application/Match/DuelProtocol.cs:38`).
 - 11–15 and 21–28 → dropped before lookup (`MatchMessageHandler.cs:23`) and never registered (`:102`).
 - Everything else → reflection registry of `IMatchDataHandler<T>` keyed by `[MatchOpcode]` on the message DTO; empty payload instantiates the DTO with defaults.
-- Outgoing senders: 2 `ClientReadyHandler`, 4 `LobbySpellSelectionHandler`, 29 `DuelProtocol.Send`, 101 `ChoiceSelectedCommandHandler`, 199 `QuitCommandHandler` (all under `client:Application/Match/Outgoing/`).
+- Outgoing senders: 2 `ClientReadyHandler`, 4 `LobbySpellSelectionHandler`, 29 `DuelProtocol.Send`, 199 `QuitCommandHandler` (all under `client:Application/Match/Outgoing/`).
 
 See [[combat-v2]] for the combat contract, [[shared-types]] for payload structs, [[duel-v2-client]] for the client implementation.
 

@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, protocol, opcode, story-update]
 sources: ["client:docs/opcodes/op_100_story_update.md", "server:docs/opcodes/op_100_story_update.md"]
 ---
@@ -26,6 +26,10 @@ The story module is still registered at boot (`server:modules/main.go:109` → `
 ## When
 
 Once, on the first tick of `EntryMessageState` after the single presence joined. The payload is a static placeholder prompt.
+
+## Client removal (2026-09-08)
+
+The client no longer implements this opcode. Its constant, DTO, handler/sender and all storytelling DI/events/RPC calls were removed. References below describe the historical client. Server-side code was not changed or reverified in this client cleanup.
 
 ## Payload
 

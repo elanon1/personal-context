@@ -78,3 +78,14 @@ zacommitowane (ani repo, ani vault).
 - Przeczytano indeks i dokumentację klienta: spell-effect-system, spell-vfx-configuration, vfx-and-race-animation; sprawdzono MagicSparkle.cs i mapowanie magic_arrow → magic_sparkle.
 - Przygotowano propozycję: ostry świetlisty grot, warstwowa smuga energii, kierunkowe trafienie z krótkim błyskiem i wygasającymi odłamkami.
 - Zmieniono wyłącznie dziennik; kod i assety bez zmian. Pozostało zatwierdzenie kierunku wymagane przez skill brainstorming, implementacja, build i ocena efektu w Godot.
+
+
+## 2026-09-08 — Czyszczenie starych czarów, VFX/SFX i storytellingu klienta
+
+- Usunięto 863 pliki (287,5 MiB): 19 starych implementacji VFX wraz ze scenami/teksturami/particle assets, dane generatora zaklęć, wszystkie SFX (w tym Mirror Reflection i klik UI), klientowy storytelling (RPC, manager, DTO, handlery/komendy, DI, event, opcode’y 100/101), nieużywane handlery starej walki i GTweens.
+- Zachowano nowe animacje ras, casting/gesty/charge/occlusion/presety, medytację, areny, nowy MirrorWard i 13 ikon obsługujących 14 aktualnych zaklęć. Muzyka została. Stare id w ścieżkach ikon są aliasami assetów, nie aktywnymi starymi zaklęciami.
+- Uproszczono registry/factory/manager do efektów statycznych i MirrorWard; usunięto nieaktywne interfejsy projectile/beam/area, martwy cleanup, stare nawigacje i test Heal. Podglądy lobby/HUD korzystają z obecnego katalogu.
+- Walidacja: build 0 błędów / 9 ostrzeżeń (przed zmianami 37); MirrorWard 60/60; GestureVfx 8899/8899; aktywny HUD duel_v2 i 14 ikon PASS; brak odwołań zasobów do usuniętych plików. Test gestów dostosowany do istniejącego zachowania presetów (brak podwójnego generic charge), bez zmiany castingu.
+- Offline test aktywnego HUD-u loguje null-reference inicjalizacji NotificationModule oraz ObjectDB leaks przy wyjściu; nie naprawiano niezwiązanych modułów. Nie sprawdzano meczu na żywym Nakama ani Androida.
+- Notatki: spell-effect-system, spell-vfx-configuration, vfx-and-race-animation, client-architecture, legacy-and-tooling, opcodes, op_100_story_update, op_101_story_choice_selected, rpcs, _index, _state, docs/plans/2026-09-08-client-legacy-cleanup.
+- Kopie usuniętych plików (również untracked) w /tmp/hexbane-removed-{legacy,code,pipeline}.tar.gz; manifest /tmp/hexbane-removed-files.json. Nie robiono commitów. Zakres: klient; backend storytellingu nie był modyfikowany.

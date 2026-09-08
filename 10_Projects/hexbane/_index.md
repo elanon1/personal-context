@@ -64,6 +64,7 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 - [[matchmaking]] — `normal` vs `ai_duel`, matchmaker, rejoin
 - [[spell-system]] — katalog 14 zaklęć, schema YAML, efekty, kolejka, jak dodać zaklęcie
 - [[spell-lore]] — natury i inkantacje, `get_spell_lore`
+- [[combat-stat-rules]] — aktywne statystyki, odporności, regeneracja, skille i bonusy ras w duel_v2.3
 - [[progression]] — 6 ras, staty, skille, XP/poziomy/MP, sloty, reguły walki duel_v2
 - [[database]] — schemat z migracji `000001..000003`, tabele Nakamy, reset
 - [[social]] · [[notifications]] — moduły na wbudowanych API Nakamy
@@ -92,6 +93,10 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 - [[repos-and-branches]] — snapshot repo 2026-09-07
 
 ## Plany (`docs/plans/`)
+
+- [[2026-09-08-combat-restoration]] — przywrócenie mechanik walki po zatwierdzeniu użytkownika
+
+- [[2026-09-08-client-legacy-cleanup]] — usunięcie starych VFX/SFX, storytellingu i martwych zależności klienta.
 
 - [[2026-09-05-spell-system-redesign]] — co z redesignu zostało do zrobienia
 - [[level-up-notifications]] — niezaimplementowany plan powiadomień o level-upie

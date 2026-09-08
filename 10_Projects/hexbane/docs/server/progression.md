@@ -13,7 +13,7 @@ sources: ["server:docs/progression/overview.md", "server:docs/progression/race.m
 
 # Character progression and combat rules (duel_v2)
 
-Characters keep race, STR/INT/DEX, three skills, XP/levels, stat points, magic points (MP) and draft slots. In the current prototype ruleset `duel_v2` **none of the stored stats, skills or racial combat traits change a duel**: every character fights with 200 HP and 100 mana and fixed catalog values (see [[spell-system]]). Only Human's extra draft slot is an active racial effect. `get_character_details` reports `stat_bonuses_active: false`, an empty `modifiers` array and only the slot trait (`server:modules/character/details.go:214,306-320`).
+Characters keep race, STR/INT/DEX, three skills, XP/levels, stat points, magic points and draft slots. Stats, skills and racial combat traits are active again in `duel_v2.3` (2026-09-08). HP/mana, regeneration, damage/healing, casting, evasion and skill growth use the shared profile described in [[combat-stat-rules]]. `get_character_details` advertises `stat_bonuses_active: true` and actual modifiers.
 
 ## Races
 
@@ -28,11 +28,11 @@ Six races seeded by migration `000002_reference_data` (`server:db/migrations/000
 | Gnome | `gnome` | 0/+50/+50 | — | 110 | 150 | — | 150 | — | `{"mana_cost_multiplier": 0.75}` |
 | Orc | `orc` | +110/0/0 | 250 | — | — | 120 | — | 130 | `{"damage_stat": "strength", "health_multiplier": 1.15, "paralyze_duration_multiplier": 0.5}` |
 
-Also stored per race (character-creation and menu metadata only, no duel effect): `casting_time_modifier` (Shadow −2, Gnome −6, Orc +3, others 0), `primary_element`/`secondary_element` with bonuses (Human neutral +20; Elf water +25 / ice +12; Dark Elf toxic +40 / mind +20; Shadow air +25 / mind +12; Gnome lightning +25 / fire +12; Orc earth +25 / fire +12), `spell_resistances` (all `{}`).
+Also used by the combat profile: `casting_time_modifier` (Shadow −2, Gnome −6, Orc +3, others 0), `primary_element`/`secondary_element` with bonuses (Human neutral +20; Elf water +25 / ice +12; Dark Elf toxic +40 / mind +20; Shadow air +25 / mind +12; Gnome lightning +25 / fire +12; Orc earth +25 / fire +12), `spell_resistances` (all `{}`).
 
 Traits are decoded into a typed `race.Traits` struct; an unknown key or wrong type fails startup (`server:modules/race/traits.go:54-119`). Every trait is returned by `get_races`/`get_race` with neutral defaults for missing keys (`mana_regen_multiplier`, `mana_cost_multiplier`, `health_multiplier`, `paralyze_duration_multiplier` = 1; dodge overrides = 0; `damage_stat` = "").
 
-**Active trait:** only `spell_slot_bonus`, read in `server:modules/character/character.go:75,266` and `details.go:210,316`. The other seven keys have no consumer outside `modules/combat` helper signatures and tests (verified by grep on 2026-09-07). Do not present them as active bonuses.
+All signature trait keys are consumed by the restored combat profile/scheduler. School bonuses and typed resistance require matching catalog metadata; the current catalog remains neutral (see [[combat-stat-rules]]).
 
 ## Stats
 
@@ -47,11 +47,7 @@ Seed distributions used by `make db-seed` (legal for every race): Human 133/134/
 
 ## Skills
 
-**Direction agreed 2026-09-08:** resistance, regeneration and skills must return. Their implementation and tests are retained during cleanup; activation scope is awaiting clarification. The following describes the still-active fixed-value ruleset, not the intended final combat design.
-
-Meditation, Spell Resistance and Magery are stored as 0–100 floats (`skill_meditation`, `skill_spell_resistance`, `skill_magery`). They are shown in details with `tier = ceil(value/10)` and groups `core`/`defense` (`server:modules/character/details.go:290-304`).
-
-In `duel_v2` they do nothing and never gain: `BuildPlayerState` sets `SkillGains: nil` (`server:modules/match/engine/core/player_setup.go:77`), the damage path uses `TakeDamageWithEvents` (no trigger), and the game-over phase only applies gains when the tracker is non-nil (`server:modules/match/engine/phase/gameover/phase.go:239-255`). `modules/skills` (random gain chances 15/8/3/0.5 % and `+0.1`) remains as dormant helpers.
+Meditation, Spell Resistance and Magery are stored as 0–100 floats and exposed in character details. Human match setup initializes a gain tracker. Actual hostile damage/pulses roll Magery and Spell Resistance; active meditation rolls once per second after warm-up. Chances, caps, match-local RNG and persistence are specified in [[combat-stat-rules]]. Game-over skill before/after values can now differ; the new skill value affects subsequent matches.
 
 ## XP and levels
 
@@ -112,12 +108,12 @@ Available MP = `magic_points − magic_points_spent` (CHECK-constrained ≥ 0). 
 
 ## Combat rules (duel_v2)
 
-Real-time 1v1, no movement, logical clock of 100 ms ticks, 180 s safety limit (`server:modules/match/engine/phase/game/phase.go:27`). Both players start at **200 HP / 100 mana** (`player_setup.go:33-34`); the duel simulator uses the same constants.
+Real-time 1v1, no movement, logical clock of 100 ms ticks, 180 s safety limit (`server:modules/match/engine/phase/game/phase.go:27`). Players and bots start at their shared profile maxima, derived from effective stats/race; simulation uses the same formulas. See [[combat-stat-rules]].
 
 ### Actions
 
 - Commands: `cast` (with `spell_id`), `meditate`, `clear_queue` (`phase.go:110`). Rejection reasons: `not_participant`, `combat_ended`, `invalid_client_seq`, `stale_command`, `unknown_command`, `unknown_spell`, `insufficient_mana`, `unexpected_spell_id`, `paralyzed`, `meditation_unavailable` (`reasons.go`); at start: `insufficient_mana`, `busy`, `paralyzed`, `dead`, `invalid_spell` (`phase.go:381-394`).
-- Mana is charged once when the cast starts and never refunded (`server:modules/match/engine/state/actions.go:29`). Casting ends automatically at `now + casting_time`; recovery blocks the next action until `cast end + recovery_time` (`actions.go:30-32`).
+- Mana is charged once when the cast starts and never refunded (`server:modules/match/engine/state/actions.go:29`). Casting ends automatically at `now + personalized casting_time`; recovery blocks the next action until `cast end + recovery_time` (`actions.go:30-32`).
 - One private queued action per player; a new command replaces it; `clear_queue` removes it. The queued action starts once the player is idle (not casting, past recovery, not paralysed) (`phase.go:244-303`).
 - Only paralysis interrupts a cast (`paralyze.go:39-62`, `actions.go:87-98`): the cast is cancelled, mana stays spent, recovery restarts from the interruption. Damage never interrupts casting or meditation.
 - Impact time = cast end + `travel_time` (0 for the whole catalog). Target is the enemy if any effect targets `enemy`, otherwise self (`phase.go:170-180`).
@@ -129,19 +125,17 @@ Real-time 1v1, no movement, logical clock of 100 ms ticks, 180 s safety limit (`
 3. Release every completed cast of both players (ids sorted) and schedule impacts, before any impact can interrupt.
 4. Process due impacts and pulses in deterministic order (time, then seat with priority alternating by tick parity, then sequence); deaths are deferred until the whole batch resolves.
 5. Commit deaths. If someone is dead or time is up: `defeated` (one survivor), `draw` (both dead), `timeout` (both alive at 0 s). All effects, impacts and queues are cleared; `match_ended` is emitted.
-6. Regenerate mana; then queue handling and action starts for living, non-paralysed players.
+6. Regenerate mana and unpoisoned living HP; then queue handling and action starts for living, non-paralysed players.
 
 Simultaneous lethal impacts are a draw. Timeout is a draw regardless of HP.
 
-### Resources
+### Resources and scaling
 
-- Passive mana: 1 per second, integer carry, also under poison and paralysis (`actions.go:62-64`). No passive HP regeneration.
-- Meditation: refused while poisoned, paralysed, casting, in recovery or at full mana (`actions.go:42`). 0.8 s warm-up, then an additional 10 mana/s with millisecond carry (`actions.go:49,69-77`). Stops on a successful cast, poison, paralysis, or full mana (`actions.go:33,65-67,79-84`).
-- Mana is capped at 100 and HP at 200 (`player_state.go:186-191,208-211`).
+HP/mana maxima, cast time, mana costs, damage/healing, resistances, dodge and regeneration are specified in [[combat-stat-rules]]. Poison blocks passive HP and regeneration pulses; passive mana continues. Meditation keeps the 800 ms warm-up and stops at full mana, on casting, poison or paralysis. Fractional gains carry between ticks. Resource bounds use each player's maxima.
 
 ### Statuses and counters
 
-One instance per kind per target; re-application does nothing (no refresh, no stack, no refund). Details and reasons in [[spell-system]].
+Values below are **base catalog values before stat/skill/racial scaling**. One instance per kind per target; re-application does nothing (no refresh, no stack, no refund). Details and reasons in [[spell-system]].
 
 | Effect | Rule |
 |---|---|
@@ -157,17 +151,16 @@ One instance per kind per target; re-application does nothing (no refresh, no st
 
 ## Match integration
 
-- `core.BuildPlayerState` loads the character and owned spells, sets 200/100, clamps draftable slots to the number of owned spells while exposing the full entitlement as `max_spell_slots`, and injects both standard spells into `SelectedSpells`/`SpellBook` (`server:modules/match/engine/core/player_setup.go:18-87`).
+- `core.BuildPlayerState` loads the character and owned spells, derives combat profile/maxima and initializes skill gains, clamps draftable slots to the number of owned spells while exposing the full entitlement as `max_spell_slots`, and injects both standard spells into `SelectedSpells`/`SpellBook` (`server:modules/match/engine/core/player_setup.go:18-87`).
 - Lobby draft offers `DraftableSpells()` (owned minus standards), rejects standard ids and auto-picks from the same pool (`server:modules/match/engine/phase/lobby/phase.go:130,161,226,275`).
 - A bot copies the human's `SpellSlots`/`MaxSpellSlots`, drafts that many random non-standard spells and carries both standards (`server:modules/match/ai_match/join.go:49-66`, `server:modules/spellbook/db.go:70-78`).
 - Rejoin keeps the existing player state; no reload, no HP/mana reset (`server:modules/match/engine/core/rejoin.go`). A combat snapshot restores the client ([[combat-v2]]).
-- Game over (`server:modules/match/engine/phase/gameover/phase.go:133-332`): per human player: XP via `CalculateMatchXP`, `char.AddExp` (level, stat points, MP, slots with race bonus), `last_match_date = now`, wins++ on victory (+`last_first_win_date` if first win today), losses++ only on `defeat`; draws change neither counter. Persisted with `UpdateMatchResult`. Bots are not persisted. The per-player result message (opcode 50) carries XP, level-up, skill before/after (always equal), stats and record.
+- Game over (`server:modules/match/engine/phase/gameover/phase.go:133-332`): per human player: XP via `CalculateMatchXP`, `char.AddExp` (level, stat points, MP, slots with race bonus), `last_match_date = now`, wins++ on victory (+`last_first_win_date` if first win today), losses++ only on `defeat`; draws change neither counter. Persisted with `UpdateMatchResult`. Bots are not persisted. The per-player result message (opcode 50) carries XP, level-up, skill before/after (including applied gains), stats and record.
 
 ## Known code smells (not rules)
 
 - `get_progression` now uses `XPToNextLevel` (clamped to zero) and `GetNextSpellSlotLevel`, matching the active `{4,8,12}` ladder. Fixed 2026-09-08; regression tests cover unlock boundaries, level cap and stale-level XP.
 - `NewCharacter` comments still describe an empty roster / `DefaultRaceId == ""` (`character.go:67-68`).
-- `modules/combat` (damage/resistance/dodge/regen formulas, passive HP regen constants) and `modules/skills` gain helpers are dormant; `CalculateEffectiveStats` is the only live call.
 
 ## Source of truth in code
 
