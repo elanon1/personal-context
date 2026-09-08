@@ -105,7 +105,7 @@ The separate `get_primary_progression` response supplies both versioned graphs, 
 
 ## Mobile presentation (2026-09-08)
 
-The four tabs are Summary, Stats, Spellbook and Primary. All compact views can scroll vertically; long labels wrap. The tab strip moves below the header below 1700 logical units. Summary sections/primary cards stack at that width; Stats and Spellbook use one column below 1250 and the summary below 900. Reflow is reevaluated on resize. Card/tab selection preserves mobile padding. See [[design-system]] and [[2026-09-08-mobile-layout-review]]. No RPC or gameplay changes in this revision.
+The four tabs are Summary, Stats, Spellbook and Primary. All compact views can scroll vertically; long labels wrap. The tab strip moves below the header below 1700 logical units. Summary sections/primary cards stack at that width; Stats and Spellbook use one column below 1250 and the summary below 900 or whenever the measured columns exceed the available width. Reflow is reevaluated on resize. Card/tab selection preserves mobile padding. See [[design-system]] and [[2026-09-08-mobile-layout-review]]. No RPC or gameplay changes in this revision.
 
 ## Source of truth in code
 - `server:modules/character/details.go` — request/response structs, all field derivations.

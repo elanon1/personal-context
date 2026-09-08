@@ -40,3 +40,7 @@ Użytkownik zatwierdził rozpoczęcie implementacji wszystkich zmian. Ta notatka
 - Down000004 przywraca zapisany snapshot starej progresji; celowo odmawia rollbacku, jeśli powstały nowe postacie bez snapshotu. W takim przypadku potrzebna jawna konwersja do starego modelu. Nie ma bezpiecznego automatycznego zachowania obu krzywych jednocześnie.
 - Transakcyjny receipt chroni zapisane wyniki i retry w żywym procesie. Utrata procesu w trakcie awarii DB może zgubić jeszcze niezapisany wynik: trwały outbox całego meczu nie jest częścią tej implementacji.
 - Bez testu interaktywnego nowych kontrolek w Godot i pełnego live meczu Nakama. Dużo timeoutów wymaga strojenia tempa i playtestu, zanim współczynniki zostaną uznane za finalny balans. Pierwsza paczka ma12opcjonalnych czarów, więc cel15+wyborów wymaga następnej paczki; MP można oszczędzać.
+
+## Follow-up: mobile layout revision
+
+The mobile presentation follow-up is recorded in [[2026-09-08-mobile-layout-review]]. It removes obsolete racial stat-limit presentation, stabilizes selection padding, adds width-aware compaction and reflows/scrolls dense menus. No gameplay, balance or RPC changes.

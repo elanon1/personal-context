@@ -237,3 +237,13 @@ Notatki: duel-v2-client (sekcja „Catalog2.4 progression UI”), character-deta
 - Testy: czerwony test potwierdził brak canonical release przed poprawką; `Tests/Tutorial` PASS po poprawce (w tym action identity/reflection/status refresh). `VerifyCleanse` 18/18 dla 6 ras. Rzeczywisty `TutorialVerification` GPU, 1360×612, syntetyczny dotyk, katalog/auth z lokalnego Nakama7350: PASS do Summary, z asercjami wspólnych pocisków/impactów oraz widocznych Poison/Cleanse. Wyjście przed ukończeniem konta i tworzeniem postaci (`TUTORIAL_VFX_ONLY=1`). Build 0 błędów, 9 wcześniejszych ostrzeżeń. Zrzut Cleanse w tutorialu obejrzany; logi i obrazy w `verification/tutorial-vfx/`.
 - Przegląd wychwycił dwa problemy lokalnego lifecycle (duplikaty statusu i kolejność depletion/damage); poprawione i sprawdzone. Notatki: `client-tutorial`, `spell-vfx-configuration`, `spell-effect-system`, `_state`.
 - Pozostało: fizyczny Android nie był testowany. Nie zmieniano zasad sieciowego pojedynku.
+
+
+## 2026-09-08 — Rewizja układów mobilnych po redesignie
+
+- Naprawiono zmianę wymiarów kart po wyborze rasy, usunięto stare limity STR/INT/DEX i bonusy startowe z wyboru, rozróżniono tap od przewijania. Mobilny kreator ukrywa duplikat podsumowania z boku.
+- Dopasowanie bierze pod uwagę szerokość i wysokość oraz fonty RichText. Szczegóły postaci mają przewijane zakładki i układ kolumn reagujący na zmianę szerokości. Poprawiono dashboard, wybór trybu, ustawienia, krótkie lobby i wyniki; większe podpisy/przyciski wyników, zawijanie awansu, bezpieczne marginesy mobilne.
+- Pliki: ResponsiveLayout; CreateCharacterScreen; CharacterDetailScreen (główny/Responsive/Primary); DashboardScreen/ModeOverlay; SettingsScreen; LobbyScreen; GameOverScreen; nowy MobileLayoutVerification.cs/.tscn. Nie zmieniano mechanik ani RPC i nie wykonywano commita/deployu.
+- Build:0 błędów/9 wcześniejszych ostrzeżeń. Kontrola rozmiarów960×432..2400×1080, wypełnione primary/spellbook/respec/wyniki oraz zmiany rozmiaru otwartych zakładek; końcowe kluczowe przebiegi bez przepełnień. StarterSelectionCheck PASS, aktywny reference HUD DuelV2Preview PASS. Przegląd kodu i renderowane PNG w verification/mobile-layout.
+- Notatki: design-system, race-selection (usunięto nieaktualny kontrakt sprzed redesignu), character-details, redesign-implementation, nowy audyt mobile-layout-review, _index, _state.
+- Pozostało: playtest na fizycznym Androidzie (DPI, klawiatura, notch, dotyk) i żywy mecz Nakama. Szczegóły dowodów i ograniczeń w audycie.
