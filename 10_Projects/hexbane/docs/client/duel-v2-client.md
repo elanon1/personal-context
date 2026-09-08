@@ -17,7 +17,7 @@ Wire contract: [[combat-v2]] (opcodes 29–32) and [[opcodes]]. This note covers
 
 ## Catalog2.4 and progression client preparation (2026-09-08)
 
-The compatible client implementation has been prepared and build-checked in `/private/tmp/hexbane-client-progression`; the reviewable patch is `/private/tmp/hexbane-client-progression.patch`. At this documentation checkpoint it has not yet been applied to the actual client repository. No live deployment or interactive Godot/network verification of these new controls has occurred. The following describes that prepared implementation.
+The compatible implementation is applied to the actual client repository `/Users/elanon/RiderProjects/hexbane`. Its `dotnet build --no-restore` passes (0 errors, 9 existing warnings), and `Tests/Progression` passes shared-budget and combat-preview tests. No live deployment or interactive Godot/network verification of these new controls has occurred.
 
 `DuelVersion.Supported` accepts catalog `duel_v2.4` and retains 2.2/2.3 for existing tutorial/preview fixtures, still protocol 2/rulesetduel_v2. Server spell views provide selected primary effects and effective cost/cast/recovery; snapshots provide actual maxima. Mirror live `remaining` is one charge; definition `value` is return percentage. A reflected packet can do zero damage after rounding; Arrow remains fixed 1. Formulas and reflection are in [[combat-stat-rules]]. Local tutorial remains a separate training model.
 

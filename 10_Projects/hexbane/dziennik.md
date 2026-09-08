@@ -201,3 +201,10 @@ Przeliczono propozycję XP:50+13*(L−2),6728 XP do30;64 gry przy równym bilans
 ## 2026-09-08 — Codex — obniżenie XP za porażkę
 
 W planie XP zmieniono nagrody na120/70 i przeliczono krzywą45+12*(L−2),6177 XP do30. Przy50% zwycięstw średnia95 XP daje około65 gier; skrajnie52 zwycięstwa lub89 porażek. Sloty7/11/16 pozostają około5/10/20 gier. Uwzględniono wolniejsze zasilanie post-cap MP (500 XP to około5,3 meczu). Kod bez zmian.
+
+
+## 2026-09-08 — Codex — implementacja ras, grafów primary i progresji
+
+Wykonano zatwierdzone zmiany backendu oraz klienta: wspólny budżet/statsoftcap/respec,6ras, grafy primary i ich runtime, krzywa6177XP/120:70, sloty7/11/16, MPstudy+skillmilestones, rankedlevel30. Transakcyjne nagrody z receipt/retry i blokada buildu podczas meczu. Migracje000004/000005 z ochroną istniejących danych i jawnym guardem rollbacku nowych postaci. Pliki: modules/{primary,progression,character,combat,race,skills,match,spell_system}, YAMLprimary, cmd/duel-sim, db/migrations;13plików klienta opisane w [[2026-09-08-redesign-implementation]]. Dokumentacja: server/progression,combat-stat-rules,spell-system; protocol/character-details,shared-types,rpcs,combat-v2; client/duel-v2-client;2plany i ledger, _index, _state, dziennik.
+
+Walidacja: go test ./..., go test -race ./..., go vet ./..., Linux makebuild; klient build0errors/9existingwarnings i testy Progression PASS. DisposablePG17.6 up/down/up i integracje migracji/8równoległych rozliczeń PASS.1000symulacji bez błędów zasobów,45.4%timeoutów. Pozostało strojenie tempa/playtest, livewalidacja nowych UI i wdrożenie zgodnych migracji+binarek. Brak commitów i zmian na działającej bazie; wcześniejsze niezacommitowane zmiany zachowane.

@@ -125,3 +125,5 @@ Raporty weryfikacji docs vs kod z 2026-09-07 — sekcje „code smells” i „o
 - `99_Archive/Projects/hexbane-notes-2026-08-31/` — poprzednie polskie notatki vaulta (sprzed duel_v2)
 - `~/hexbane-archive/docs-2026-09-07/` — usunięte z repo drzewa `docs/`, `thoughts/`, `RPCs.md`
 - `~/hexbane-archive/Races-2026-08-31/` — wycofany roster 35 ras
+
+- [[docs/plans/2026-09-08-redesign-implementation|Wykonanie przebudowy ras, primary i progresji]] — zakres, walidacja, migracja i ograniczenia.

@@ -2,13 +2,15 @@
 type: project
 project: Hexbane
 area: plans
-status: proposed
+status: implemented
 created: 2026-09-08
 updated: 2026-09-08
 verified: 2026-09-08
 tags: [hexbane, design, races, stats, primary-spells, progression]
 ---
 # Race, stat-budget and primary-spell redesign — proposed design plan
+
+> **Status 2026-09-08:** użytkownik zatwierdził implementację wszystkich zmian; wykonanie i konkretne rozstrzygnięcia opisuje [[2026-09-08-redesign-implementation]]. Poniższy tekst zachowuje historyczną analizę/propozycje; sformułowania „proposed/current code/not yet” odnoszą się do stanu sprzed implementacji. Bieżący kontrakt jest w notatkach serwera i protokołu.
 
 ## Confirmed user direction
 

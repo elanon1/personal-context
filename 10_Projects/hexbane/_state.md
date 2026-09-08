@@ -58,6 +58,9 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+- **2026-09-08 — Implementacja przebudowy zatwierdzona i wykonana w kodzie obu repo.** Wspólne statystyki/softcap, nowe cechy6ras, primary DAG6tierów, XP120/70 i6177do30, sloty7/11/16, MPpo capie+milestones, ranked od30. **Why:** użytkownik polecił wdrożyć wszystkie ustalenia; rasy muszą działać z bieżącą paczką i pozwalać na swobodne buildy. Szczegółowe rozstrzygnięcia i wyniki: [[2026-09-08-redesign-implementation]]. Testy/race/vet/buildy i migracje testowe PASS; bez deploya.45.4%timeoutów w symulacji wymaga dalszego strojenia, nie oznacza gotowego balansu.
+
+
 - **2026-09-08 — Porażka70 XP.** Użytkownik obniżył proponowane XP za porażkę z90 do70. **Why:** zwycięstwo powinno być wyraźniej premiowane. Wygrana pozostaje120, remis proponowany jak porażka; nowa proponowana krzywa6177 XP utrzymuje około65 gier przy50% zwycięstw oraz późniejsze sloty.
 
 - **2026-09-08 — Wolniejsze sloty, około65 meczów do capu.** Użytkownik ustalił slot4 po około4–5 grach, slot5 po10, slot6 po20 oraz skrócił drogę do maksymalnego poziomu do około65 meczów. **Why:** dłużej rozwijać draft, ale szybciej dojść do końca levelowania. Proponowane progi7/11/16 i6728 XP do30 są w [[2026-09-08-xp-ranked-progression]]; MP dopasowane do nowych progów. Human zachowuje dodatkowy slot od startu.
