@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, server, spells, effects, balance]
 sources: ["server:docs/spell_system/GUIDE-v2.md", "server:docs/spell_system/spells.md", "server:docs/spell_system/balance-v2.md", "server:docs/spell_system/balance-v2.json", "server:docs/spell_system/verification-v2.md", "server:docs/superpowers/specs/2026-09-05-spell-system-redesign.md", "server:docs/superpowers/plans/2026-09-05-spell-system-redesign.md", "client:docs/Plans/2026-09-04-standard-spells-6-slot-draft.md"]
 ---
@@ -86,9 +86,11 @@ One spell per file, one YAML document per file, `.yaml` or `.yml`, walked recurs
 
 ## Loader and registry
 
+Cleanup 2026-09-08 removed unused `LoadFromFile`, `Add`, `GetByLevelRequirement` and `GetSpells`. Startup and tests continue to use validated directory loading.
+
 - Startup loads `/nakama/spells` (`server:modules/spell_system/init.go:36`). Docker Compose mounts `./data/spells` there (`server:docker-compose.yml:56`); the image copies it (`server:Dockerfile:21`). Replace the whole directory when deploying.
 - `LoadFromDirectory` parses all files, validates the set, and only then swaps the registry (`server:modules/spell_system/registry.go:136-141`).
-- Global registry `spell_system.Spells`. API: `Get`, `Exists`, `GetAll` (sorted by id), `GetStarter`, `GetStandard` (sorted by id, stable bar order), `IsStandard`, `GetByLevelRequirement` (`server:modules/spell_system/registry.go:20-59`, `server:modules/spell_system/standard.go`).
+- Global registry `spell_system.Spells`. API: `Get`, `Exists`, `GetAll` (sorted by id), `GetStarter`, `GetStandard` (sorted by id, stable bar order), `IsStandard` (`server:modules/spell_system/registry.go:20-59`, `server:modules/spell_system/standard.go`).
 - Millisecond helpers for client payloads: `CastTimeMillis`, `RecoveryTimeMillis`, `TravelTimeMillis` (`server:modules/spell_system/spell.go:42-52`). Character details report these in ms; the catalog RPCs return seconds.
 
 RPCs registered by the module (`server:modules/spell_system/init.go`): `get_spell_lore`, `get_entry_spells` (returns the six starters), `get_my_spells` (owned + both standards, optional `school`/`limit`), `get_spell`, `get_spell_details_yaml`. Payload shapes are in [[rpcs]].
@@ -125,6 +127,7 @@ Reflection is resolved before effects are scheduled (`server:modules/match/engin
 - **Process** repeatedly picks the earliest due item among scheduled impacts and effect pulses. Ties: earlier time, then seat order (player ids sorted ascending; on odd ticks the order is reversed), then sequence id (`queue.go:159-230`). A periodic pulse landing exactly on `end` is removed instead of pulsing, so poison and regeneration produce 5 pulses at seconds 1–5.
 - **Removal** (`queue.go:111-135`) runs the handler's `OnEnd`, deletes the player effect, emits `effect_removed` with a reason: `expired`, `cleansed`, `dispelled`, `consumed`, `depleted` (shield broken by damage, from `player_state.go:125-146`), `match_ended`. Removing an instance cancels all its future pulses and detonation.
 - **Damage/heal** go through `EffectContext.DealDamage`/`Heal`, which emit `damage` (with `absorbed`) and `heal` (with `overheal`) lifecycle events (`events.go:33-63`).
+- The old `CastInterruptions` accumulator was removed on 2026-09-08. `MatchLog` remains, including paralysis/interruption entries; interruption delivery uses the lifecycle sink.
 - `cast_interrupted` and `meditation_stopped` are emitted by the engine wrapper when a handler changed those states (`engine.go:27-46`).
 
 The per-tick order in which the game phase drives the queue is documented in [[progression]] (section "Combat rules"); events and payloads in [[combat-v2]].

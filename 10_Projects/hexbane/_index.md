@@ -4,7 +4,7 @@ project: Hexbane
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
+updated: 2026-09-08
 tags: [hexbane, docs, index, moc]
 aliases: [hexbane-docs, hexbane-index]
 ---
@@ -98,6 +98,8 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 - [[server-devlog-summary]] — oś czasu kamieni milowych serwera (z dawnego `devlog.md`)
 
 ## Audyty (`docs/audits/`)
+
+- [[2026-09-08-server-unused-code-audit]] — audyt martwego kodu serwera: 61 kandydatów, zależności i kolejność czyszczenia.
 
 Raporty weryfikacji docs vs kod z 2026-09-07 — sekcje „code smells” i „open questions” to backlog:
 [[2026-09-07-server-match-audit]] · [[2026-09-07-server-spells-audit]] ·

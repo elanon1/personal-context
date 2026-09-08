@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, server, notifications, nakama]
 sources: ["server:modules/notifications/README.md", "client:docs/Server/Notifications.md", "server:docs/API-REFERENCE-v2.md"]
 ---
@@ -25,28 +25,15 @@ Thin wrapper over Nakama's built-in notification system. No custom tables.
 Errors: `{"success":false,"error":"request_failed","message":"…"}`. `create_time` is formatted
 `2006-01-02T15:04:05Z` (UTC, no fractional seconds). `content` is the JSON string Nakama stores.
 
-**No `notifications_send` RPC exists** — the README still documents one, but `init.go:12-13` states
-notifications are dispatched server-side only. `SendNotificationRequest` in `types.go:52-59` is dead.
+**No `notifications_send` RPC exists.** Cleanup on 2026-09-08 removed the six uncalled
+`Send*Notification` helpers, their unused send/event DTOs, unused code constants, misleading
+startup logs and `CreateNotificationContent` (an example stub that returned only message text).
+The list/delete handlers and their response DTOs remain unchanged.
 
-## Codes (`server:modules/notifications/types.go:5-27`)
-
-| Code | Meaning | Emitted by |
-|---|---|---|
-| −1 … −8 | Nakama built-ins (offline message, friend request −2, friend accepted −3, group −4/−5, friend online −6, socket closed −7, banned −8) | Nakama core |
-| 1 | `NotificationCodeMatchInvite` — **actually used by `remove_friend`** as a generic "friends" notification (`server:modules/social/rpc.go:344`) | social module |
-| 2 | Match result | nobody |
-| 3 | Achievement | nobody |
-| 4 | Level up | nobody (see [[level-up-notifications]]) |
-| 5 | Spell unlocked | nobody |
-| 6 / 7 | Tournament start/end | nobody |
-| 8 | Leaderboard rank | nobody |
-| 9 | System message | nobody |
-| 10 | Challenge received | nobody |
-
-Helper functions `SendFriendRequestNotification`, `SendFriendAcceptedNotification`,
-`SendMatchInviteNotification`, `SendMatchResultNotification`, `SendSystemNotification`,
-`SendFriendOnlineNotification` (`rpc.go:112-240`) exist but have **no callers** outside commented code.
-The game-over phase does not send notifications (it has no `NakamaModule`).
+The live custom notification in `social.RpcRemoveFriend` still calls `nk.NotificationSend`
+directly with subject `friends` and code 1. No match-result, level-up or custom system-message
+sender was activated. Nakama's built-in notifications remain available. Numeric payload codes
+were not remapped; the unused Go declarations were removed.
 
 ## Client (`client:Application/Modules/Notifications/`)
 
@@ -60,6 +47,6 @@ The game-over phase does not send notifications (it has no `NakamaModule`).
 - Client code enum `NotificationType` (`Models/NotificationType.cs`): Nakama negatives, `SimpleNotification = 1`, `LevelUp = 4`.
 
 ## Source of truth in code
-- `server:modules/notifications/init.go`, `rpc.go`, `types.go` — RPCs, codes, unused helpers.
-- `server:modules/social/rpc.go:337-348` — the only custom notification actually sent.
+- `server:modules/notifications/init.go`, `rpc.go`, `types.go` — retained list/delete RPCs and response DTOs.
+- `server:modules/social/rpc.go` — the only custom notification actually sent.
 - `client:Application/Nakama/NakamaClientManager.cs`, `client:Application/Modules/Notifications/**` — client delivery and SDK calls.

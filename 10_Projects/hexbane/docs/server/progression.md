@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, server, progression, races, stats, skills, combat]
 sources: ["server:docs/progression/overview.md", "server:docs/progression/race.md", "server:docs/progression/stats.md", "server:docs/progression/skills.md", "server:docs/progression/progression.md", "server:docs/progression/combat.md", "server:docs/progression/match-integration.md", "server:docs/progression/modifiers.md", "server:docs/superpowers/specs/2026-09-02-race-system-redesign-design.md", "server:docs/superpowers/plans/2026-09-02-race-system-redesign.md", "client:docs/Server/progression/overview.md", "client:docs/Server/progression/race.md", "client:docs/Server/progression/stats.md", "client:docs/Server/progression/skills.md", "client:docs/Server/progression/progression.md", "client:docs/Server/progression/combat.md", "client:docs/Server/progression/match-integration.md", "client:docs/Server/progression/races_seed.sql"]
 ---
@@ -46,6 +46,8 @@ Traits are decoded into a typed `race.Traits` struct; an unknown key or wrong ty
 Seed distributions used by `make db-seed` (legal for every race): Human 133/134/133, Elf 120/200/80, Dark Elf 110/180/110, Shadow 120/150/130, Gnome 100/160/140, Orc 180/110/110 (`server:scripts/seed_dev_accounts.sh:64-69`).
 
 ## Skills
+
+**Direction agreed 2026-09-08:** resistance, regeneration and skills must return. Their implementation and tests are retained during cleanup; activation scope is awaiting clarification. The following describes the still-active fixed-value ruleset, not the intended final combat design.
 
 Meditation, Spell Resistance and Magery are stored as 0–100 floats (`skill_meditation`, `skill_spell_resistance`, `skill_magery`). They are shown in details with `tier = ceil(value/10)` and groups `core`/`defense` (`server:modules/character/details.go:290-304`).
 
@@ -163,7 +165,7 @@ One instance per kind per target; re-application does nothing (no refresh, no st
 
 ## Known code smells (not rules)
 
-- `get_progression` RPC computes XP-to-next with `100·1.5^(level−1)` and next-slot level from the retired ladder `{4,6,10,15,20,25}` (`server:modules/character/rpc.go:341-357`). Use `get_character_details.progression` instead, which uses the progression package.
+- `get_progression` now uses `XPToNextLevel` (clamped to zero) and `GetNextSpellSlotLevel`, matching the active `{4,8,12}` ladder. Fixed 2026-09-08; regression tests cover unlock boundaries, level cap and stale-level XP.
 - `NewCharacter` comments still describe an empty roster / `DefaultRaceId == ""` (`character.go:67-68`).
 - `modules/combat` (damage/resistance/dodge/regen formulas, passive HP regen constants) and `modules/skills` gain helpers are dormant; `CalculateEffectiveStats` is the only live call.
 

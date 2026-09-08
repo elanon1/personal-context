@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, server, match-engine, architecture]
 sources: ["server:docs/match/GUIDE-v2.md", "server:docs/match/README.md", "server:docs/match/architecture.md", "server:docs/match/phases.md", "server:docs/match/state-management.md", "server:docs/match/communication.md", "server:docs/match/matchmaking.md", "server:docs/QUICKSTART-v2.md", "server:docs/DOCUMENTATION-INDEX.md", "server:CLAUDE.md", "server:AGENTS.md"]
 ---
@@ -125,7 +125,9 @@ Phase transitions: `MatchState.TransitionTo` is documented as the single entry p
 
 ## State structs (`server:modules/match/engine/state/`)
 
-**`MatchState`** (`state.go:35-59`): `MatchId`, `Presences map[userId]Presence`, `Players map[userId]*PlayerState`, `Game *GameState`, `Stats *MatchStats`, `Phase`, `PhaseState`, `MatchLog`, `EffectRemovalEvents`, `CastInterruptions`, `MatchMode` (`normal` | `ai`), `Tick`, `EmptyTicks`, `HasHadPlayers`, `TerminateMatch`, `Debug`. Helpers: `GetPlayer`, `GetOpponent(Id)`, `GetPlayerUserIds`, `GetPlayerSlots` (draft slots clamped to draftable spells, `:129-144`), `IsOver`, `GetNonBotsPlayers`.
+Cleanup 2026-09-08 retains `MatchLog` and its current lifecycle. The old `CastInterruptions` buffer was removed from match/effect contexts; live interruption events are emitted by `spell_effects.ApplyEffect` through the queue sink. No opcode or payload shape changed.
+
+**`MatchState`** (`state.go:35-59`): `MatchId`, `Presences map[userId]Presence`, `Players map[userId]*PlayerState`, `Game *GameState`, `Stats *MatchStats`, `Phase`, `PhaseState`, `MatchLog`, `EffectRemovalEvents`, `MatchMode` (`normal` | `ai`), `Tick`, `EmptyTicks`, `HasHadPlayers`, `TerminateMatch`, `Debug`. Helpers: `GetPlayer`, `GetOpponent(Id)`, `GetPlayerUserIds`, `GetPlayerSlots` (draft slots clamped to draftable spells, `:129-144`), `IsOver`, `GetNonBotsPlayers`.
 
 **`PlayerState`** (`player_state.go:12-67`), built by `core.BuildPlayerState` (`core/player_setup.go:18-87`):
 

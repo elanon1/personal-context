@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, protocol, rpc, nakama]
 sources: ["server:RPCs.md", "server:docs/API-REFERENCE-v2.md", "server:docs/match/api-reference.md", "server:docs/progression/client/menu-rpc-requirements.md", "client:docs/Server/progression/menu-rpc-requirements.md", "server:docs/client/client-implementation-prompt.md"]
 ---
@@ -104,10 +104,13 @@ Client DTO `client:Application/Modules/Character/Dto/CharacterResponse.cs` expec
    "experience_to_next_level":100,"magic_points":0,"magic_points_spent":0,"available_magic_points":0,
    "spell_slots":3,"next_spell_slot_level":4,"unspent_stat_points":0}
   ```
-- **Stale maths inside this handler**: `experience_to_next_level` uses `100·1.5^(level−1)` and
-  `next_spell_slot_level` uses `{4,6,10,15,20,25}` (`rpc.go:341-357`), while the progression module
-  uses `100·1.5^(level−2)` (`server:modules/progression/xp.go:10-18`) and unlock levels `{4,8,12}`
-  (`constants.go:33`). `get_character_details` uses the correct module functions. Prefer it.
+- Uses `progression.XPToNextLevel` (clamped to zero) and `GetNextSpellSlotLevel` in
+  `buildProgressionResponse`. The slot ladder is `{4,8,12}`; next unlock is 8 at levels 4/6,
+  12 at level 8, and 0 from level 12 onward. Remaining XP is 0 at the level cap.
+- Fixed on 2026-09-08; the response fields and authentication/character lookup are unchanged.
+  The old next-level XP exponent was mathematically consistent with `XPForLevel(level+1)`;
+  the confirmed defect was the retired slot ladder. Both calculations now use shared helpers.
+- Regression coverage: `server:modules/character/progression_test.go`.
 
 ### `tutorial` and `set_tutorial_completed`
 - `init.go:45` / `init.go:49`; handlers `tutorial.go:106` / `rpc.go:153`. Contract in [[server-tutorial]].

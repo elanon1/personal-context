@@ -16,6 +16,22 @@ co zrobione — notatki/pliki — co zostało**. Decyzje z uzasadnieniem idą do
 [[10_Projects/hexbane/_state|_state]] → *Decisions log*. Historia sprzed dziennika (2025-06 →
 2026-09-06): [[server-devlog-summary]] i decisions log w `_state`.
 
+## 2026-09-08 — Codex — czyszczenie helperów i naprawa progresji
+
+**Zrobione** — zgodnie z decyzją użytkownika usunięto niepodłączone helpery/walidatory i funkcje debugowe, sześć helperów powiadomień z martwymi DTO oraz stary bufor `CastInterruptions`. `MatchLog` zachowany. `get_progression` korzysta ze wspólnych funkcji XP/slotów, test regresji sprawdzono przed i po naprawie. Testy paraliżu sprawdzają obecne zdarzenia lifecycle, brak zwrotu many i wpisy MatchLog. Zachowano kod/testy odporności, regeneracji i skilli do przywrócenia. Usunięto 33 deklaracje funkcji/metod (w tym zastąpione `pow`). Końcowe `go test ./...`, `go vet ./...` i `git diff --check`: PASS; testy race match/spell_system/symulator: PASS po zmianie bufora.
+
+**Pliki/notatki** — moduły character, spellbook, spell_system, notifications, social, race, common, match oraz lokalne nieużywane helpery endless_story; [[rpcs]], [[progression]], [[spell-system]], [[server-architecture]], [[notifications]], [[2026-09-08-server-unused-code-audit]], [[_state]], ten dziennik. Nie zmieniano migracji, RPC rejestracji ani katalogu zaklęć. Bez commita.
+
+**Zostało** — doprecyzowanie zakresu powrotu mechanik walki i ich aktywacja; obecnie nadal działa model stałych wartości duel_v2. Nie wycofywano story ani działających RPC powiadomień.
+
+## 2026-09-08 — Codex — audyt nieużywanego kodu serwera
+
+**Zrobione** — przeanalizowano aktualny working tree (niezacommitowane zmiany zaakceptowane przez użytkownika), 451 deklaracji funkcji/metod. Wskazano 61 kandydatów bez odwołań produkcyjnych po wykluczeniu callbacków: 48 bez testów, 13 z odwołaniami testowymi. Zweryfikowano martwe formuły walki, zależności skilli, bufory zdarzeń, helpery powiadomień, niedokończone story i duplikację progresji. Przygotowano kolejność czyszczenia oraz granice API/danych. `go test ./...` (cache) i `go vet ./...`: PASS, Go 1.24.5 na macOS. Analiza AST i ręczna; nie pełny graf osiągalności typowanego programu.
+
+**Pliki/notatki** — [[2026-09-08-server-unused-code-audit]], [[_index]], ten dziennik. Kod aplikacji pozostawiono bez zmian; nic nie zacommitowano.
+
+**Zostało** — realizacja opisanych etapów czyszczenia, naprawa starej drabinki slotów w `get_progression`, decyzja o wycofaniu story i ewentualnym zmniejszeniu API. Raport to rekomendacje, nie zatwierdzone decyzje produktowe; przed usuwaniem RPC potrzebny aktualny audyt klienta.
+
 ## 2026-09-07 — Claude Code — konsolidacja dokumentacji
 
 **Zrobione**

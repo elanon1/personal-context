@@ -6,7 +6,7 @@ status: active
 state: active
 repo: https://github.com/elanon1/hexbane
 created: 2026-08-31
-updated: 2026-09-07
+updated: 2026-09-08
 tags: [hexbane, gamedev, godot, csharp, nakama, go, kubernetes, ai-art]
 aliases: [hexbane, hexbane-server]
 ---
@@ -56,6 +56,14 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 wizualne dla 4 id; 21 folderów `Resources/Spells/` to stare id prototypu. → [[spell-vfx-configuration]]
 
 ## Decisions log
+
+- **2026-09-08 — Zakres czyszczenia serwera po audycie.** Usuwamy nieużywane helpery/walidatory,
+  stare `CastInterruptions` oraz niepodłączone helpery powiadomień; `MatchLog` zostaje.
+  `get_progression` naprawione na wspólne reguły XP i slotów `{4,8,12}`. Odporności, regeneracja
+  i skille mają wrócić: ich kod i testy zachowujemy; zakres aktywacji wymaga doprecyzowania.
+  **Why:** nieużywany kod zawiera zarówno zbędne pozostałości, jak i docelowe mechaniki gry;
+  użytkownik rozdzielił te kategorie. Nie należy kasować całego starego modelu walki na podstawie
+  braku bieżących wywołań. → [[2026-09-08-server-unused-code-audit]].
 
 - **2026-09-07 — Jedno źródło prawdy dla dokumentacji: vault Obsidian, nie repozytoria.** Oba drzewa
   `docs/` (klient 45 plików + kopie docs serwera, serwer 75 plików + `RPCs.md`) zweryfikowane z kodem
