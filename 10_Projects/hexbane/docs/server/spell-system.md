@@ -203,3 +203,10 @@ All 14 spells were cast. The historical `duel_v2.1` run above is not a balance b
 - `server:modules/match/engine/phase/game/apply_spell_effect.go` — reflection resolution
 - `server:cmd/duel-sim/main.go`, `server:modules/match/engine/phase/game/ai.go` — balance simulator and bot policies
 - `client:Core/Spells/Spell.cs`, `client:Core/Spells/StandardSpells.cs` — client-side spell model and standard-spell handling
+
+
+## Verification limitation — 2026-09-08 seeded prototype run
+
+Command: `go run ./cmd/duel-sim -matches 1000 -seed 42 -out /private/tmp/hexbane-final-sim.json`, catalog `duel_v2.4`. All 1,000 matches terminated without resource-invariant errors. There were 546 decisive results (267/279 by seat) and 454 draws, all at the 180-second timeout. Median duration was 143.1 seconds; p90 was 180 seconds. The run recorded 10,661 zero-mana player-ticks, 549,490 HP damage, 51,299 shield absorption, and 382,087 healing.
+
+These results apply only to this simulator setup: 400-point race seed spreads, zero skills, level-one primary configurations, maximum six/seven optional slots, random pack-one drafts, and rotating adjacent race/policy pairs. They do not cover all 15 race pairings, primary capstones, mixed novice/veteran progression, or human play. The 45.4% timeout rate is an unresolved pacing concern requiring targeted tuning and playtests; these totals establish neither competitive race balance nor readiness of the prototype coefficients. The JSON report is a local temporary artifact, not a committed benchmark fixture.
