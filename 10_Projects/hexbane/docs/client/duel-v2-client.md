@@ -15,9 +15,17 @@ sources: ["client:docs/opcodes/duel-v2.md", "client:docs/opcodes/duel-v2-verific
 
 Wire contract: [[combat-v2]] (opcodes 29–32) and [[opcodes]]. This note covers only what the Godot client does with it.
 
-## Server stat restoration compatibility (2026-09-08)
+## Catalog2.4 and progression client preparation (2026-09-08)
 
-`DuelVersion.Supported` accepts `duel_v2.3` server rules as well as2.2 for existing local tutorial/preview fixtures. Server spell views provide effective cost/cast time, and snapshots carry each player's maxima. No new opcode/event kind is required; dodge/passive healing use existing impact/heal events with reasons. Combat formulas: [[combat-stat-rules]]. Client build was checked; local tutorial retains its own fixed-value training model.
+The compatible client implementation has been prepared and build-checked in `/private/tmp/hexbane-client-progression`; the reviewable patch is `/private/tmp/hexbane-client-progression.patch`. At this documentation checkpoint it has not yet been applied to the actual client repository. No live deployment or interactive Godot/network verification of these new controls has occurred. The following describes that prepared implementation.
+
+`DuelVersion.Supported` accepts catalog `duel_v2.4` and retains 2.2/2.3 for existing tutorial/preview fixtures, still protocol 2/rulesetduel_v2. Server spell views provide selected primary effects and effective cost/cast/recovery; snapshots provide actual maxima. Mirror live `remaining` is one charge; definition `value` is return percentage. A reflected packet can do zero damage after rounding; Arrow remains fixed 1. Formulas and reflection are in [[combat-stat-rules]]. Local tutorial remains a separate training model.
+
+Character Spellbook gains **PRIMARY DEVELOPMENT**: a scrollable six-tier path selector uses server node IDs and `next` edges, shows locked tiers/checkpoints, clears later choices when an earlier choice changes, and saves via `set_primary_path`. Saved effective base config displays mana/cast/recovery plus mirror window/return. Both primary paths are independent. Reopening fetches current config; backend failures are displayed.
+
+Stats gains **REALLOCATE ALL STATS**: three numeric inputs spend exactly400+5×(level−1), with min 10 each. Saving calls `respec_stats`, clears local pending allocation and reloads details. Creation and incremental allocation remove racial ceilings/flat grants; fallback race traits and previews use shared softened stats and migration 000005 values. Active-match build changes fail server-side and show their error; no optimistic mutation is committed.
+
+The character progression view consumes `study_xp`, `ranked_eligible`, `primary_tier`. At cap the XP bar becomes **Spell study /500**, explaining +5MP and ranked access. Dashboard mode selection adds ranked, disabled below character level 30; skills, MP, collection and primary allocation are not consulted. Normal MatchManager carries `queue=normal|ranked` plus matching query, default normal; the server remains authoritative. This is queue/access support, not rating/MMR UI.
 
 ## Scene and versions
 
@@ -60,10 +68,14 @@ Events → visuals: `Application/Modules/Spell/Effects/SpellEffectManager.DuelV2
 ## Character creation and catalog
 
 - Wizard sends `spell_ids` (`CreateCharacterCommandHandler.cs:49`): exactly 3 picks, 4 for Human, from the six `get_starter_spells` results. Standards never appear in the pick list.
-- All 14 server ids are known to the client (`Core/Spells/Spell.cs:88-96` icon mapping, `SpellEffectManager.DuelV2.cs:16-20` FX mapping). Fixed 200 HP / 100 mana; stat/skill/race combat multipliers are inactive (server side, see [[combat-v2]]).
+- All 14 server ids are known to the client (`Core/Spells/Spell.cs:88-96` icon mapping, `SpellEffectManager.DuelV2.cs:16-20` FX mapping). Server resources and stat/skill/trait modifiers are active and authoritative; the former fixed 200/100 prototype is superseded (see [[combat-v2]]).
 - Spellbook timing units differ per RPC (seconds vs milliseconds) and are converted at the DTO boundary (`Application/Modules/Spell/Dto/*`). (unverified: exact conversion sites)
 
-## Validation
+## Prepared implementation validation (2026-09-08)
+
+`dotnet build hexbane.csproj --no-restore` passes in the temporary copy with 0 errors and 9 existing warnings. `dotnet run --project Tests/Progression/Progression.csproj --no-restore` passes shared-budget, universal-floor, legacy-race-bounds and softened-preview checks. `git apply --check` passed against the actual client. These are compile/pure-behavior checks, not confirmation of live RPC success, visual fit or deployed migration state.
+
+## Existing validation harnesses
 
 ```sh
 dotnet build hexbane.csproj
@@ -80,9 +92,12 @@ HEXBANE_IGNORE_ENV_FILE=1 HEXBANE_TEST_COMPACT=1 HEXBANE_TEST_REFERENCE=1 \
 ```
 Flags read by the dev scenes: `HEXBANE_TEST_COMPACT` (1360×612), `HEXBANE_TEST_REFERENCE`, `HEXBANE_TEST_RACE=elf` (eight buttons instead of nine), `HEXBANE_TEST_DRAFT`. `Dev/StarterSelectionCheck.tscn` covers the wizard payload (3/4 picks).
 
-Recorded results (2026-09-06, from `docs/opcodes/duel-v2-verification.md`, logs were in `/tmp/hexbane-redesign` and are not in the repo): build 0 errors / 37 warnings; offline and live ai/pvp tests PASS; headless Human 9 buttons, Elf 8 buttons, desktop 2400×1080 PASS. Not covered: physical device touch/DPI, RTT/jitter simulation, full interactive login→game flow, audio, balance. Headless startup still reports the missing `signal_lens` autoload and an unresolved theme UID; these are pre-existing.
+Historical results (2026-09-06, from `docs/opcodes/duel-v2-verification.md`, logs were in `/tmp/hexbane-redesign` and are not in the repo): build 0 errors / 37 warnings; offline and live ai/pvp tests PASS; headless Human 9 buttons, Elf 8 buttons, desktop 2400×1080 PASS. Not covered: physical device touch/DPI, RTT/jitter simulation, full interactive login→game flow, audio, balance. Headless startup still reports the missing `signal_lens` autoload and an unresolved theme UID; these are pre-existing.
 
 ## Source of truth in code
+- Prepared client: `Application/Modules/Character/PrimaryProgression/PrimaryProgression.cs`, `Game/ScenesV3/CharacterDetail/CharacterDetailScreen.Progression.cs` — graph/respec RPCs and UI
+- Prepared client: `Game/ScenesV3/Dashboard/ModeOverlay.cs`, `Application/ArcaneDuel/Normal/MatchManager.cs` — ranked mode and queue
+- Prepared client: `Core/Characters/{StatAllocation,RaceCatalog,RaceTraits}.cs`, `Tests/Progression` — shared rules/preview validation
 - `client:Core/Match/DuelV2.cs` — versions, DTOs, `DuelState` sequencing/watermark/interpolation
 - `client:Application/Match/DuelProtocol.cs` — send/receive for opcodes 29–32
 - `client:Application/Match/Incoming/MatchMessageHandler.cs` — routing and retired-opcode drop

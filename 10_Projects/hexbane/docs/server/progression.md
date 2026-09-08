@@ -11,164 +11,84 @@ tags: [hexbane, server, progression, races, stats, skills, combat]
 sources: ["server:docs/progression/overview.md", "server:docs/progression/race.md", "server:docs/progression/stats.md", "server:docs/progression/skills.md", "server:docs/progression/progression.md", "server:docs/progression/combat.md", "server:docs/progression/match-integration.md", "server:docs/progression/modifiers.md", "server:docs/superpowers/specs/2026-09-02-race-system-redesign-design.md", "server:docs/superpowers/plans/2026-09-02-race-system-redesign.md", "client:docs/Server/progression/overview.md", "client:docs/Server/progression/race.md", "client:docs/Server/progression/stats.md", "client:docs/Server/progression/skills.md", "client:docs/Server/progression/progression.md", "client:docs/Server/progression/combat.md", "client:docs/Server/progression/match-integration.md", "client:docs/Server/progression/races_seed.sql"]
 ---
 
-# Character progression and combat rules (duel_v2)
+# Character progression — duel_v2.4
 
-Characters keep race, STR/INT/DEX, three skills, XP/levels, stat points, magic points and draft slots. Stats, skills and racial combat traits are active again in `duel_v2.3` (2026-09-08). HP/mana, regeneration, damage/healing, casting, evasion and skill growth use the shared profile described in [[combat-stat-rules]]. `get_character_details` advertises `stat_bonuses_active: true` and actual modifiers.
+User-approved rules implemented on 2026-09-08. This note describes checked-in/workspace code and migrations, not a deployed database. Protocol remains 2. Combat calculations are in [[combat-stat-rules]], primary graphs in [[spell-system]], and requests in [[rpcs]].
 
-## Races
+## Shared stats and races
 
-Six races seeded by migration `000002_reference_data` (`server:db/migrations/000002_reference_data.up.sql`), loaded once into an in-memory registry at startup (`server:modules/race/init.go:11-18`, `registry.go`). `race.DefaultRaceId = "human"` (`server:modules/race/types.go:6`). Limits apply to **effective** stats (base + modifier); `0` means no limit.
+Every race has 400 base points at creation and earns 5 per character level, for 545 at level 30. Each stat must be at least 10. There are no racial stat ceilings, unequal flat stat grants, or forced race presets. Base and effective stats are equal under migration 000005. Creation requires exactly 400 points; incremental allocation may spend a subset of unspent points. Free `respec_stats` redistributes the entire earned budget outside a match, then sets unspent points to zero. Build mutations lock the character row and reject an active match lease (code 9).
 
-| Race | `race_id` | STR/INT/DEX modifier | min STR | max STR | min INT | max INT | min DEX | max DEX | `traits` |
-|---|---|---|---:|---:|---:|---:|---:|---:|---|
-| Human | `human` | +20/+20/+20 | — | 250 | — | 250 | — | 250 | `{"spell_slot_bonus": 1}` |
-| Elf | `elf` | 0/+70/+30 | — | 160 | 200 | — | — | — | `{"mana_regen_multiplier": 1.4}` |
-| Dark Elf | `dark_elf` | 0/+100/0 | — | 120 | 220 | — | — | 140 | `{}` |
-| Shadow | `shadow` | 0/0/+100 | — | 150 | — | 180 | 200 | — | `{"dodge_per_dex": 0.05, "dodge_cap": 25.0}` |
-| Gnome | `gnome` | 0/+50/+50 | — | 110 | 150 | — | 150 | — | `{"mana_cost_multiplier": 0.75}` |
-| Orc | `orc` | +110/0/0 | 250 | — | — | 120 | — | 130 | `{"damage_stat": "strength", "health_multiplier": 1.15, "paralyze_duration_multiplier": 0.5}` |
+| Race | Active identity after migration 000005 |
+|---|---|
+| Human | +1 optional spell slot, including at creation and cap |
+| Elf | mana regeneration ×1.2 |
+| Dark Elf | poison and delayed-hex damage ×1.1 |
+| Shadow | dodge .035% per softened DEX, cap 15%; casting modifier −2 percentage points |
+| Gnome | mana costs ×.85, rounded up |
+| Orc | HP ×1.05; paralysis duration ×.75; spell power still uses INT |
 
-Also used by the combat profile: `casting_time_modifier` (Shadow −2, Gnome −6, Orc +3, others 0), `primary_element`/`secondary_element` with bonuses (Human neutral +20; Elf water +25 / ice +12; Dark Elf toxic +40 / mind +20; Shadow air +25 / mind +12; Gnome lightning +25 / fire +12; Orc earth +25 / fire +12), `spell_resistances` (all `{}`).
+All six have flat stat modifiers 0, shared minima 10, maxima 0 (unbounded by race), school bonuses 0 and empty per-spell resistance maps. Traits are decoded/validated at startup. Lore/nature does not supply hidden mechanical school bonuses.
 
-Traits are decoded into a typed `race.Traits` struct; an unknown key or wrong type fails startup (`server:modules/race/traits.go:54-119`). Every trait is returned by `get_races`/`get_race` with neutral defaults for missing keys (`mana_regen_multiplier`, `mana_cost_multiplier`, `health_multiplier`, `paralyze_duration_multiplier` = 1; dodge overrides = 0; `damage_stat` = "").
+## XP and character levels
 
-All signature trait keys are consumed by the restored combat profile/scheduler. School bonuses and typed resistance require matching catalog metadata; the current catalog remains neutral (see [[combat-stat-rules]]).
-
-## Stats
-
-- Creation distributes exactly `CreationPoints = 400` base points over STR/INT/DEX (`server:modules/progression/constants.go:17`, `server:modules/character/validate.go:31-34`).
-- Checks at creation (`validate.go:28-71`): total = 400; race exists; **effective** stat ≥ `MinStatValue = 10`; race floors/ceilings on effective stats; base ≥ 1. Name 3–20 characters.
-- Defaults when unspecified (debug RPC only): 133/134/133 (`constants.go:19-21`).
-- Effective = base + race modifier, floored at 1 (`server:modules/combat/stats.go:107-124`). Both base and effective columns are persisted.
-- Level-up points: `allocate_stat_points` accepts any non-negative subset of unspent points (the "total must equal unspent" check is commented out, `server:modules/character/rpc.go:223-235`). Each stat is validated against race limits **before** mutation (`character.go:140-177`).
-- `get_character_details.stats` returns `base`, `racial`, `effective`, `min`, `max` per stat (`details.go:71-85`).
-
-Seed distributions used by `make db-seed` (legal for every race): Human 133/134/133, Elf 120/200/80, Dark Elf 110/180/110, Shadow 120/150/130, Gnome 100/160/140, Orc 180/110/110 (`server:scripts/seed_dev_accounts.sh:64-69`).
-
-## Skills
-
-Meditation, Spell Resistance and Magery are stored as 0–100 floats and exposed in character details. Human match setup initializes a gain tracker. Actual hostile damage/pulses roll Magery and Spell Resistance; active meditation rolls once per second after warm-up. Chances, caps, match-local RNG and persistence are specified in [[combat-stat-rules]]. Game-over skill before/after values can now differ; the new skill value affects subsequent matches.
-
-## XP and levels
-
-`server:modules/progression/constants.go`, `xp.go`.
-
-| Constant | Value |
-|---|---:|
-| `MaxLevel` | 30 |
-| `XPWin` | 100 |
-| `XPLoss` | 30 (also awarded for a draw) |
-| `XPFirstWin` | +50, winners only, once per calendar day (`last_first_win_date`) |
-| `XPDaily` | +50, first match of the day for any outcome (`last_match_date`) |
-| `StatPointsPerLevel` | 5 |
-
-XP required to *reach* a level: `XPForLevel(1)=0`, `XPForLevel(2)=100`, `XPForLevel(n)=int(100·1.5^(n−2))` (`xp.go:10-18`). Experience is cumulative and never reset. Computed from the formula:
+Cumulative threshold to reach level L is `T(L)=45*(L-1)+12*(L-1)*(L-2)/2`, clamped to levels 1–30. The next step costs 45 XP initially and 381 for 29→30. XP is cumulative; settlement clamps stored character XP at 6177. Remaining XP is `max(0,T(L+1)-XP)`, zero at cap.
 
 | Level | Total XP |
-|---:|---:|
-| 2 | 100 |
-| 3 | 150 |
-| 4 | 225 |
-| 5 | 337 |
-| 8 | 1 139 |
-| 10 | 2 562 |
-| 12 | 5 766 |
-| 15 | 19 461 |
-| 20 | 147 789 |
-| 25 | 1 122 274 |
-| 30 | 8 522 269 |
+|---|---:|
+| 1 | 0 |
+| 2 | 45 |
+| 7 | 450 |
+| 11 | 990 |
+| 16 | 1935 |
+| 23 | 3762 |
+| 30 | 6177 |
 
-## Magic points
+A completed win pays 120 XP, loss/draw 70; daily and first-win XP extras are disabled. A first win reaches level 3, a first loss level 2; both earn 5 MP. At an even win rate, 95 XP/match implies about 65 matches to cap, not a match-count gate.
 
-MP are earned on level-up and spent on learning spells (`server:modules/progression/magic_points.go`). `GetMagicPointsForLevel(1) = 0`; per level reached: 2–5 → 2, 6–10 → 4, 11–20 → 10, 21–30 → 15.
+## Magic Points and skills
 
-| Level reached | Cumulative MP |
-|---:|---:|
-| 5 | 8 |
-| 10 | 28 |
-| 15 | 78 |
-| 20 | 128 |
-| 25 | 203 |
-| 30 | 278 |
+| Reached levels | MP per level | Cumulative checkpoint |
+|---|---:|---:|
+| 2, 4, 6 | 5 | 15 by level 7 |
+| 8–11 | 5 | 35 by 11 |
+| 12–16 | 5 | 60 by 16 |
+| 17–30 | 2 | 88 by 30 |
 
-Available MP = `magic_points − magic_points_spent` (CHECK-constrained ≥ 0). Every selectable spell costs its explicit `magic_point_cost` (5 for all 12 in the catalog); standards cost 0 and are rejected by `learn_spell`. Collection size is **not** capped by draft slots (`server:modules/spellbook/rpc.go:156-171`). A learn is one transaction: insert ownership row, then debit MP with a guard against overspending (`server:modules/character/db.go:248-293`).
+Other levels grant no MP. Available MP remains earned minus spent; learning a spell charges its explicit price, currently 5 for each of 12 optional spells. Ownership is not limited by draft slots and purchases are preserved by migration. Collection targets of 15/16 optional spells require future content; the present optional catalog has only 12.
 
-## Draft slots
+At character cap, continued result XP fills `study_xp` (0–499): each 500 grants 5 MP and carries overflow. On the match reaching cap only XP beyond 6177 enters study; the final level's MP still pays. No extra stat points or levels are granted. Multiple study thresholds can pay in one atomic settlement, even when every skill is capped.
 
-`server:modules/progression/constants.go:26-33`, `spell_slots.go`. Slots limit how many owned spells a player drafts into a match; the two standard spells are carried on top.
+Meditation, Spell Resistance and Magery each retain their individual 100 cap. They keep growing after character level 30. Each attained 25/50/75/100 threshold grants 5 MP once (maximum 60 across all three skills). `skill_mp_mask` uses bits 0–3 Meditation, 4–7 Spell Resistance, 8–11 Magery, in ascending threshold order. Reset/respec must not clear the mask. Skill training is bounded per action and at +5 per skill per match; see [[combat-stat-rules]].
 
-| Level | Slots (other races) | Slots (Human, `spell_slot_bonus` 1) |
-|---:|---:|---:|
+## Draft slots and primary entitlement
+
+| Character level | Other races | Human |
+|---|---:|---:|
 | 1 | 3 | 4 |
-| 4 | 4 | 5 |
-| 8 | 5 | 6 |
-| 12 | 6 (cap) | 7 (cap) |
+| 7 | 4 | 5 |
+| 11 | 5 | 6 |
+| 16–30 | 6 | 7 |
 
-`CalculateSpellSlots(level, bonus) = min(3 + bonus + unlocks, 6 + bonus)`. `characters.spell_slots` is persisted at creation (`character.go:105`) and rewritten on level-up (`character.go:117-135`); the column CHECK is 3–7. Details report `spell_slots_unlocked` (current) and `spell_slots_max` (6 + bonus) (`details.go:370-376`).
+Previously earned higher slots are grandfathered. Match setup clamps usable picks to owned optional spells while exposing full entitlement. The two permanent primary spells are carried on top and cost no optional slots.
 
-## Combat rules (duel_v2)
+Each primary independently earns tiers 1–6 at character levels 1/5/10/16/23/30. Tier entitlement is not an automatically allocated path: empty saved paths resolve to the free root. `set_primary_path` permits a legal contiguous prefix up to the earned tier. Bonuses accumulate through reconnecting graph branches; unspent tiers supply no effect. Graph version is 1. See [[spell-system]].
 
-Real-time 1v1, no movement, logical clock of 100 ms ticks, 180 s safety limit (`server:modules/match/engine/phase/game/phase.go:27`). Players and bots start at their shared profile maxima, derived from effective stats/race; simulation uses the same formulas. See [[combat-stat-rules]].
+## Ranked access
 
-### Actions
+The normal matchmaker accepts string property `queue=normal|ranked` (omitted means normal). The server replaces the query with `+properties.queue:<queue>`, forces two distinct players, rejects mixed queues and checks ranked character level ≥30 at queueing, match creation and invited join. No skill, MP, collection or primary-allocation requirement exists. Ranked matches use the same combat/economy; this implements an access gate and separate queue, **not MMR, rating, seasons or leaderboards**.
 
-- Commands: `cast` (with `spell_id`), `meditate`, `clear_queue` (`phase.go:110`). Rejection reasons: `not_participant`, `combat_ended`, `invalid_client_seq`, `stale_command`, `unknown_command`, `unknown_spell`, `insufficient_mana`, `unexpected_spell_id`, `paralyzed`, `meditation_unavailable` (`reasons.go`); at start: `insufficient_mana`, `busy`, `paralyzed`, `dead`, `invalid_spell` (`phase.go:381-394`).
-- Mana is charged once when the cast starts and never refunded (`server:modules/match/engine/state/actions.go:29`). Casting ends automatically at `now + personalized casting_time`; recovery blocks the next action until `cast end + recovery_time` (`actions.go:30-32`).
-- One private queued action per player; a new command replaces it; `clear_queue` removes it. The queued action starts once the player is idle (not casting, past recovery, not paralysed) (`phase.go:244-303`).
-- Only paralysis interrupts a cast (`paralyze.go:39-62`, `actions.go:87-98`): the cast is cancelled, mana stays spent, recovery restarts from the interruption. Damage never interrupts casting or meditation.
-- Impact time = cast end + `travel_time` (0 for the whole catalog). Target is the enemy if any effect targets `enemy`, otherwise self (`phase.go:170-180`).
+## Settlement and migration operations
 
-### Tick order (`phase.go:138-304`)
+`character.SettleMatch` locks the character, applies XP/level/MP/skills/record changes and writes a `(character_id,match_id)` receipt atomically. Repeated delivery returns the original receipt. Game over persists both human results before broadcasting, so partial database success is retryable without double payment. Bots have no persistence. Existing completed AI duels also use this settlement; private/custom reward modes are not separately implemented. Queueing, lobby cancellation and insufficient-player exits do not themselves settle a reward; only the completed game-over path does. Skills and post-cap MP remain independent of ranked access.
 
-1. Bots decide every 4th tick; `Elapsed++`.
-2. Expire statuses (hex excluded).
-3. Release every completed cast of both players (ids sorted) and schedule impacts, before any impact can interrupt.
-4. Process due impacts and pulses in deterministic order (time, then seat with priority alternating by tick parity, then sequence); deaths are deferred until the whole batch resolves.
-5. Commit deaths. If someone is dead or time is up: `defeated` (one survivor), `draw` (both dead), `timeout` (both alive at 0 s). All effects, impacts and queues are cleared; `match_ended` is emitted.
-6. Regenerate mana and unpoisoned living HP; then queue handling and action starts for living, non-paralysed players.
-
-Simultaneous lethal impacts are a draw. Timeout is a draw regardless of HP.
-
-### Resources and scaling
-
-HP/mana maxima, cast time, mana costs, damage/healing, resistances, dodge and regeneration are specified in [[combat-stat-rules]]. Poison blocks passive HP and regeneration pulses; passive mana continues. Meditation keeps the 800 ms warm-up and stops at full mana, on casting, poison or paralysis. Fractional gains carry between ticks. Resource bounds use each player's maxima.
-
-### Statuses and counters
-
-Values below are **base catalog values before stat/skill/racial scaling**. One instance per kind per target; re-application does nothing (no refresh, no stack, no refund). Details and reasons in [[spell-system]].
-
-| Effect | Rule |
-|---|---|
-| Poison | 6 s, 2 damage at seconds 1–5 (10 total). Stops meditation immediately, blocks starting it and blocks regeneration pulses; direct heals work. Passive mana continues. |
-| Paralysis | 1 s. Blocks all actions, clears the queue, interrupts casting and meditation. Then 3 s immunity. Damage does not remove it. |
-| Mirror (reflection) | One charge for 3 s. Reflects a whole hostile package once at impact; the reflected package cannot consume a second mirror. Self-target spells never reflect. |
-| Barrier (shield) | Absorbs up to 22 damage for 3 s; removed as `depleted` when damage exceeds it; hostile statuses still apply. |
-| Delayed Hex | Visible marker, 28 damage after 2.5 s. Application reflects, detonation does not. Cleanse removes it; Barrier absorbs the detonation. |
-| Regeneration | 5 HP at seconds 1–5 (25 total); pulses under poison are lost. |
-| Cleanse | Removes hex first, else poison. Never removes paralysis or immunity. |
-| Dispel | Removes mirror, else barrier, else regeneration from the enemy; is itself reflectable. |
-| Consume Venom | If the final target carries poison owned by the final caster: remove it and deal 18; otherwise nothing. |
-
-## Match integration
-
-- `core.BuildPlayerState` loads the character and owned spells, derives combat profile/maxima and initializes skill gains, clamps draftable slots to the number of owned spells while exposing the full entitlement as `max_spell_slots`, and injects both standard spells into `SelectedSpells`/`SpellBook` (`server:modules/match/engine/core/player_setup.go:18-87`).
-- Lobby draft offers `DraftableSpells()` (owned minus standards), rejects standard ids and auto-picks from the same pool (`server:modules/match/engine/phase/lobby/phase.go:130,161,226,275`).
-- A bot copies the human's `SpellSlots`/`MaxSpellSlots`, drafts that many random non-standard spells and carries both standards (`server:modules/match/ai_match/join.go:49-66`, `server:modules/spellbook/db.go:70-78`).
-- Rejoin keeps the existing player state; no reload, no HP/mana reset (`server:modules/match/engine/core/rejoin.go`). A combat snapshot restores the client ([[combat-v2]]).
-- Game over (`server:modules/match/engine/phase/gameover/phase.go:133-332`): per human player: XP via `CalculateMatchXP`, `char.AddExp` (level, stat points, MP, slots with race bonus), `last_match_date = now`, wins++ on victory (+`last_first_win_date` if first win today), losses++ only on `defeat`; draws change neither counter. Persisted with `UpdateMatchResult`. Bots are not persisted. The per-player result message (opcode 50) carries XP, level-up, skill before/after (including applied gains), stats and record.
-
-## Known code smells (not rules)
-
-- `get_progression` now uses `XPToNextLevel` (clamped to zero) and `GetNextSpellSlotLevel`, matching the active `{4,8,12}` ladder. Fixed 2026-09-08; regression tests cover unlock boundaries, level cap and stale-level XP.
-- `NewCharacter` comments still describe an empty roster / `DefaultRaceId == ""` (`character.go:67-68`).
+Migration **000004** snapshots existing character rows into `progression_redesign_backup`, preserves earned level and the bounded fraction within the old exponential XP interval, maps capped characters to 6177, and initializes study remainder to 0. It resets base/effective stats to 133/134/133 with `5*(level-1)` unspent points; the free full-budget respec is the reallocation flow. It preserves skills, previous MP/spending and spell ownership, grants existing skill milestones once and records their mask, and preserves the greater of old/new slot entitlement. It adds versioned primary paths, reward receipts and 15-minute match leases. Migration **000005** replaces the six race definitions with the shared-stat trait model. Apply migrations and compatible server/client together when rollout is explicitly performed; no live deployment was performed in this implementation task.
 
 ## Source of truth in code
 
-- `server:db/migrations/000002_reference_data.up.sql` — race rows
-- `server:modules/race/types.go`, `traits.go`, `db.go`, `registry.go` — race model, trait parsing, registry
-- `server:modules/progression/constants.go`, `xp.go`, `magic_points.go`, `spell_slots.go` — XP curve, rewards, MP, slot ladder
-- `server:modules/character/validate.go`, `character.go`, `details.go`, `rpc.go` — creation rules, allocation, level-up, details payload
-- `server:modules/match/engine/phase/game/phase.go`, `apply_spell_effect.go`, `reasons.go` — tick loop, reflection, rejection reasons
-- `server:modules/match/engine/state/actions.go`, `player_state.go` — cast/meditate/regen/damage rules
-- `server:modules/match/engine/core/player_setup.go`, `server:modules/match/engine/phase/gameover/phase.go` — match entry and rewards
-- `client:Core/Characters/StatAllocation.cs`, `client:Core/Characters/RaceCatalog.cs` — client mirrors of creation constants and race presentation
+- `server:modules/progression/{constants,xp,magic_points,spell_slots,rewards}.go`
+- `server:modules/character/{character,validate,details,rpc,primary_progression,rewards,db}.go`
+- `server:modules/primary/graph.go`
+- `server:db/migrations/000004_progression_redesign.up.sql`, `000005_race_redesign.up.sql`
+- `server:modules/match/normal_match/{matchmaker,join}.go`
+- `server:modules/match/engine/{core/player_setup,phase/gameover/phase}.go`

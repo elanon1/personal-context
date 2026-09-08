@@ -11,9 +11,9 @@ tags: [hexbane, protocol, combat, duel_v2]
 sources: ["server:docs/client/combat-v2.md", "server:docs/client/effect-sync.md", "client:docs/opcodes/duel-v2.md", "server:docs/match/communication.md"]
 ---
 
-# Combat protocol 2 (`duel_v2`, catalog `duel_v2.3`)
+# Combat protocol 2 (`duel_v2`, catalog `duel_v2.4`)
 
-Server-authoritative duel at **100 ms ticks** (`server:modules/match/engine/state/state.go:12`, `spell_system/version.go:7`). Opcodes 29–32 replace the retired 11–15/21–28. Client and server must ship together; the server tuple is `combat_protocol 2 / duel_v2 / duel_v2.3`.
+Server-authoritative duel at **100 ms ticks** (`server:modules/match/engine/state/state.go:12`, `spell_system/version.go:7`). Opcodes 29–32 replace the retired 11–15/21–28. Client and server must ship together; the server tuple is `combat_protocol 2 / duel_v2 / duel_v2.4`.
 
 ## Handshake and loadout
 
@@ -27,11 +27,19 @@ Loadout rules (`server:modules/match/engine/core/player_setup.go:33-55`, `state/
 |---|---|
 | HP / mana | stat/race-derived maxima; combat formulas and growth in [[combat-stat-rules]] |
 | `spell_slots` | min(learned non-standard spells, `max_spell_slots`) — what can actually be drafted |
-| `max_spell_slots` | character entitlement (6, Human 7 per race rules; verify in [[progression]]) |
+| `max_spell_slots` | character entitlement: 3→6, Human 4→7, unlocks at levels 7/11/16; migrated slots may be grandfathered ([[progression]]) |
 | standard spells | `magic_arrow`, `mirror_reflection`: always in `me.spells` and `me.standard_spells`, never draftable, no slot |
 | bot (`ai_duel`) | copies the human's `spell_slots`/`max_spell_slots` and drafts random spells (`server:modules/match/ai_match/join.go:49-66`) |
 
 Dedupe `spells` + `standard_spells` by id on the client (`DuelLoadout.DistinctById`).
+
+## Catalog2.4 mechanics and progression boundary
+
+Character resources and scaling use shared softened stats and bounded skill coefficients ([[combat-stat-rules]]). Two standards remain permanent. Arrow is fixed 1 damage and consumes mirrors; Mirror has a selected six-tier path determining its window, returned fraction and checkpoints. Entire hostile packages are intercepted, but selected tier<3 returns direct damage only. Original offense is retained through reflection, fraction and new-target mitigation apply once, and tiny reflected damage may round to0 (Arrow remains1). No reflection chain. `spell_reflected` can precede an impact with no returned damage when a status was blocked below tier 3. Clients must follow resulting events/snapshots rather than assume every reflection inflicts damage.
+
+Reflection definition `value` is percentage; live `remaining` is one charge. Arrow break benefits fire before returned-target dodge. Conditional refunds and shared tempo modify authoritative mana/action deadlines, not client prediction. Primary config/graph APIs and free stat redistribution are outside-match RPCs ([[rpcs]]); opcode29 remains cast/meditate/clear_queue.
+
+Normal/ranked queues are separated by server-owned `queue` property/query. Ranked requires level 30 only, with invited joins revalidated. Skills/MP/collection/selected primary path do not gate access; no MMR is implemented. Completed match settlement is atomic and idempotent by character/match receipt. Deploy migration 000004,000005 and compatible client/server together when rollout is performed; this implementation has not deployed them live.
 
 ## Commands (opcode 29)
 
@@ -64,7 +72,7 @@ Both 30 and 31 share one `event_seq` counter, so gaps in the public stream are n
 
 ### Event kinds (31)
 
-`duel_v2.3` retains existing kinds: `spell_impact` may carry `reason=dodged`; passive HP recovery emits `heal` with `reason=passive_regeneration`. Deadlines round up to the first processing tick. Private spell metadata already includes player cost/cast bonuses. Client accepts2.3 and retains2.2 for local tutorial/preview.
+`duel_v2.4` retains existing kinds: `spell_impact` may carry `reason=dodged`; passive HP recovery emits `heal` with `reason=passive_regeneration`. Deadlines round up to the first processing tick. Private spell metadata includes resolved primary paths and player cost/cast/recovery adjustments; standard descriptions reflect selected effects. Prepared client support accepts 2.4 and retains 2.2/2.3 for existing local tutorial/preview.
 
 `cast_started`, `cast_released`, `cast_interrupted`, `spell_impact`, `spell_reflected`, `effect_applied`, `effect_removed`, `damage`, `heal`, `meditation_started`, `meditation_stopped`, `mana_spent`, `mana_regenerated`, `match_ended`. `spell_reflected`: `player_id` = reflector (new owner), `target_id` = original caster; the mirror is removed with reason `consumed` and the reflected spell then impacts with the swapped owner/target. `damage.amount` = HP actually lost, `absorbed` = shield consumed; `heal.amount` = HP restored, `overheal` = wasted. Effect kinds use engine names: `shield` (Barrier), `reflection` (Mirror), `paralyze` (Paralysis), `poison`, `regeneration`, `delayed_hex`.
 

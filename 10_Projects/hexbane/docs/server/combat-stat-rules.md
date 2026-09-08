@@ -8,78 +8,74 @@ updated: 2026-09-08
 verified: 2026-09-08
 tags: [hexbane, combat, stats, races, skills]
 ---
-# Restored combat statistics — duel_v2.3
 
-User-approved restoration on 2026-09-08. `combat_protocol=2`, `ruleset_id=duel_v2`, `catalog_version=duel_v2.3`. The queue, draft, recovery, travel, reflection, immunity and 180-second match limit remain. The fixed 200 HP / 100 mana prototype is superseded for server matches.
+# Combat statistics — duel_v2.4
+
+User-approved shared stats, traits and primary progression implemented 2026-09-08. Tuple: `combat_protocol=2`, `ruleset_id=duel_v2`, `catalog_version=duel_v2.4`. This supersedes the earlier fixed-resource prototype and duel_v2.3 flat-bonus restoration. Implementation is not a live deployment.
 
 ## Shared profile
 
-`combat.NewProfile` derives the same combat values for player setup, race-based bots, character details and simulation. It consumes **effective** STR/INT/DEX (racial stat modifiers already applied), stored Meditation skill and the race registry entry. Race resistance maps are copied into the match profile. Skill coefficients are fixed at match entry; accumulated gains become stored values at game over and affect subsequent matches.
+Define `S(x)=x` up to 200, otherwise `200+.5*(x-200)`; negative inputs are floored at zero. Spending has no soft/hard racial cap: only derived combat benefits diminish. `combat.NewProfile` serves setup, bots, character details and simulation. Base/effective stats are equal after migration 000005. Skill coefficients are snapshotted at entry; earned training changes the next match.
 
 | Quantity | Formula / units |
 |---|---|
-| Max HP | `max(1, CalculateMaxHealth(STR, health_multiplier))`; existing helper clamps an omitted/sub-1 health multiplier to 1 |
-| Max mana | `max(1, INT)` |
-| Cast reduction | `clamp(DEX*0.025 - race.casting_time_modifier, -15, 15)` percentage points |
-| Cast duration | base catalog seconds × `(1 - reduction/100)` |
-| Mana cost | `max(0, ceil(base mana cost * mana_cost_multiplier))`; free spells remain free |
-| Passive mana/sec | `(1 + Meditation/50) * (1 + DEX*0.001) * mana_regen_multiplier` |
-| Additional meditation mana/sec | `10 * (1 + Meditation/200) * (1 + DEX*0.001) * mana_regen_multiplier`, after 800 ms warm-up |
-| Passive HP/sec | `1/3`; blocked by poison, never resurrects a dead player |
-| Dodge chance | `min(DEX * perDex, cap)` percentage points; defaults `perDex=.025`, `cap=8`; Shadow `.05`, `25` |
-| Paralysis duration | base duration × target `paralyze_duration_multiplier` (Orc `.5`), before queue deadlines are calculated |
+| Max HP | `max(1,round((100+.5*S(STR))*health_multiplier))` |
+| Max mana | `max(1,round(S(INT)))` |
+| Cast/recovery reduction | `clamp(S(DEX)*.025-race.casting_time_modifier,-15,15)` percentage points |
+| Cast and recovery | base seconds × `(1-reduction/100)`; temporary primary tempo affects an eligible cast only |
+| Mana cost | `max(0,ceil(baseCost*mana_cost_multiplier))`; free spells stay free |
+| Passive mana/sec | `(1+Meditation/50)*(1+S(DEX)*.001)*mana_regen_multiplier` |
+| Additional active meditation/sec | `10*(1+Meditation/200)*(1+S(DEX)*.001)*mana_regen_multiplier`, after .8s warm-up |
+| Passive HP/sec | `1/3`, blocked by poison, no resurrection |
+| Dodge | `min(S(DEX)*perDex,cap)` percent; default .025/8, Shadow .035/15 |
+| Paralysis | duration × target trait; Orc .75 |
 
-Passive and active mana share one fractional carry; HP has a separate carry. Fractional regeneration carries between ticks and caps against each player's maximum. Poison/paralysis stop meditation; passive mana continues. Meditation gain time stops when mana fills, including larger simulation steps. Recovery and travel use base catalog values and are not shortened by DEX.
+Race traits: Human +1 slot; Elf regen 1.2; Dark Elf poison/hex damage 1.1; Shadow casting−2 plus dodge; Gnome cost.85; Orc HP 1.05/paralysis.75. All flat stat/school bonuses are zero. See [[progression]]. Passive/active mana share fractional carry, HP carries separately. Poison/paralysis stop meditation; passive mana continues. Travel stays at catalog time. Deadlines use the first 100ms tick on or after the exact deadline, including stat/race fractions.
 
-Deadlines are reported as the **first 100 ms tick on or after** the exact deadline (`spell_system.DeadlineTick`). Racial/stat scaling can create fractions of a tick; rounding down would tell the client a cast had ended before the server released it. Effect deadlines and equal-time queue priority use the same tick conversion.
+## Damage, healing and shielding
 
-## Damage, healing and evasion
-
-All damage handlers share `EffectContext.DealDamage`: direct damage, poison pulses, delayed hex detonation and consume venom. Let `N` be the effect's actual planned number of pulses: positive multiples of interval strictly below duration (`ceil(duration/interval)-1`, minimum 1 for calculation); poison 6s/1s has **5** pulses. The INT/STR bonus is divided across N, so each tick does not gain a whole spell's flat bonus.
+Every race uses INT for spell power, including Orc. No per-pulse flat stat addition remains.
 
 ```
-raw = base * (1 + Magery/200) + damageStat * .1 / N
-schoolScaled = raw * (1 + matchingRaceSchoolBonus/100)
-resistance = min(.75, targetSpellResistanceSkill/200
-                      + statResistance + targetRaceResistanceForSpell)
-finalDamage = max(1, round(schoolScaled * (1-resistance)))
-healing = round(baseHeal + casterINT*.05/N)
+power = 1 + S(INT)/1000
+raw = baseDamage * power * (1+Magery/400)
+resistance = min(.75, targetSpellResistance/400 + statResistance + perSpellRaceResistance)
+damage = round(raw * offenseModifiers * (1-resistance))
+heal = round(baseHeal * power)
+shield = round(baseShield * power)
 ```
 
-`damageStat` is INT, or STR for Orc's `damage_stat=strength`. Primary school match takes precedence over secondary. Resistance values stored per spell are fractions (`.2` = 20%). Stat resistance is STR×.0005 for kinetic and INT×.0005 for mind. Recognized damage metadata is read from spell `type`, then `school`; ordinary `type=attack` is not a damage element.
+Ordinary damage has minimum 1. Reflected damage may round to **0**; a low return fraction must not receive repeated minimum-one poison damage. **Magic Arrow always deals exactly 1**, including on return, bypassing all damage/skill/stat/school scaling; shields and package dodge still work. Dark Elf's ×1.1 is applied only to poison and delayed hex. School bonus branches remain for explicit future metadata, but all current race bonuses are zero. Kinetic resistance is `S(STR)*.0005`, mind resistance `S(INT)*.0005`; current neutral attack/defense/support metadata supplies neither type. Cosmetic nature does not infer a damage type.
 
-**Current catalog limitation:** all 14 spells still have `school=neutral` and attack/defense/support types. They therefore receive skill/per-spell resistance but no kinetic/mind stat resistance. Human's neutral school bonus applies; another race's school bonus only applies when catalog metadata matches. No fire/mind/toxic assignments were inferred from names or lore `nature`, whose contract remains cosmetic. The explicit typed branches are tested for future catalog entries.
+Dodge rolls once per hostile package, after reflection interception and swap. No repeat dodge on pulses, hex detonation or self-healing. `damage.amount` is HP actually lost, `absorbed` is shield spent; `heal.amount` is actual restoration and `overheal` is excess.
 
-Dodge rolls **once per hostile package at impact**, after reflection swaps caster/target, and skips all effects in that package. There are no dodge rolls on each poison pulse, on hex detonation or on self-heals. A dodge emits `spell_impact` with `reason=dodged`; reflection still consumes its charge. Damage mitigated by resistance then consumes shields and HP. Lifecycle `damage.amount` is actual HP lost, `absorbed` is shield consumption; `heal.amount` and MatchLog healing are actual restoration, `overheal` records excess.
+## Primary interception and checkpoints
 
-## Skill gain and persistence
+Full primary graphs, node IDs and resolved config are in [[spell-system]]. A mirror always intercepts one entire hostile package. Below selected primary tier 3 only direct enemy-target damage is returned; statuses/periodic/delayed damage are blocked without return. Tier3 unlocks returning those mechanics, with damage multiplied by the selected fraction. Status durations are not fractionally scaled; the new target's duration rules apply. Original caster offensive stats, Magery and poison/hex multiplier are captured before ownership changes. Apply fraction once, then new-target mitigation once. Reflector stats never replace original offense. Queued poison/hex retains that snapshot; no reflection chains.
 
-Human player setup creates `skills.NewSkillGains`; bots do not earn/persist gains. Every actual hostile damaging hit/pulse (including shield absorption) rolls caster Magery and target Spell Resistance. Zero damage, dodged packages, status application without damage and friendly healing do not grant those rolls. Meditation rolls once per full second of active meditation after warm-up, not every server tick.
+The mirror's effect `value` is returned-damage percentage (10–100), while live `remaining` is exactly **1 charge**. Arrow consumes it before the reflected target's dodge roll. Arrow break effects therefore trigger even if the resulting return is dodged.
 
-Existing chances are retained: below 50 →15%, below 75 →8%, below 90 →3%, below 100 →0.5%; success adds .1. Each roll uses base value plus already pending gains for its chance/cap; total cannot exceed100. The phase supplies a match-local random stream. Seeded simulation/tests reproduce dodges and gains without package-global random interleaving.
+Arrow tier 3 shortens its own remaining recovery by .1s on a mirror break. Opening/Counterstroke grant a shared non-stacking .1s speedup for the next non-primary cast started within 2s, with a .1s floor. Counterstroke needs an actually applied returned hostile effect; no grant for dodged/fully blocked returns. Arrow Rebate refunds 1 mana at most actual paid, only on mirror break. Mirror Conservation refunds `floor(actual paid/2)` only on unused expiry; consumption, Dispel, replacement and match end do not refund.
 
-Game over calls `ApplySkillGains`, copies values into the character and persists them through existing `UpdateMatchResult`. Opcode50 exposes previous/current/gained. No schema migration or persistent notification was introduced.
+## Skill gain and atomic persistence
 
-## Client contract
+Human players (all player races; not bots) have gain trackers. The first effective non-Arrow hostile damage in an action (HP or shield) rolls caster Magery and target Spell Resistance once. All effects/pulses share the action's training flag; poison cannot farm a roll per pulse. Dodges, zero damage, utility Arrow and friendly healing grant no damage-training rolls. Meditation rolls once per active second after warm-up and stops when mana fills.
 
-- Private match views copy each catalog spell and expose the player's effective `mana_cost` and `casting_time`; originals remain immutable for other players and damage scheduling. Both selected and standard spells are projected.
-- `get_character_details` sets `stat_bonuses_active=true`, returns derived resource/regen attributes and active modifiers/traits, and personalizes spellbook cost/cast time (milliseconds). Public catalog RPCs still return base values.
-- Snapshots contain actual `hp_max`/`mana_max`; the HUD must use them instead of 200/100. Cast/recovery fields already carry authoritative deadlines.
-- Passive HP recovery uses the existing `heal` event with `reason=passive_regeneration`; dodge uses existing `spell_impact` with `reason=dodged`. No new opcode or event kind.
-- Client `DuelVersion.Supported` accepts server2.3 as well as2.2 for the existing local fixed-value tutorial/preview. Tutorial simulation was not converted into the server progression model.
-- `MatchLog` remains and retains existing tick-clearing behavior. Removed legacy `CastInterruptions` buffer stays removed; interruption delivery uses the lifecycle sink.
+Chances remain 15% below 50, 8% below 75, 3% below 90, .5% below 100; success +.1. Chance includes pending gains. Each skill is capped at 100 and at **+5 per match**; match-local RNG keeps simulation reproducible. Character level 30 does not stop training. Settlement writes gains, level/MP/record changes and the receipt transactionally; retries return the original receipt. Skill milestone MP and study rewards are specified in [[progression]].
+
+## Client contract and verification boundary
+
+Private spell views project primary configuration and effective mana/cast/recovery values onto copies, leaving catalog immutable. Character details expose corresponding milliseconds and derived attributes; public catalog calls expose base values. Snapshot maxima and action deadlines are authoritative. Dodge and passive regeneration use existing impact/heal events; snapshots and action deadlines reflect refunds and tempo. No protocol-number bump is required. Prepared client support accepts catalog 2.4 while retaining local 2.2/2.3 compatibility; local tutorial remains its separate training model.
+
+The earlier restoration's simulation/build report is historical, not validation of this redesign's balance. Current regression tests cover primary paths/checkpoints, damage/reflection, shared stats, training bounds and settlement. Passing unit/build checks does not establish competitive balance or live rollout.
 
 ## Source of truth in code
 
-- `server:modules/combat/profile.go`, `stats.go`, `damage.go` — shared profile and formulas
-- `server:modules/match/engine/state/combat.go`, `actions.go`, `player_state.go` — cost, spell views, resources, skill gains
-- `server:modules/match/engine/core/player_setup.go`, `modules/match/ai_match/bot.go` — production initialization
-- `server:modules/match/engine/phase/game/phase.go`, `apply_spell_effect.go`, `ai.go` — random stream, event/deadline integration and evasion
-- `server:modules/spell_system/spell_effects/events.go`, `engine.go`, `queue.go` — shared damage/heal, duration scaling, tick conversion
-- `server:modules/skills/gain.go`, `modules/match/engine/phase/gameover/phase.go`, `modules/character/db.go` — growth/persistence
-- `server:modules/character/details.go`, `modules/spell_system/version.go`, `cmd/duel-sim` — metadata/version/simulation
-- `client:Core/Match/DuelV2.cs` — supported versions
-
-## Verification (2026-09-08)
-
-Full Go tests, race tests for match/spells/simulator, `go vet ./...`, Linux plugin `make build` and client `dotnet build --no-restore` passed (client: 0 errors, 9 existing warnings). Seed 42 completed 100 simulated matches; [[../audits/2026-09-08-combat-restoration-simulation.json|raw simulation]]. Simulation reads checked-in race migrations and seed stat spreads with a strict fixture parser; it does not query the database. This validates execution and reproducibility, not competitive balance. No live stack restart or deployment was performed.
+- `server:modules/combat/{profile,stats,damage}.go`
+- `server:modules/primary/graph.go`
+- `server:modules/match/engine/state/{combat,actions,player_state}.go`
+- `server:modules/match/engine/phase/game/apply_spell_effect.go`
+- `server:modules/spell_system/spell_effects/{events,engine,queue}.go`
+- `server:modules/character/{details,rewards,primary_progression}.go`
+- `server:modules/skills/gain.go`
+- `client:Core/Characters/StatAllocation.cs`, `client:Core/Match/DuelV2.cs`

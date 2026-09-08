@@ -30,14 +30,14 @@ that trio only when this RPC is unreachable (`client:Game/ScenesV3/CharacterDeta
 
 ```json
 {
-  "combat_protocol": 2, "ruleset_id": "duel_v2", "catalog_version": "duel_v2.3",
+  "combat_protocol": 2, "ruleset_id": "duel_v2", "catalog_version": "duel_v2.4",
   "combat_ruleset": "duel_v2",
   "stat_bonuses_active": true,
   "success": true, "message": "",
   "character":   {"id","name","avatar","race_id","race_name","level","wins","losses","win_rate"},
   "progression": {"experience","experience_to_next_level","experience_total_for_level",
                   "unspent_stat_points","magic_points","magic_points_spent","available_magic_points",
-                  "spell_slots","next_spell_slot_level"},
+                  "spell_slots","next_spell_slot_level","study_xp","ranked_eligible","primary_tier"},
   "stats":       {"strength":{"base","racial","effective","min","max"}, "intelligence":{...}, "dexterity":{...}},
   "skills":      {"meditation":{"value","tier","group"}, "spell_resistance":{...}, "magery":{...}},
   "attributes":  {"max_health":200,"max_mana":140,"mana_regen":1.8,"health_regen":0.33},
@@ -62,17 +62,20 @@ Errors come back as `{"success":false,"message":"…","modifiers":[],"racial_tra
 | `stat_bonuses_active` | `true`; restored server combat profile is active. Client uses authoritative derived values. |
 | `character.win_rate` | `round(wins/(wins+losses)*100)`, `0` with no matches (`details.go:234-237`). |
 | `progression.experience_to_next_level` | `progression.XPToNextLevel` — `XPForLevel(level+1) − experience`, `0` at level 30 (`server:modules/progression/xp.go:20-27`). |
-| `progression.experience_total_for_level` | `XPForLevel(level+1)` = `100·1.5^(level−1)`; at level 30 the level-30 threshold so the bar renders full (`details.go:255-258`). |
-| `progression.spell_slots` | `characters.spell_slots`: 3 at level 1 (+1 for Human), unlocks at levels 4, 8, 12 to a cap of 6 (+1 Human) (`server:modules/progression/constants.go:26-33`, `spell_slots.go:7-21`). |
-| `progression.next_spell_slot_level` | Next of `{4,8,12}` above the current level, `0` when maxed (`spell_slots.go:25-32`). |
-| `stats.*.racial` | Race modifier alone, so the UI can show `133 + 20 = 153`. |
-| `stats.*.min` / `max` | Race floor/ceiling on the **effective** value; `0` = no limit. Enforced by `create_character` and `allocate_stat_points` at every level (`server:modules/character/validate.go:134-162`, `character.go:160-169`). |
+| `progression.experience_total_for_level` | `T(L)=45*(L-1)+6*(L-1)*(L-2)`; next-level cumulative threshold, or 6177 at level 30 (`details.go:255-258`). |
+| `progression.spell_slots` | `characters.spell_slots`: 3 at level 1 (+1 for Human), unlocks at levels 7, 11, 16 to a cap of 6 (+1 Human) (`server:modules/progression/constants.go:26-33`, `spell_slots.go:7-21`). |
+| `progression.next_spell_slot_level` | Next of `{7,11,16}` above the current level, `0` when maxed (`spell_slots.go:25-32`). |
+| `progression.study_xp` | Post-cap study remainder 0–499; each500 XP pays5 MP. |
+| `progression.ranked_eligible` | Character level≥30 only; no skills/MP/collection/allocation gate. |
+| `progression.primary_tier` | Earned per-primary tier 1–6 at character levels1/5/10/16/23/30. |
+| `stats.*.racial` | Zero for all races after migration 000005; base and effective stats match. |
+| `stats.*.min` / `max` | Shared minimum 10 and maximum0 (no race ceiling). Earned total budget is enforced server-side; full redistribution uses `respec_stats`. |
 | `skills.*.value` | Rounded to 2 decimals. `tier` = `ceil(value/10)`, `0` at 0. `group` = `core` (meditation, magery) or `defense` (spell_resistance). |
 | `attributes` | Derived max HP/mana and passive mana/HP per second, rounded for display; formulas in [[combat-stat-rules]]. |
-| `modifiers` | `cast_speed`, `dodge`, `spell_power`, `flat_damage`, `healing`, skill/kinetic/mind resistance and `meditation_regen`; typed resistance is conditional on spell metadata. |
+| `modifiers` | `cast_speed`, `dodge`, `spell_power` (Magery percent), `stat_spell_power` (INT percent), `healing` (healing/shield percent), skill/kinetic/mind resistance and `meditation_regen`; typed resistance is conditional on spell metadata. |
 | `racial_traits` | Non-neutral slot, cast, school, multiplier, dodge and damage-stat traits plus per-spell resistances, derived from race. |
 | `spellbook.spells` | The whole 14-spell catalogue, sorted by school → level requirement → id (`details.go:325-336`), so locked entries render. |
-| `spellbook.spells[].cast_time`, `recovery_time`, `travel_time` | Milliseconds. Cost and cast time are personalized from the combat profile; recovery/travel remain base. Public catalog RPCs expose base values. |
+| `spellbook.spells[].cast_time`, `recovery_time`, `travel_time` | Milliseconds. Cost, cast and recovery are personalized from resolved primary config plus combat profile; travel remains base. Public catalog RPCs expose base values. |
 | `spellbook.spells[].is_learned` | From `character_spells`; **standard spells are forced `true`** (`details.go:344-346`). `is_equipped` mirrors `is_learned`: there is no loadout outside a match. |
 | `spellbook.spells[].magic_points_cost` | `magic_point_cost` from YAML verbatim (`EffectiveMagicPointCost`, `spell.go:36-38`): 5 for every non-standard spell, 0 for standards. The old "5 when unset" fallback no longer exists. |
 | `spellbook.spells[].learned_at_level` | Character level when learned; `0` if not learned. |
@@ -95,6 +98,10 @@ Errors come back as `{"success":false,"message":"…","modifiers":[],"racial_tra
 - Spell purchase: `learn_spell` — `{"spell_id"}` → `{"success","error","spell_id","magic_points_remaining"}`; bounded by MP and level only, never by slots; see [[rpcs]].
 - The screen re-queries `get_character_details` after both.
 - Level-up rewards arrive only in the game-over message (opcode 50) — see [[level-up-notifications]]; there is no persistent notification.
+
+## Primary path and reallocation UI
+
+The separate `get_primary_progression` response supplies both versioned graphs, selected paths and resolved base configs. `set_primary_path` saves a legal prefix; `respec_stats` redistributes the full400+5×(level−1) budget with min 10. Both reject active-match mutation with code 9. Details refresh after saving. Spell descriptions remain catalog prose; the graph response is authoritative for selected window/return/checkpoint values. See [[rpcs]].
 
 ## Source of truth in code
 - `server:modules/character/details.go` — request/response structs, all field derivations.

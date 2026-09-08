@@ -11,7 +11,7 @@ tags: [hexbane, server, spells, effects, balance]
 sources: ["server:docs/spell_system/GUIDE-v2.md", "server:docs/spell_system/spells.md", "server:docs/spell_system/balance-v2.md", "server:docs/spell_system/balance-v2.json", "server:docs/spell_system/verification-v2.md", "server:docs/superpowers/specs/2026-09-05-spell-system-redesign.md", "server:docs/superpowers/plans/2026-09-05-spell-system-redesign.md", "client:docs/Plans/2026-09-04-standard-spells-6-slot-draft.md"]
 ---
 
-# Spell system (catalog duel_v2.3)
+# Spell system (catalog duel_v2.4)
 
 `data/spells/*.yaml` is the only spell definition source. The whole directory is loaded atomically at plugin start; any invalid file fails startup. PostgreSQL stores ownership and saved loadouts only (see [[database]]). Combat rules that consume these definitions are in [[progression]] (section "Combat rules"); the wire protocol is in [[combat-v2]].
 
@@ -21,19 +21,19 @@ Version constants (`server:modules/spell_system/version.go:3-8`):
 |---|---|
 | `CombatProtocol` | 2 |
 | `RulesetID` | `duel_v2` |
-| `CatalogVersion` | `duel_v2.3` |
+| `CatalogVersion` | `duel_v2.4` |
 | `TickMillis` | 100 |
 
 Every spell RPC response, character details and the tutorial RPC embed `combat_protocol`, `ruleset_id`, `catalog_version` (`server:modules/spell_system/rpc.go:159-167`).
 
 ## Catalog
 
-All 14 definitions verified against the YAML files on 2026-09-07. Every spell has `school: neutral`, `level_requirement: 1`, `travel_time: 0`. Times are seconds.
+Catalog baseline below; primary definitions reverified against YAML and graph code on 2026-09-08. Every spell has `school: neutral`, `level_requirement: 1`, `travel_time: 0`. Times are seconds.
 
 | ID | Name | Nature | Mana | Cast | Recovery | MP cost | Flags | Effect (type, value, timing, target) |
 |---|---|---|---:|---:|---:|---:|---|---|
-| `magic_arrow` | Magic Arrow | arcana | 3 | 0.6 | 0.3 | 0 | standard | damage 4, enemy |
-| `mirror_reflection` | Mirror Reflection | arcana | 9 | 0.5 | 0.4 | 0 | standard | reflection, 3 s, self |
+| `magic_arrow` | Magic Arrow | arcana | 5 | 0.8 | 0.4 | 0 | standard | fixed damage 1, enemy |
+| `mirror_reflection` | Mirror Reflection | arcana | 9 | 0.5 | 0.4 | 0 | standard | one mirror charge, 10% return, 1.5 s, self |
 | `firebolt` | Firebolt | ember | 9 | 1.0 | 0.4 | 5 | starter | damage 16, enemy |
 | `heavy_bolt` | Heavy Bolt | ember | 18 | 1.9 | 0.5 | 5 | starter | damage 32, enemy |
 | `poison` | Poison | venom | 12 | 1.0 | 0.4 | 5 | starter | poison 2/pulse, duration 6, interval 1, enemy |
@@ -51,6 +51,29 @@ All 14 definitions verified against the YAML files on 2026-09-07. Every spell ha
 - Six **starter** spells form the creation pool: a new character picks 3 (Human 4) distinct starters; only those become ownership rows. Unchosen starters cost 5 MP later like every other selectable spell (`server:modules/character/validate.go:106-129`, `server:modules/character/db.go:49-75`).
 - `type` (`attack`/`defense`/`support`) and `icon` are presentation metadata and are not validated beyond being present in the YAML.
 - `nature` and `incantation` are lore metadata, see [[spell-lore]].
+
+## Primary graphs (version 1)
+
+Two independent six-tier DAGs are implemented in `server:modules/primary/graph.go`. Earned tier comes from character levels 1/5/10/16/23/30. A selected path is root-first, contiguous, at most one node per tier and no longer than entitlement. Empty path means free root. Ordinary choices at 2/4/5 reconnect through shared tier 3; both choices at one ordinary tier connect to both next-tier choices. Bonuses are incremental and survive reconnection. Changing allocation is free outside a match, via [[rpcs#`get_primary_progression` and `set_primary_path`|primary RPCs]]. Match entry snapshots the resolved configuration.
+
+All IDs have prefix `<spell_id>.v1.`. Append these suffixes:
+
+| Tier | Magic Arrow | Mirror Reflection |
+|---|---|---|
+| 1 | `root` | `root` |
+| 2 | `speed2`, `economy2` | `power2`, `duration2` |
+| 3 | `follow_through3` | `return_statuses3` |
+| 4 | `speed4`, `economy4` | `power4`, `duration4` |
+| 5 | `speed5`, `economy5` | `power5`, `duration5` |
+| 6 | `opening6`, `rebate6` | `counterstroke6`, `conservation6` |
+
+Arrow baseline: fixed 1 damage, mana 5, cast.8s, recovery.4s. Each speed node reduces base cast by.1s; each economy node reduces mana by 1. Tier3 shortens own remaining recovery by.1s on a mirror break. Opening grants the next non-primary cast within 2s a non-stacking.1s speedup (minimum.1s cast). Rebate refunds 1 mana, capped at actual paid, only on a mirror break.
+
+Mirror baseline: one charge, window 1.5s, returned damage 10%, mana 9, cast.5s, recovery.4s. Each power node adds30 percentage points; each duration node adds1s. Ordinary full allocations yield100%/1.5s,70%/2.5s,40%/3.5s,10%/4.5s. Tier3 unlocks returned hostile status/periodic/delayed mechanics. Counterstroke grants the same shared tempo effect after an actually applied returned non-primary hostile effect; a dodged or fully blocked return does not trigger it. Conservation refunds half actual paid, rounded down, only when the mirror expires unused.
+
+Below tier 3 the entire original package is intercepted, but only direct damage returns. Returned damage snapshots original offense, scales once by selected fraction and applies new-target mitigation once; a tiny reflected packet may round to0 (Arrow remains1). No second mirror or reflection chain. Reflected poison/hex retains original potency despite changed ownership. The effect's `value` means return percentage; its live `remaining` means one charge, never percentage-as-charges. See [[combat-stat-rules]].
+
+Graph nodes serialize `{id,tier,next,modifier}`. Modifier fields are `cast_seconds`, `mana_cost`, `window_seconds`, `return_fraction`, `effect` (zero values omitted). Effective config includes `spell_id,version,level,cast_seconds,mana_cost,recovery_seconds` and nonzero `fixed_damage,window_seconds,return_fraction,return_statuses,follow_through_seconds,opening,rebate_mana,counterstroke,conservation,tempo_seconds,tempo_window_seconds`. `level` is selected-path length, not earned character tier. Config values are pre-profile; match spell metadata additionally applies player stat/race cost and tempo rules.
 
 ## YAML schema
 
@@ -115,7 +138,7 @@ Registered in `server:modules/spell_system/spell_effects/effect_handlers/registr
 | `dispel` | `tactical.go` | removes one from target: `reflection`, else `shield`, else `regeneration` |
 | `consume_venom` | `tactical.go` | if target carries poison owned by the (final) caster: remove it and deal `value`; otherwise nothing |
 
-Reflection is resolved before effects are scheduled (`server:modules/match/engine/phase/game/apply_spell_effect.go:20-33`): a hostile package hitting a target with `reflection` consumes that instance, swaps caster and target, and emits `spell_reflected`. The swapped package is applied directly, so it can never consume a second mirror. Self-target spells never reflect. Hex detonation is a queued tick on the target, so only the hex application reflects.
+Reflection consumes one mirror before target dodge and follows the selected primary graph; direct/status return eligibility, original-offense snapshot and capstone triggers are specified above. Self-target spells never reflect; hex reflects at application, not detonation.
 
 ## Effect queue semantics
 
@@ -167,7 +190,7 @@ Recorded run (catalog `duel_v2.1`, 2026-09-06, seed 42, 1000 duels, from `balanc
 | Timeouts | 404 |
 | Interrupted casts | 2082 |
 
-All 14 spells were cast. The historical `duel_v2.1` run above is not a balance baseline for restored `duel_v2.3`; formulas and race resources now differ. The 40% timeout rate is an open balance concern; bot results do not establish competitive balance. Remaining balance work is tracked in [[2026-09-05-spell-system-redesign]].
+All 14 spells were cast. The historical `duel_v2.1` run above is not a balance baseline for current `duel_v2.4`; formulas and race resources now differ. The 40% timeout rate is an open balance concern; bot results do not establish competitive balance. Remaining balance work is tracked in [[2026-09-05-spell-system-redesign]].
 
 ## Source of truth in code
 

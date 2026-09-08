@@ -11,7 +11,7 @@ tags: [hexbane, protocol, rpc, nakama]
 sources: ["server:RPCs.md", "server:docs/API-REFERENCE-v2.md", "server:docs/match/api-reference.md", "server:docs/progression/client/menu-rpc-requirements.md", "client:docs/Server/progression/menu-rpc-requirements.md", "server:docs/client/client-implementation-prompt.md"]
 ---
 
-# RPC reference (verified against code, 2026-09-07)
+# RPC reference (verified against code, 2026-09-08)
 
 Every RPC the Nakama plugin registers, with the exact JSON it accepts and returns. All handlers are
 registered from `server:modules/main.go` via each module's `InitModule`. Unless stated otherwise:
@@ -23,7 +23,7 @@ registered from `server:modules/main.go` via each module's `InitModule`. Unless 
   `learn_spell`). Only `tutorial` and the two match RPCs return real gRPC errors. The gRPC error-code
   table in the old API-REFERENCE-v2 does not describe any other RPC.
 - **Version stamp**: spell RPCs and `get_character_details`/`tutorial` embed
-  `{"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.3"}`
+  `{"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.4"}`
   (`server:modules/spell_system/version.go:3-19`). The client supports server2.3 and local tutorial2.2; it rejects other values
   (`client:Core/Match/DuelV2.cs:8-12`) in `get_player_spells` and `tutorial` only.
 
@@ -38,6 +38,8 @@ registered from `server:modules/main.go` via each module's `InitModule`. Unless 
 
 `RpcAsync` on the socket is used for `decline_match`, `create_ai_arcane_duel`; everything else goes through `client.RpcAsync(session, id, payload)`.
 
+Prepared client primary/respec integration is described in [[duel-v2-client]]; deployment status is separate from this server contract.
+
 ## Character module (`server:modules/character/init.go`)
 
 ### `create_character`
@@ -49,8 +51,7 @@ registered from `server:modules/main.go` via each module's `InitModule`. Unless 
    "base_strength":133,"base_intelligence":134,"base_dexterity":133}
   ```
 - Validation order (`validate.go:83-103`): name 3–20 chars → `race_id` in registry → base stats sum to
-  `progression.CreationPoints` = 400, each effective (base + race modifier) ≥ 10, race floors/ceilings
-  (`ValidateEffectiveStatLimits`, 0 = no limit), each base ≥ 1 → `spell_ids`: exactly
+  `progression.CreationPoints` = 400, each base stat ≥10; all races share these bounds and flat racial stat modifiers are zero → `spell_ids`: exactly
   `StartingSpellCount(race)` = 4 for `human`, 3 otherwise (`validate.go:106-111`), distinct, each
   `starter: true` and not `standard` (`validate.go:113-129`).
 - One character per user: `FindByUserId` first; if one exists → `{"success":false,"message":"Character already exists","character":{...existing}}`.
@@ -88,29 +89,52 @@ Client DTO `client:Application/Modules/Character/Dto/CharacterResponse.cs` expec
 - Request `{"character_id":"(optional, ignored)","strength":2,"intelligence":3,"dexterity":0}`.
 - Rules: each value ≥ 0; each positive value is applied in order STR, INT, DEX through
   `Character.AllocateStatPoints` (`character.go:140-177`): must not exceed `unspent_stat_points`
-  remaining at that step and the new effective stat must stay inside the race floor/ceiling. The total
+  remaining at that step. Race-specific floors/ceilings are removed; shared minimum 10 remains. The total
   does **not** have to equal all unspent points (that check is commented out, `rpc.go:231-235`).
   Row is locked `FOR UPDATE` in a transaction (`rpc.go:204-270`).
-- Response `{"character": <Character>|null, "message", "success"}`. Errors: `"All stat values must be non-negative"`, `"not enough stat points"`, `"invalid point allocation"`, `"<stat> may not exceed N for race X, got V"`, `"<stat> requires at least N for race X, got V"`.
+- Response `{"character": <Character>|null, "message", "success"}`. Errors: `"All stat values must be non-negative"`, `"not enough stat points"`, `"invalid point allocation"`, `"<stat> must be at least 10"`; active-match changes are rejected before mutation.
 
 ### `get_character_details`
 - `init.go:40`, handler `details.go:156`. Client: `GetCharacterDetailsQueryHandler.cs:26-28`. Contract in [[character-details]].
 
 ### `get_progression`
-- `init.go:54`, handler `rpc.go:320`. Client: `GetProgressionQueryHandler.cs:28`.
-- Request ignored. Response:
-  ```json
-  {"success":true,"message":"Progression retrieved successfully","level":1,"experience":0,
-   "experience_to_next_level":100,"magic_points":0,"magic_points_spent":0,"available_magic_points":0,
-   "spell_slots":3,"next_spell_slot_level":4,"unspent_stat_points":0}
-  ```
-- Uses `progression.XPToNextLevel` (clamped to zero) and `GetNextSpellSlotLevel` in
-  `buildProgressionResponse`. The slot ladder is `{4,8,12}`; next unlock is 8 at levels 4/6,
-  12 at level 8, and 0 from level 12 onward. Remaining XP is 0 at the level cap.
-- Fixed on 2026-09-08; the response fields and authentication/character lookup are unchanged.
-  The old next-level XP exponent was mathematically consistent with `XPForLevel(level+1)`;
-  the confirmed defect was the retired slot ladder. Both calculations now use shared helpers.
-- Regression coverage: `server:modules/character/progression_test.go`.
+
+Request ignored; authenticated current-character progression. Example level 1 non-Human:
+
+```json
+{"success":true,"message":"Progression retrieved successfully","level":1,"experience":0,
+ "experience_to_next_level":45,"magic_points":0,"magic_points_spent":0,"available_magic_points":0,
+ "spell_slots":3,"next_spell_slot_level":7,"unspent_stat_points":0,
+ "study_xp":0,"ranked_eligible":false,"primary_tier":1}
+```
+
+Cumulative XP uses `T(L)=45*(L-1)+6*(L-1)*(L-2)`, cap 30/6177. `experience_to_next_level` never goes below 0 and is0 at cap. Next slot milestones are7/11/16, then0; Human gets one additional starting/capped slot and migrated earned slots are preserved. `study_xp` is post-cap remainder 0–499 (500→5MP). `primary_tier` is earned tier 1–6, independent of selected paths. `ranked_eligible` requires only level≥30. Skills, MP, collection and unallocated primary tiers never block it. See [[progression]] for rewards and migration. Source: `server:modules/character/rpc.go`, `progression_test.go`.
+
+### `get_primary_progression` and `set_primary_path`
+
+Authenticated, current character only. `get_primary_progression` accepts `{}`; `set_primary_path` accepts exactly `{"spell_id":"magic_arrow","path":["magic_arrow.v1.root","magic_arrow.v1.speed2"]}`. An empty path resolves to the free root. Unknown fields/trailing JSON, foreign/unknown nodes, skipped tiers, disconnected paths and paths exceeding earned tier are rejected (code 3). Both primaries are independent; no MP is spent.
+
+Success envelope for both:
+
+```json
+{"success":true,"graph_version":1,"earned_tier":2,"primaries":[
+ {"spell_id":"magic_arrow","path":["magic_arrow.v1.root","magic_arrow.v1.speed2"],
+  "graph":{"version":1,"spell_id":"magic_arrow","nodes":[
+   {"id":"magic_arrow.v1.root","tier":1,"next":["magic_arrow.v1.speed2","magic_arrow.v1.economy2"],"modifier":{}}]},
+  "config":{"spell_id":"magic_arrow","version":1,"level":2,"cast_seconds":0.7,"mana_cost":5,"recovery_seconds":0.4,"fixed_damage":1}},
+ {"spell_id":"mirror_reflection","path":["mirror_reflection.v1.root"],
+  "graph":{"version":1,"spell_id":"mirror_reflection","nodes":[]},
+  "config":{"spell_id":"mirror_reflection","version":1,"level":1,"cast_seconds":0.5,"mana_cost":9,"recovery_seconds":0.4,"window_seconds":1.5,"return_fraction":0.1}}
+]}
+```
+
+Graph node arrays above are abbreviated for readability; production returns every node for both complete six-tier DAGs. Exact node suffixes, modifiers and optional config fields are in [[spell-system]]. `earned_tier` is derived from character levels1/5/10/16/23/30; `config.level` is selected prefix length. Config timing/cost is before profile/race adjustments; live spell metadata includes those adjustments.
+
+### `respec_stats`
+
+Authenticated current character only. Request `{"strength":133,"intelligence":134,"dexterity":133}` at level 1; replace values to sum exactly `400+5*(min(level,30)-1)` at later levels. Each stat must be at least10. No race ceilings or flat grants. Success `{"success":true,"character":<Character>}`; base and effective stats match, unspent points become0. No cost, skills/ownership/MP/path reset, or once-only restriction.
+
+Both mutations (`set_primary_path`, `respec_stats`) lock the character row and reject a live match lease with Nakama code 9 / `finish the current match before changing your build`. Missing auth is 16, missing character 5, invalid payload/build 3. Client refreshes details after success and shows failures. Lease acquisition snapshots the current build for a match and has a 15-minute crash expiry. Source: `server:modules/character/primary_progression.go`.
 
 ### `tutorial` and `set_tutorial_completed`
 - `init.go:45` / `init.go:49`; handlers `tutorial.go:106` / `rpc.go:153`. Contract in [[server-tutorial]].
@@ -120,9 +144,9 @@ Client DTO `client:Application/Modules/Character/Dto/CharacterResponse.cs` expec
 
 ### `get_starter_spells`
 - `init.go:33`, handler `rpc.go:375`. Client: `client:Application/Modules/Spell/Queries/GetEntrySpells/GetEntrySpellsQueryHandler.cs:39`.
-- Request ignored. Returns every catalog spell with `starter: true` (6 in `duel_v2.3`: barrier, cleanse, firebolt, heavy_bolt, mend, poison):
+- Request ignored. Returns every catalog spell with `starter: true` (6 in `duel_v2.4`: barrier, cleanse, firebolt, heavy_bolt, mend, poison):
   ```json
-  {"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.3","success":true,
+  {"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.4","success":true,
    "message":"Starter spells retrieved successfully",
    "spells":[{"nature":"ember","incantation":["Tal","Rath"],"id":"firebolt","name":"Firebolt",
               "description":"...","school":"Fire","mana_cost":20,"cast_time":1.5,"icon_path":"firebolt"}]}
@@ -135,7 +159,7 @@ Client DTO `client:Application/Modules/Character/Dto/CharacterResponse.cs` expec
 - Request: ignored (client sends `character_id`/`category`; server uses the session user).
 - Response:
   ```json
-  {"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.3","success":true,"message":"...",
+  {"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.4","success":true,"message":"...",
    "spells":[{"nature","incantation","standard":false,"starter":true,"recovery_time":1.0,"travel_time":0.4,
               "id","name","description","school","mana_cost":20,"cast_time":1.5,"icon_path",
               "is_learned":true,"magic_points_cost":5,"level_requirement":1}],
@@ -178,6 +202,10 @@ The catalog is loaded from `/nakama/spells` at startup (`init.go:36`), 14 spells
 
 ### `get_race`
 - `init.go:26`, handler `rpc.go:34`. `{"race_id":"orc"}` → `{"race": <Race>|null, "success", "message"}`; errors `race_id is required`, `Race not found`. No client caller.
+
+## Matchmaker queue (socket operation, not an RPC)
+
+Use Nakama MatchmakerAdd string property `queue=normal|ranked`; omitted means normal. The server overwrites query to `+properties.queue:<queue>` and forces 2 players. Ranked validates level≥30 at ticket, matched entries and invited join; unknown/mixed queues fail. No rating/MMR/season system is introduced. Both queues use the same normal match module. See [[progression]].
 
 ## Match RPCs
 

@@ -23,7 +23,7 @@ Field names are the Go `json` tags; the client column is the C# `JsonPropertyNam
 |---|---|
 | `combat_protocol` | `2` |
 | `ruleset_id` | `"duel_v2"` |
-| `catalog_version` | `"duel_v2.3"` |
+| `catalog_version` | `"duel_v2.4"` |
 | `tick_ms` (match entry only) | `100` |
 
 Client check: `DuelVersion.Supported` (`client:Core/Match/DuelV2.cs:8-12`).
@@ -49,7 +49,13 @@ Client check: `DuelVersion.Supported` (`client:Core/Match/DuelV2.cs:8-12`).
 
 Client DTO `client:Core/Spells/Spell.cs` maps `casting_time` → `CastingTimeSec` and also declares `cast_time` (ms, spellbook RPC shape), `icon_path`, `invocation`, `animation`, `visual_key`. None of the latter four are emitted by the match engine; `visual_key`/`animation` are client-only (see [[spell-visual-key]]). Old docs listed `level` and `effect` string fields: they do not exist on the struct.
 
-Match spell views carry effective `mana_cost` and `casting_time` for the recipient, including opcode 70 draft entries. Recovery/travel/effect definitions retain catalog values. The server projects copies and never mutates shared catalog entries.
+Match spell views carry effective `mana_cost`, `casting_time` and `recovery_time` for the recipient, including opcode 70 draft entries. Travel retains catalog values. Primary effect values/window are projected from the match-entry path; optional effect definitions retain catalog values. The server projects copies and never mutates shared catalog entries.
+
+## Primary/progression payload additions
+
+`get_progression` and `get_character_details.progression` add `study_xp:int` (0–499), `ranked_eligible:bool` (level≥30), and `primary_tier:int` (1–6). These are independent of stored skills/MP and selected-path length. Full graph/config DTOs and build mutation requests are in [[rpcs]] and [[spell-system]].
+
+A `reflection` effect definition's `value` is returned-damage percentage (10–100). In live status/snapshot/lifecycle data, `remaining=1` denotes the single consumable mirror charge; clients must not draw 10–100 charges. Zero-damage reflected events can occur after proportional rounding; Magic Arrow is the fixed 1 exception. No opcode or combat protocol bump accompanies catalog 2.4.
 
 ## Effect (spell effect definition)
 
@@ -117,7 +123,7 @@ Status effects that appear in a player's `effects` list (`isStatus`, `server:mod
 | `effect`, `icon` | string | display name / icon id (same as key today) |
 | `start_tick`, `end_tick` | int64 | match ticks |
 | `due_tick` | int64 | omitempty; hex detonation tick (= `end_tick`) |
-| `remaining` | int | shield: current shield HP (patched in `GetSnapshot`); others: effect value |
+| `remaining` | int | shield: current shield HP (patched in `GetSnapshot`); reflection:1 charge; other statuses: effect value |
 | `started_at`, `remove_after` | RFC3339 | logical clock (1970-based); do not compare with wall-clock |
 
 ## CombatCommand / CombatEvent / snapshot structs
