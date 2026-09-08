@@ -54,9 +54,13 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 `git status`, w tym skasowana stara historia migracji `000001..000016` zastąpiona świeżym baseline
 `000001..000003`). Snapshot repo: [[repos-and-branches]].
 
-**Content:** 13 zachowanych ikon pokrywa 14 obecnych zaklęć; jedyny VFX samego zaklęcia to nowy Mirror Reflection z przywróconymi dźwiękami tworzenia i rozbicia. Nowe animacje castingu i presety zachowane. Stare VFX/SFX i assety generatora usunięte 2026-09-08. → [[spell-vfx-configuration]]
+**Content:** 13 zachowanych ikon pokrywa 14 obecnych zaklęć; VFX samych zaklęć obejmuje Mirror Reflection z przywróconymi dźwiękami oraz nowy Magic Arrow (błękitna Arkana, grot, smuga i krystaliczne trafienie). Nowe animacje castingu i presety zachowane. Stare VFX/SFX i assety generatora usunięte 2026-09-08. → [[spell-vfx-configuration]]
 
 ## Decisions log
+
+- **2026-09-08 — Propozycja fallback AI: kolejka serwerowa i wspólny silnik walki.** Przygotowano [[2026-09-08-fallback-player-design]] i [[2026-09-08-fallback-player-plan]], bez wdrożenia. Rekomendacja: trwałe fikcyjne persony, legalne buildy, opóźniony draft, AI utility z ograniczoną obserwacją i kontekstowymi błędami; roboczo zwykła kolejka po 35–55 s. **Why:** obecny bot ma stałą tożsamość i natychmiastowe wybory, a timeout po stronie klienta ryzykuje podwójny przydział meczu. To kierunek projektowy do przeglądu, nie zatwierdzona zmiana zachowania.
+
+- **2026-09-08 — Magic Arrow: błękitna Arkana i krótki przelot wizualny.** Nowy proceduralny shader używa `#64B5FF` / `#EAF4FF`; efekt lotu trwa 0.14 s, odbicia 0.10 s, bez zmian mechanik. **Why:** natura `arcana` wymaga kryształu i geometrii, a serwer ma `travel_time: 0`; prezentacja nie może opóźniać obrażeń ani zmieniać kolejności zdarzeń.
 
 - **2026-09-08 — Przywrócono statystyki, rasy i skille do walki.** Wspólny profil zasila mecz, efekty, kartę postaci i symulator; klient otrzymuje efektywne koszty/czasy również w drafcie. Zachowano MatchLog i wcześniejsze czyszczenie helperów/bufora/powiadomień. **Why:** użytkownik wyraźnie zlecił przywrócenie mechanik („przywroc”); ich nieużywanie było regresją integracji. Nie dopisujemy szkół obrażeń z lore — katalog nadal neutralny, ograniczenia opisuje [[combat-stat-rules]].
 

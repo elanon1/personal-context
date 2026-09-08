@@ -112,3 +112,28 @@ Pozostało poza zakresem: test live po restarcie lokalnego stacku, tuning balans
 ## 2026-09-08 — Codex — instrukcja przebudowania
 
 Sprawdzono Makefile, docker-compose.yml i docs/server/dev-setup. Po zmianach Go lokalny cykl to `make dev` (build pluginu, kopia do kontenera, restart Nakama); klient wymaga przebudowania po zmianie kompatybilności katalogu. Bez uruchamiania stacku i bez zmian kodu.
+
+
+## 2026-09-08 — Codex — projekt naturalnego przeciwnika zastępczego
+
+- Na prośbę użytkownika opracowano projekt i plan, bez implementacji backendu/klienta. Przeczytano kontrakty vaulta, bieżący matchmaking, boty, lobby, walkę, progresję i klientowy MatchManager; uwzględniono niezacommitowane przywrócenie statystyk/skilli.
+- Pliki: docs/plans/2026-09-08-fallback-player-design.md, docs/plans/2026-09-08-fallback-player-plan.md, _index.md, _state.md, dziennik.md.
+- Projekt: atomowa kolejka i przydział, fallback po proponowanych 35–55 s, stabilne nicki/persony, legalne buildy, wspólny budżet draftu 35 s, utility AI z pamięcią i opóźnioną obserwacją, kontekstowe błędy, zwykłe komendy, testy i etapowe uruchomienie lokalne.
+- Weryfikacja tej sesji: przegląd dokumentów i odniesień do kodu; nie uruchamiano testów gry, migracji ani wdrożenia. Pozostało: przegląd propozycji, implementacja ośmiu etapów, testy live, strojenie i human playtests. Nie gwarantowano nierozpoznawalności AI.
+
+
+## 2026-09-08 — Codex — Magic Arrow: nowy efekt Arkany
+
+- Dodano proceduralny grot, potrójną smugę, pierścień wystrzału i krystaliczne trafienie w palecie `#64B5FF` / `#EAF4FF`. Preset castingu: Impulse, `attack_1h_01`, zgodny tint, subtelniejsza skala, bez pierścienia naziemnego.
+- Integracja z cast_released, spell_impact/dodged, spell_reflected i pending_impacts; jedna instancja na action_id, śledzenie celu i skali aktora, cleanup po snapshotach, końcu meczu i disposal. Serwer nadal rozstrzyga Magic Arrow natychmiast (`travel_time: 0`); 0.14 s lotu i 0.10 s odbicia dotyczą tylko animacji.
+- Pliki: `Game/FX/MagicArrow.cs/.gdshader/.tscn`, `Game/FX/_Previews/MagicArrowPreview.cs/.tscn`, `Core/Spells/ISpellEffect.cs`, `Application/Modules/Spell/Effects/SpellEffectFactory.cs`, `SpellEffectConfigurations.cs`, `SpellEffectManager.cs`, `SpellEffectManager.DuelV2.cs`, `SpellEffectManager.MagicArrow.cs`, `Resources/SpellVisuals/magic_arrow.tres`, `Game/ScenesV3/VfxTest/VfxTestScreen.cs`, nowe `VerifyMagicArrow.cs/.tscn`. W `VerifyMirrorWard.cs` próbka niezaimplementowanego zaklęcia zmieniona z Magic Arrow na Firebolt, zachowując sens kontroli po dodaniu strzały. Towarzyszące UID wygenerowane przez Godot.
+- Walidacja: build 0 błędów / 9 wcześniejszych ostrzeżeń; Magic Arrow 13/13, MirrorWard 60/60, WardAudio 10/10. Test przed wdrożeniem: pięć oczekiwanych błędów braku pocisku. Review wykrył późny burst po anulowaniu; dodatkowy test odtworzył błąd, poprawiono wraz z odpinaniem callbacka celu przy disposal i ponownie sprawdzono. Logi: `/tmp/hexbane-arrow-{build,final,ward,audio,capture}.log`. GPU: pięć PNG w `verification/magic-arrow/`, wizualnie sprawdzone charge/flight/impact/reflection; brak błędów shaderów.
+- Podgląd: `Game/FX/_Previews/MagicArrowPreview.tscn` (F6), 1 trafienie / 2 odbicie / 3 unik / Tab odwrócenie / Space powtórka. VfxTest także zawiera Magic Arrow.
+- Notatki: spell-effect-system, spell-vfx-configuration, vfx-and-race-animation, client-architecture, duel-v2-client, _state (decyzja i rationale), dziennik. Nie zmieniano protokołu, mechanik serwera ani SFX. Bez commita.
+- Poza wykonaną walidacją: rzeczywisty mecz Nakama i wydajność na fizycznym Androidzie nie były testowane.
+
+## 2026-09-08 — Codex — rewizja balansu ras/statystyk/czarów
+
+Porównano aktualny kod z progression, combat-stat-rules i spell-system. Raport [[2026-09-08-balance-review]]: wszystkie pary ras, trzy scenariusze progresji, kontrolne próby Arrow kontra AI/Firebolt/Heavy Bolt, razem10 860 walk. Rozpisano statcapy i legalne ekstrema, bonusy ras, skalowanie ataków/heali/shielda, ticki DEX, skille i XP. Wyniki/harness/hash źródeł w docs/audits/2026-09-08-balance-review-data; indeks uzupełniony.
+
+Najważniejsze: Orc dominuje w testowanej rodzinie buildów; Gnome/Shadow słabe; bonusy szkół tylko Human działają; pełny flat damage wzmacnia tanie czary; maksymalne skille/progresja prowadzą do licznych timeoutów. Nie zmieniono produkcyjnego kodu ani parametrów. Propozycje są do kolejnej iteracji strojenia, nie są zatwierdzonym balansem. Pozostało: wybrać kierunek, przetestować kandydatów współczynników i buildy zoptymalizowane, potem tuning i playtest.

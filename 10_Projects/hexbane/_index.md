@@ -94,6 +94,9 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 
 ## Plany (`docs/plans/`)
 
+- [[2026-09-08-fallback-player-design]] — projekt naturalnego przeciwnika zastępczego: kolejka, persony, lobby i AI.
+- [[2026-09-08-fallback-player-plan]] — plan wdrożenia i weryfikacji fallbacku (propozycja, bez implementacji).
+
 - [[2026-09-08-combat-restoration]] — przywrócenie mechanik walki po zatwierdzeniu użytkownika
 
 - [[2026-09-08-client-legacy-cleanup]] — usunięcie starych VFX/SFX, storytellingu i martwych zależności klienta.
@@ -103,6 +106,8 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 - [[server-devlog-summary]] — oś czasu kamieni milowych serwera (z dawnego `devlog.md`)
 
 ## Audyty (`docs/audits/`)
+
+- [[2026-09-08-balance-review]] — rewizja ras, statcapów, skilli i integracji czarów; 10 860 symulowanych walk, problemy i propozycje korekt.
 
 - [[2026-09-08-server-unused-code-audit]] — audyt martwego kodu serwera: 61 kandydatów, zależności i kolejność czyszczenia.
 
