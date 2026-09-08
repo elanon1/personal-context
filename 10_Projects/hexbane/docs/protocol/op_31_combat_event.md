@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, protocol, opcode, combat-event]
 sources: ["server:docs/client/combat-v2.md", "client:docs/opcodes/duel-v2.md"]
 ---
@@ -33,7 +33,7 @@ sources: ["server:docs/client/combat-v2.md", "client:docs/opcodes/duel-v2.md"]
 | `client_seq` | uint64 | kinds tied to a command |
 | `action_id` | string | cast identity (decimal counter as string) |
 | `spell_id` | string | casts, impacts, effects |
-| `reason` | string | `action_rejected`, `meditation_stopped`, `cast_interrupted`, `effect_removed`, `match_ended` |
+| `reason` | string | `action_rejected`, `meditation_stopped`, `cast_interrupted`, `effect_removed`, `match_ended`; also `spell_impact:dodged`, `heal:passive_regeneration` |
 | `cast_end_tick`, `recovery_end_tick` | int64 | `cast_started` |
 | `due_tick` | int64 | `effect_applied` for `delayed_hex` |
 | `start_tick`, `end_tick` | int64 | effect events |
@@ -44,17 +44,17 @@ sources: ["server:docs/client/combat-v2.md", "client:docs/opcodes/duel-v2.md"]
 | `overheal` | int | `heal`: wasted healing |
 | `remaining` | int | `effect_applied`: effect value (shield capacity / hex or poison amount) |
 
-Tick fields are match-relative ticks (`deadlineTick`, `phase.go:374`); `0` means no deadline.
+Deadline fields are rounded up to the first authoritative 100 ms tick. Tick fields are match-relative ticks (`deadlineTick`, `phase.go:374`); `0` means no deadline.
 
 ## Kinds actually emitted
 
 | `kind` | Emitted by | Notes |
 |---|---|---|
-| `mana_spent` | `phase.go:300` | at cast start, `amount = mana_cost` |
+| `mana_spent` | `phase.go:300` | at cast start, effective racial mana cost |
 | `cast_started` | `:301` | with `client_seq`, `action_id`, `spell_id`, `cast_end_tick`, `recovery_end_tick` |
 | `cast_released` | `:169` | cast time elapsed; impact scheduled after `travel_time` |
 | `cast_interrupted` | `spell_effects/engine.go:32` | `reason:"paralyzed"`; the only interrupt source |
-| `spell_impact` | `apply_spell_effect.go:38` | `player_id` = final caster, `target_id` = final target |
+| `spell_impact` | `apply_spell_effect.go:38` | `player_id` = final caster, `target_id` = final target; `reason:dodged` means the whole hostile package missed after reflection |
 | `spell_reflected` | `apply_spell_effect.go:32` | `player_id` = reflector (new owner), `target_id` = original caster; mirror removed with `consumed` |
 | `effect_applied` | `spell_effects/queue.go:102` | status effects only (`isStatus`, `queue.go:46`) |
 | `effect_removed` | `queue.go:128`, `events.go:44` | `reason` ∈ `expired`, `depleted`, `consumed`, `cleansed`, `dispelled`, `match_ended` |
@@ -62,7 +62,7 @@ Tick fields are match-relative ticks (`deadlineTick`, `phase.go:374`); `0` means
 | `heal` | `events.go:58` | `amount` + `overheal` |
 | `meditation_started` | `phase.go:282` | with `client_seq` |
 | `meditation_stopped` | `:253` (no reason: mana full / regen tick), `:298` (`reason:"cast_started"`), `engine.go:40` (`reason` = effect type, e.g. `poison`, `paralyze`) | |
-| `mana_regenerated` | `:251` | 1 mana/s base; +10/s after 0.8 s meditation warm-up (`state/actions.go:56-85`) |
+| `mana_regenerated` | `:251` | profile-derived passive mana plus active meditation after 0.8 s warm-up; see [[combat-stat-rules]] |
 | `match_ended` | `:241` | `reason` ∈ `defeated`, `timeout`, `draw` |
 
 Private kinds (`action_queued`, `queue_cleared`, `action_rejected`) go to [[op_30_combat_result]] instead (`phase.go:312`).

@@ -29,7 +29,7 @@ User-approved restoration on 2026-09-08. `combat_protocol=2`, `ruleset_id=duel_v
 | Dodge chance | `min(DEX * perDex, cap)` percentage points; defaults `perDex=.025`, `cap=8`; Shadow `.05`, `25` |
 | Paralysis duration | base duration × target `paralyze_duration_multiplier` (Orc `.5`), before queue deadlines are calculated |
 
-Fractional regeneration carries between ticks and caps against each player's maximum. Poison/paralysis stop meditation; passive mana continues. Meditation gain time stops when mana fills, including larger simulation steps. Recovery and travel use base catalog values and are not shortened by DEX.
+Passive and active mana share one fractional carry; HP has a separate carry. Fractional regeneration carries between ticks and caps against each player's maximum. Poison/paralysis stop meditation; passive mana continues. Meditation gain time stops when mana fills, including larger simulation steps. Recovery and travel use base catalog values and are not shortened by DEX.
 
 Deadlines are reported as the **first 100 ms tick on or after** the exact deadline (`spell_system.DeadlineTick`). Racial/stat scaling can create fractions of a tick; rounding down would tell the client a cast had ended before the server released it. Effect deadlines and equal-time queue priority use the same tick conversion.
 
@@ -79,3 +79,7 @@ Game over calls `ApplySkillGains`, copies values into the character and persists
 - `server:modules/skills/gain.go`, `modules/match/engine/phase/gameover/phase.go`, `modules/character/db.go` — growth/persistence
 - `server:modules/character/details.go`, `modules/spell_system/version.go`, `cmd/duel-sim` — metadata/version/simulation
 - `client:Core/Match/DuelV2.cs` — supported versions
+
+## Verification (2026-09-08)
+
+Full Go tests, race tests for match/spells/simulator, `go vet ./...`, Linux plugin `make build` and client `dotnet build --no-restore` passed (client: 0 errors, 9 existing warnings). Seed 42 completed 100 simulated matches; [[../audits/2026-09-08-combat-restoration-simulation.json|raw simulation]]. Simulation reads checked-in race migrations and seed stat spreads with a strict fixture parser; it does not query the database. This validates execution and reproducibility, not competitive balance. No live stack restart or deployment was performed.

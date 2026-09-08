@@ -7,6 +7,7 @@ state: active
 repo: https://github.com/elanon1/hexbane
 created: 2026-08-31
 updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, gamedev, godot, csharp, nakama, go, kubernetes, ai-art]
 aliases: [hexbane, hexbane-server]
 ---
@@ -31,8 +32,9 @@ się wybór zaklęć, kolejkowanie akcji (cast time + recovery, brak cooldownów
   `feat/spell-system-redesign` = `main` + niezacommitowana praca): plugin Go do Nakama 3.27
   (`backend.so`), Postgres 17. → [[server-architecture]], [[dev-setup]]
 - **Reguły gry (stan duel_v2):** 6 ras, 14 zaklęć (2 standardowe zawsze dostępne + 6 starterów, z
-  których przy tworzeniu postaci wybiera się 3, Human 4), stałe 200 HP / 100 many, staty/skille/
-  bonusy rasowe **nieaktywne** w walce, sloty draftu 3→6 (Human 4→7), tick 100 ms, mecz 180 s.
+  których przy tworzeniu postaci wybiera się 3, Human 4), HP/mana ze statystyk i ras, aktywne
+  skille, regeneracje i odporności (szczegóły i ograniczenia metadanych: [[combat-stat-rules]]),
+  katalog `duel_v2.3`, sloty draftu 3→6 (Human 4→7), tick 100 ms, mecz 180 s.
   → [[progression]], [[spell-system]], [[combat-v2]]
 - **Protokół:** opcode’y 0–10, 16, 70, 50, 199 bez zmian; walka to 29 (komenda) → 30 (prywatny
   wynik) / 31 (zdarzenia) / 32 (snapshot). Opcode’y 11–15 i 21–28 **wycofane**. → [[opcodes]], [[rpcs]]
@@ -55,6 +57,8 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 **Content:** 13 zachowanych ikon pokrywa 14 obecnych zaklęć; jedyny VFX samego zaklęcia to nowy Mirror Reflection z przywróconymi dźwiękami tworzenia i rozbicia. Nowe animacje castingu i presety zachowane. Stare VFX/SFX i assety generatora usunięte 2026-09-08. → [[spell-vfx-configuration]]
 
 ## Decisions log
+
+- **2026-09-08 — Przywrócono statystyki, rasy i skille do walki.** Wspólny profil zasila mecz, efekty, kartę postaci i symulator; klient otrzymuje efektywne koszty/czasy również w drafcie. Zachowano MatchLog i wcześniejsze czyszczenie helperów/bufora/powiadomień. **Why:** użytkownik wyraźnie zlecił przywrócenie mechanik („przywroc”); ich nieużywanie było regresją integracji. Nie dopisujemy szkół obrażeń z lore — katalog nadal neutralny, ograniczenia opisuje [[combat-stat-rules]].
 
 - **2026-09-08 — Przywrócenie SFX Mirror Reflection.** Przywrócono oryginalne formation.wav/shatter.wav i WardAudio; reszta usuniętych SFX pozostaje wycofana. **Why:** użytkownik doprecyzował wyjątek od czyszczenia dźwięków.
 

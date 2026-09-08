@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, protocol, opcode, lobby-spellbook-spells]
 sources: ["client:docs/opcodes/op_70_lobby_spellbook_spells.md", "server:docs/opcodes/op_70_lobby_spellbook_spells.md"]
 ---
@@ -31,7 +31,7 @@ sources: ["client:docs/opcodes/op_70_lobby_spellbook_spells.md", "server:docs/op
 | Field | Type | Notes |
 |---|---|---|
 | `availableSpells` | [`{spell, used}`] | camelCase key is intentional (`LobbySpellbookSpellsMessage`, `phase.go:39-41`) |
-| `spell` | [[shared-types#Spell]] | full catalog object |
+| `spell` | [[shared-types#Spell]] | catalog object with recipient-effective mana cost and cast time; see [[combat-stat-rules]] |
 | `used` | bool | already picked by this player in this draft |
 
 Only `DraftableSpells()` are listed: the player's learned spellbook minus standard spells (`server:modules/match/engine/state/player_state.go:421-431`). `magic_arrow` and `mirror_reflection` never appear.

@@ -18,7 +18,7 @@ sources: ["server:modules", "server:cmd", "server:vendor/github.com/heroiclabs/n
 
 - Approved and implemented: unused character/spellbook/catalog/race/player/debug/story-local helpers; unused notification helpers and DTOs; commented social implementations; old `CastInterruptions` buffer. Notification list/delete RPCs and the real social notification remain.
 - `MatchLog` is explicitly retained, including existing writes and resets. `EffectRemovalEvents` was not removed.
-- Combat formulas, resistances, regeneration, stats, racial mechanics and skills are **not approved for deletion**. They and their tests are retained for restoration; the exact activation scope is awaiting the user's answer. Sections B/C are withdrawn as deletion recommendations.
+- Combat formulas, resistances, regeneration, stats, racial mechanics and skills are **not approved for deletion**. They and their tests were restored into live combat after the user approved “przywroc”; see [[combat-stat-rules]]. Sections B/C are withdrawn as deletion recommendations.
 - `get_progression` fixed using the shared progression helpers. New regression test failed on the old slot ladder and passes after the fix; next-level XP is clamped to zero. API shape unchanged.
 - Tests for paralysis now assert the real lifecycle `cast_interrupted` event (player/action/spell/reason), no mana refund and preserved MatchLog entries instead of the removed buffer.
 - Removed 33 declarations from the original snapshot (including the replaced `pow`); added the directly tested response builder. Final `go test ./...`, `go vet ./...`, `git diff --check`: PASS. Race tests for match/spell_system/simulator passed after buffer removal.

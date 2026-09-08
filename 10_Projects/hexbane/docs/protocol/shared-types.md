@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, protocol, shared-types, payloads]
 sources: ["client:docs/opcodes/shared_types.md", "server:docs/opcodes/shared_types.md", "server:docs/client/combat-v2.md"]
 ---
@@ -23,7 +23,7 @@ Field names are the Go `json` tags; the client column is the C# `JsonPropertyNam
 |---|---|
 | `combat_protocol` | `2` |
 | `ruleset_id` | `"duel_v2"` |
-| `catalog_version` | `"duel_v2.2"` |
+| `catalog_version` | `"duel_v2.3"` |
 | `tick_ms` (match entry only) | `100` |
 
 Client check: `DuelVersion.Supported` (`client:Core/Match/DuelV2.cs:8-12`).
@@ -49,6 +49,8 @@ Client check: `DuelVersion.Supported` (`client:Core/Match/DuelV2.cs:8-12`).
 
 Client DTO `client:Core/Spells/Spell.cs` maps `casting_time` → `CastingTimeSec` and also declares `cast_time` (ms, spellbook RPC shape), `icon_path`, `invocation`, `animation`, `visual_key`. None of the latter four are emitted by the match engine; `visual_key`/`animation` are client-only (see [[spell-visual-key]]). Old docs listed `level` and `effect` string fields: they do not exist on the struct.
 
+Match spell views carry effective `mana_cost` and `casting_time` for the recipient, including opcode 70 draft entries. Recovery/travel/effect definitions retain catalog values. The server projects copies and never mutates shared catalog entries.
+
 ## Effect (spell effect definition)
 
 `server:modules/spell_system/spell.go` (`type Effect struct`).
@@ -73,8 +75,8 @@ Status effects that appear in a player's `effects` list (`isStatus`, `server:mod
 | Field | Type | Notes |
 |---|---|---|
 | `user_id`, `username`, `race_id` | string | `race_id` ∈ human, elf, dark_elf, shadow, gnome, orc (bot: random) |
-| `health`, `max_health` | int | fixed 200 (`core/player_setup.go:33`) |
-| `mana`, `max_mana` | int | fixed 100 |
+| `health`, `max_health` | int | current HP / STR-and-race-derived maximum; see [[combat-stat-rules]] |
+| `mana`, `max_mana` | int | current mana / INT-derived maximum |
 | `spell_slots` | int | draftable this match = min(learned non-standard spells, entitlement) |
 | `max_spell_slots` | int | character entitlement (`characters.spell_slots`) |
 | `spells` | [Spell] | `SelectedSpells`: standards first, then drafted picks |

@@ -4,7 +4,8 @@ project: Hexbane
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
+updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, log, worklog]
 aliases: [hexbane-dziennik, hexbane-worklog]
 ---
@@ -89,3 +90,25 @@ zacommitowane (ani repo, ani vault).
 - Offline test aktywnego HUD-u loguje null-reference inicjalizacji NotificationModule oraz ObjectDB leaks przy wyjściu; nie naprawiano niezwiązanych modułów. Nie sprawdzano meczu na żywym Nakama ani Androida.
 - Notatki: spell-effect-system, spell-vfx-configuration, vfx-and-race-animation, client-architecture, legacy-and-tooling, opcodes, op_100_story_update, op_101_story_choice_selected, rpcs, _index, _state, docs/plans/2026-09-08-client-legacy-cleanup.
 - Kopie usuniętych plików (również untracked) w /tmp/hexbane-removed-{legacy,code,pipeline}.tar.gz; manifest /tmp/hexbane-removed-files.json. Nie robiono commitów. Zakres: klient; backend storytellingu nie był modyfikowany.
+
+
+## 2026-09-08 — Przywrócenie dźwięków Mirror Reflection
+
+- Na prośbę użytkownika przywrócono oryginalne formation.wav i shatter.wav (identyczne z kopią sprzed czyszczenia), WardAudio.cs oraz obsługę audio w MirrorWard.cs. Przywrócono VerifyWardAudio.cs/.tscn i metadane UID/import.
+- Pozostałe stare SFX nie zostały przywrócone.
+- Walidacja: dotnet build — 0 błędów, 9 ostrzeżeń; Godot VerifyWardAudio headless — 10 kontroli, 0 błędów (start, bus, brak podwójnego shatter, wygaszanie, ogon dźwięku i cleanup).
+- Zaktualizowano spell-vfx-configuration, spell-effect-system, vfx-and-race-animation, client-architecture, legacy-and-tooling i _state. Nic nie zostało do wykonania w tym zakresie; bez commita.
+
+## 2026-09-08 — Codex — przywrócenie mechanik serwera
+
+Przywrócono profil STR/INT/DEX i ras, odporności, unik, regenerację HP/many, medytację, skalowanie obrażeń/leczenia i wzrost/zapis skilli. Poprawiono zaokrąglanie terminów ticków, ułamkową manę przy pełnym zasobie i efektywne metadane czarów w drafcie/prywatnych widokach/karcie postaci. MatchLog zachowany, stary bufor i wyczyszczone helpery nie wróciły; get_progression pozostaje naprawiony.
+
+Pliki: `modules/combat`, `modules/character/details*`, `modules/match`, `modules/skills/gain.go`, `modules/spell_system`, `cmd/duel-sim`, `scripts/test_combat_runtime.mjs`; klient `Core/Match/DuelV2.cs` — zaakceptowana kompatybilność katalogu2.3. Notatki: combat-stat-rules, progression, spell-system, server-architecture, combat-v2, rpcs, character-details, shared-types, opcode31/70, duel-v2-client, plan, audit, _index, _state.
+
+Weryfikacja: `go test ./...`, `go test -race ./modules/match/... ./modules/spell_system/... ./cmd/duel-sim`, `go vet ./...`, `make build` — PASS. Klient `dotnet build hexbane.csproj --no-restore`: 0 błędów, 9 wcześniejszych ostrzeżeń. Symulator: 100 meczów, seed42. Review: naprawione dwie uwagi z testami regresji.
+
+Pozostało poza zakresem: test live po restarcie lokalnego stacku, tuning balansu i ewentualna jawna klasyfikacja szkół/typów obrażeń w katalogu. Nie wdrażano zmian ani nie commitowano.
+
+## 2026-09-08 — Codex — instrukcja przebudowania
+
+Sprawdzono Makefile, docker-compose.yml i docs/server/dev-setup. Po zmianach Go lokalny cykl to `make dev` (build pluginu, kopia do kontenera, restart Nakama); klient wymaga przebudowania po zmianie kompatybilności katalogu. Bez uruchamiania stacku i bez zmian kodu.

@@ -2,7 +2,7 @@
 type: project
 project: Hexbane
 area: plans
-status: active
+status: complete
 created: 2026-09-08
 updated: 2026-09-08
 verified: 2026-09-08
@@ -25,13 +25,15 @@ Spec: user approval in this session; retained modules/combat formulas and race t
 - Magery/resistance gain rolls on effective damaging impacts/pulses, meditation once per active second; existing chances and +.1, accumulated skill value clamped to100 and persisted by gameover. Bot trackers remain nil.
 - Orc paralysis duration applied in scheduler, so queue expiry, snapshot and handler agree. Existing three-second immunity unchanged.
 - Keep MatchLog and prior cleanup; do not restore removed buffer or notification scaffolding.
-- Keep protocol2/ruleset duel_v2 transport. Update catalog revision for changed effective rules and document required client version rollout. No client writes outside authorized repository.
+- Keep protocol2/ruleset duel_v2 transport. Update catalog revision for changed effective rules and document required client version rollout. The required one-line client compatibility change was separately approved and applied: accept catalog2.3 alongside local tutorial2.2.
 
 ## Tasks
-- [ ] Profile and consumers: combat/profile.go + tests, character/details, core/player_setup, ai_match/bot, cmd/duel-sim and tests. Interface NewProfile(str,int,dex int, meditation float64,r *race.Race) Profile; fields MaxHealth,MaxMana int; CastingTimeBonus,DodgeChance,ManaRegen,HealthRegen,MeditationRegen,ManaCostMultiplier,ParalyzeDurationMultiplier float64; DamageStat,PrimaryElement,SecondaryElement string; PrimaryElementBonus,SecondaryElementBonus float64; SpellResistances map[string]float64.
-- [ ] Effects: scale EffectContext.DealDamage/Heal, pulse count helper, handlers avoid duplicate scaling, paralyze scheduler, regression tests. Consume PlayerState.Combat combat.Profile and RecordSkillGain(skills.SkillType).
-- [ ] Match integration: PlayerState.Combat, Roll func()float64, SpellManaCost; actions casts/regeneration/gain; skills deterministic-roll helper; game phase random stream, mana checks/events, dodge and regen events; test regressions.
-- [ ] Integration: tests first for changed behavior; full Go suite, race suite, vet, seeded simulator. Review final changes. Update server/protocol notes, audit outcome, decisions and journal.
+- [x] Profile and consumers: combat/profile.go + tests, character/details, core/player_setup, ai_match/bot, cmd/duel-sim and tests. Interface NewProfile(str,int,dex int, meditation float64,r *race.Race) Profile; fields MaxHealth,MaxMana int; CastingTimeBonus,DodgeChance,ManaRegen,HealthRegen,MeditationRegen,ManaCostMultiplier,ParalyzeDurationMultiplier float64; DamageStat,PrimaryElement,SecondaryElement string; PrimaryElementBonus,SecondaryElementBonus float64; SpellResistances map[string]float64.
+- [x] Effects: scale EffectContext.DealDamage/Heal, pulse count helper, handlers avoid duplicate scaling, paralyze scheduler, regression tests. Consume PlayerState.Combat combat.Profile and RecordSkillGain(skills.SkillType).
+- [x] Match integration: PlayerState.Combat, Roll func()float64, SpellManaCost; actions casts/regeneration/gain; skills deterministic-roll helper; game phase random stream, mana checks/events, dodge and regen events; test regressions.
+- [x] Integration: tests first for changed behavior; full Go suite, race suite, vet, seeded simulator. Review final changes. Update server/protocol notes, audit outcome, decisions and journal.
 
 ## Source of truth in code
 server:modules/combat, modules/skills, modules/race, modules/match, modules/spell_system, modules/character, cmd/duel-sim.
+
+Review resolved fractional mana capacity and effective draft metadata issues with regression tests. Validation and current limitations: [[combat-stat-rules]].

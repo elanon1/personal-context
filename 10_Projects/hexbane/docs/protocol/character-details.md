@@ -41,7 +41,7 @@ that trio only when this RPC is unreachable (`client:Game/ScenesV3/CharacterDeta
   "stats":       {"strength":{"base","racial","effective","min","max"}, "intelligence":{...}, "dexterity":{...}},
   "skills":      {"meditation":{"value","tier","group"}, "spell_resistance":{...}, "magery":{...}},
   "attributes":  {"max_health":200,"max_mana":140,"mana_regen":1.8,"health_regen":0.33},
-  "modifiers":   [{"id":"dodge","name":"Dodge chance","value":2.25,"unit":"percent"}, "..."],
+  "modifiers":   [{"id":"dodge","name":"Dodge chance","value":2.25,"unit":"percent"}],
   "racial_traits": [{"id":"spell_slot_bonus","name":"Additional spell slots","value":1,"unit":"slots"}],
   "spellbook":   {"spell_slots_used","spells_learned","spell_slots_unlocked","spell_slots_max",
                   "spells":[{"nature","incantation","recovery_time","travel_time","id","name","school",
