@@ -12,7 +12,7 @@ tags: [hexbane, design, races, stats, primary-spells, progression]
 
 ## Confirmed user direction
 
-The current14 spells are the **first content pack**, not the complete future catalog. Races were designed for the old spells and need redesign. Every character always has two primary spells: Magic Arrow and Mirror Reflection, plus a progressing set of additional slots, starting at3 and reaching6 (Human starts at4 and reaches7). Magic Arrow primarily breaks mirrors and should deal only1–2 damage. The user now selects primary progression: Mirror blocks100% of the intercepted damage at baseline but returns25%, with a development path to100%; another path extends its duration. Arrow should also have two development paths. Human starts with4 additional slots. Branch budgets, intermediate values and unlock pacing remain proposed. The user requested a plan, not immediate implementation.
+The current14 spells are the **first content pack**, not the complete future catalog. Races were designed for the old spells and need redesign. Every character always has two primary spells: Magic Arrow and Mirror Reflection, plus a progressing set of additional slots, starting at3 and reaching6 (Human starts at4 and reaches7). Magic Arrow primarily breaks mirrors and should deal only1–2 damage. The user selects primary progression with a weaker start, six levels, a branching graph and additional effects at checkpoints3 and6. Mirror should gain reflection of debuffs and periodic spells at level3. The earlier direction preserves100% protection against the intercepted spell; the user suggested25% initial return, then requested a weaker baseline. The proposed10% return below is not yet approved. Human starts with4 additional slots. Exact node bonuses, unlock pacing and capstone effects remain proposed. The user requested a plan, not immediate implementation.
 
 This supersedes the assumption in [[2026-09-08-balance-review]] that the present neutral catalog should define the permanent racial design. Its measurements remain valid for today's pack and code; they are not evidence that future elemental design should be abandoned.
 
@@ -68,49 +68,76 @@ Separate mechanical school/damage-type metadata from cosmetic nature. A future p
 
 ## 3. Primary spells: a permanent tactical foundation
 
-### Shared progression proposal
+### Six levels in a branching directed acyclic graph
 
-User correction supersedes the earlier recommendation for horizontal-only variants. Primary upgrades may increase power from a weaker baseline. To preserve distinct mature builds, propose a **limited allocation budget per primary**, rather than eventually maximizing both branches. For the first prototype: two spendable points per primary, two ranks per branch; valid mature allocations are2/0,1/1,0/2. Each point advances one rank. This budget and the ranks below are proposals, not user-approved numbers.
+The user requested six primary levels with checkpoints at3 and6 and graph-based branching. This replaces the previous two-point/two-rank proposal.
 
-Mirror and Arrow have independent point budgets, so developing one does not force abandoning the other. Earn points from explicit progression milestones, not cast spam. Permit redistribution outside a match; freeze both allocations when a match starts. Exact unlock milestones are to be set with the XP redesign. These points neither consume magic points nor alter optional spell slots in this proposal. Keep the default0/0 state valid for existing characters and define any retrospective grants from earned milestones during implementation.
+Proposed graph rules:
 
-### Mirror Reflection — confirmed direction and proposed ranks
+- Level1 is the free starting node. Each primary has its own progression; its level is not the character level.
+- Advancing to the next primary level selects exactly one eligible node in that tier. At level6 the character has a six-node path, never every node in the graph.
+- Ordinary choice tiers are2,4 and5. Level3 is a shared capability checkpoint. Level6 offers a choice of capstone effects.
+- Edges can branch and reconnect, allowing hybrid builds. Passing through a shared checkpoint preserves all previous selected node bonuses; merging the graph does not reset the build.
+- Node bonuses below are **incremental** and accumulate along the selected path. Two nodes at the same tier are mutually exclusive. The same bonus type can be selected again at a later ordinary tier.
+- Earn advancement from explicit progression milestones, not primary-cast spam. The XP redesign determines those milestones; no character-level mapping is implied by this six-level primary graph.
+- Allow redistribution outside a match, validate a contiguous legal path server-side, and snapshot it at match entry. Each primary has an independent earned-level budget; neither consumes optional spell slots.
+- Store versioned node IDs and graph definitions, not a growing set of bespoke character boolean flags. Runtime resolves one effective primary configuration. Add future branches without rewriting allocation logic, but explicitly migrate saved paths when existing nodes change or disappear.
 
-Mirror intercepts one hostile spell package. Baseline protection is already100% for that intercepted package, **not immunity to all attacks during its active window**. The offensive return starts at25%. It remains breakable by Arrow at every rank, has one charge and expires if unused.
+```mermaid
+flowchart TD
+    L1["1 · Starting spell"] --> P2["2 · Power / tempo"]
+    L1 --> E2["2 · Duration / economy"]
+    P2 --> L3["3 · New capability"]
+    E2 --> L3
+    L3 --> P4["4 · Power / tempo"]
+    L3 --> E4["4 · Duration / economy"]
+    P4 --> P5["5 · Power / tempo"]
+    P4 --> E5["5 · Duration / economy"]
+    E4 --> P5
+    E4 --> E5
+    P5 --> C6["6 · Capstone A"]
+    P5 --> G6["6 · Capstone B"]
+    E5 --> C6
+    E5 --> G6
+```
 
-| Branch | Rank0 | Rank1 | Rank2 |
-|---|---:|---:|---:|
-| Returned damage fraction |25%|60%|100%|
-| Active duration |3s|4s|5s|
+This is a compact DAG with reconnection and hybrid paths, not two disconnected linear upgrade tracks. Later pack/race branches can introduce prerequisites, but the first version should keep the above small graph understandable.
 
-The25%→100% endpoints are user direction. The intermediate60%,3/4/5s duration values and two-point budget are prototype proposals. Keep base cost9, cast.5s and recovery.4s while testing these branches. No extra charges or Arrow immunity.
+### Mirror Reflection
 
-At a two-point budget, examples are100% return/3s duration,60%/4s, or25%/5s. The first rewards precise counter timing; the last extends the opportunity to catch a spell but also gives the opponent longer to remove it with Arrow. Longer duration is not automatic invulnerability.
+**Proposed weaker level1 baseline:** one charge,1.5-second active window,10% returned direct damage, cost9, base cast.5s, recovery.4s. Full interception of one hostile package remains; it is never immunity to every attack during the window. The10%/1.5s values are new prototype candidates, not user-confirmed tuning.
 
-Proposed damage contract:
+- At levels1–2, intercept the entire incoming package and consume the mirror. Return only its direct-damage effects at the selected fraction. Debuffs, poison and delayed hex are blocked but not returned; a pure status/periodic spell therefore spends the mirror without producing an outgoing effect. Already-active statuses are not cleansed.
+- **Level3 checkpoint:** unlock returning hostile debuffs, periodic damage and delayed damage. Status mechanics return fully; their damage uses the mirror's selected fraction. This avoids undefined fractional paralysis durations. Target-specific duration rules still apply to the final target. This detailed policy is proposed; the user requested the level3 gate.
+- Ordinary levels2/4/5 each offer either **+30 percentage points of returned damage** or **+1 second of active duration**. These increments produce four final allocations:100%/1.5s,70%/2.5s,40%/3.5s,10%/4.5s, before the capstone. All retain one charge.
+- **Level6 checkpoint:** choose one proposed extra effect:
+  - **Counterstroke:** after successfully returning a non-primary hostile spell package, the next non-primary cast started within2 seconds has its cast duration reduced by100 ms, once. The duration remains at least100 ms. No trigger when Arrow breaks the mirror, when no outgoing effect exists, or when the outgoing package is dodged.
+  - **Conservation:** if the mirror expires unused, refund `floor(actual mana paid / 2)`. No refund on consumption, Dispel, replacement, match end or any other removal reason. Reflecting/being broken by Arrow never qualifies as unused expiry.
 
-- Snapshot the incoming spell's offensive potency from its original caster, then multiply by the mirror's return fraction. The new target applies its own mitigation once. Do not amplify again using the reflector's INT/STR/Magery/race.
-- Example before defender mitigation: an incoming40-damage spell is fully intercepted; rank0 sends10 damage back, rank2 sends40. No30-damage remainder leaks onto the protected player.
-- Transfer reflected ownership/target as current interactions require, but retain offensive potency separately. Keep the no-reflection-chain rule.
-- Proposed status policy to settle in the design: reflect hostile statuses fully as today; the fraction scales only their damage. Poison pulses and delayed hex detonation retain the fraction captured at reflection, not a newly looked-up rank. Paralysis duration continues to use the final target's rules. This avoids an accidental ambiguous "25% paralysis" mechanic. Status reflection at baseline is therefore stronger than25% of the overall utility of such spells and must be measured separately.
-- Arrow's1-damage utility hit remains1 even when reflected; it consumes the mirror regardless of the returned-damage rank. Explicitly test minimum-damage rounding rather than silently relying on it.
+Counterstroke is a separate proposed status with a short expiry, one consumption and no stacking. If another primary effect grants the same100 ms tempo benefit, keep only one; never add them into a larger bonus.
 
-### Magic Arrow — proposed baseline and two branches
+**Damage contract:** snapshot original caster offensive potency, multiply once by the selected return fraction, then apply the new target's mitigation once. Do not rescale with the reflector's stats. Reflected ownership changes for poison ownership and other interactions, but offensive potency remains separate. Capture the fraction and capability flags at interception for later poison pulses/hex detonation. No reflection chains. Arrow remains a1-damage utility hit when returned, an explicit minimum-damage exception, and always consumes a mirror before the final reflected target's dodge roll.
 
-Fixed1 damage on an unblocked hit, within the user's1–2 target. No STR/INT/Magery/school/racial damage amplification and no damage-growth branch. Shield and dodge still work; mirror consumption remains before the final target's dodge roll. Do not give damaging-skill training for utility Arrow probing.
+Every node preserves the core Arrow counter. No additional mirror charges, reflected-damage amplification above100%, or immunity to mirror-breaking.
 
-| Branch | Rank0 | Rank1 | Rank2 |
-|---|---:|---:|---:|
-| Base cast time |.6s|.5s|.4s|
-| Base mana cost |3|2|1|
+### Magic Arrow
 
-Recovery remains.3s. All values are prototype proposals. With two points, a player chooses a.4s/cost3 fast probe, a.5s/cost2 hybrid, or a.6s/cost1 economical probe. All deal1 damage. These casting steps deliberately cross100 ms tick boundaries; test actual final timings after stat and race effects. Mana cost never reaches zero.
+**Proposed weaker level1 baseline:** fixed1 damage, cost5, cast.8s, recovery.4s. The only confirmed damage direction is the user's1–2 target; these cost/timing values are candidates for simulation. The weaker start must still let Arrow contest a newly cast mirror with plausible reaction time; test the1.5-second initial mirror window and100 ms tick boundaries together.
 
-Primary damage remains independent of race, while any generic cost/cast modifiers must be applied once and shown in effective metadata. Prototype racial primary-specific modifiers only after these branches work; if introduced, they replace part of another racial trait's power budget rather than providing a free extra bonus.
+- No damage scaling from STR/INT/Magery/school/race and no damage-growth branch. Shield and dodge keep their normal interactions; mirror consumption is reliable at every primary level.
+- Ordinary levels2/4/5 each offer either **−100 ms base cast time** or **−1 base mana cost**. End allocations before capstones are.5s/cost5,.6s/cost4,.7s/cost3,.8s/cost2. This is a tempo/economy choice, not a growing damage attack.
+- **Level3 checkpoint — Follow-through:** when this Arrow actually consumes a mirror, shorten its own remaining recovery by100 ms, never earlier than the current authoritative time. Ordinary hits, misses and shield hits do not qualify. If no recovery remains, nothing is shortened. This is a candidate additional effect, not approved behavior.
+- **Level6 checkpoint:** choose one proposed extra effect:
+  - **Opening:** after breaking a mirror, the next non-primary cast started within2 seconds is100 ms shorter, once, minimum100 ms. It uses the same non-stacking tempo effect as Mirror Counterstroke.
+  - **Rebate:** breaking a mirror refunds1 mana, capped at the actual mana paid. An ordinary hit/miss earns nothing. Maximum economy still has a positive net cost under these prototype values.
 
-### Replacement scope
+Do not grant damaging-skill training for utility probing. Generic cost/cast racial modifiers, if retained, apply once and appear in effective metadata; no primary-specific racial overlay in the first graph iteration. Profile projection must not mutate catalog definitions. Special-case damage eligibility centrally rather than separately in each handler.
 
-Keep exactly the two primary roles and their existing spell identities for this iteration. No unrestricted replacement with ordinary spells, additional primary slots or mid-match redistribution. A later spell replacing a primary must fulfill its tactical role and pass the same counterplay tests.
+### What this prototype tests
+
+The earlier primary model was weaker only in reflected damage. This prototype weakens initial return, window, Arrow speed and Arrow cost, then grants actual new capabilities at3/6. Because this changes early counter timing materially, verify the combined baseline before committing to these numbers. If Arrow can no longer reasonably break an observed mirror, adjust the starting window/cast pair; do not grant arbitrary counter immunity.
+
+Keep exactly two primary spell identities. Unrestricted replacement, extra primary slots and racial graph overlays are deferred proposals, not part of this first implementation. New packs may expand graph content while preserving the shared tactical roles.
 
 ## 4. Slot and collection progression
 
@@ -145,13 +172,15 @@ Select one working trait per race, establish a common power budget, test each in
 
 Gate: all15 race pairings with multiple build archetypes, both seats, shared draft samples, alternate AI policies and targeted human playtests. Raw aggregate wins are insufficient. Test early Human separately, and test Human slot value again as new packs arrive.
 
-### Phase D — primary development branches
+### Phase D — six-level primary graphs and checkpoint effects
 
-Implement the weaker Mirror baseline and two branches for each primary. Deliver stored per-primary point grants/allocations, server validation of earned budgets/rank caps, out-of-match redistribution and immutable match-entry snapshots. Define retroactive point grants for existing characters. Update character progression UI, primary tooltips, effective match metadata, reflection events and supported catalog version together.
+Define versioned DAGs with node tier, prerequisites/edges, mutually exclusive choices and typed modifiers/effects. Persist earned primary level separately from selected node IDs. Validate root, reachability, one node per tier, progression budget and graph version. Reject cycles/unreachable nodes in content validation. Resolve the selected path into an immutable match-entry configuration. Deliver outside-match redistribution and explicit handling of saved allocations when the graph changes.
 
-The effect context must distinguish original offensive potency from reflected ownership and retain the selected return fraction through poison/hex scheduling. This is a small amount of new content, but affects more than YAML numbers. Relevant areas: character persistence/RPCs, combat damage context, match setup, effect queue/events, client primary selection and combat display.
+Implement weaker baseline tuning and the selected checkpoint effects, effective tooltips and graph UI, reflection payload metadata and client/server catalog compatibility together. Define retrospective earned levels for existing characters from the final unlock policy. The user requested a design plan; exact character milestones and candidate node effects are not yet an approved implementation specification.
 
-Gate: baseline25% interception causes zero leaked damage; final100% and hybrid fractions calculate once; poison/hex carry the captured fraction; status policy and Arrow's1-damage exception are explicit; no reflection chain or extra charge; allocations cannot exceed the earned budget or change mid-match. Compare0/0 beginners, mixed ranks and all2/0,1/1,0/2 endpoints across races and spell packs. Only then consider additional racial primary modifiers.
+The effect context must distinguish original offensive potency from reflected ownership and retain the selected return fraction/capabilities through poison/hex scheduling. The checkpoint3 gate must block the unsupported original effect without inadvertently returning it. Conditional refunds must use actual paid mana and explicit lifecycle removal reasons. Tempo effects cannot stack and are consumed only by eligible casts.
+
+Gate: all legal six-tier paths, beginner levels1/2, capability boundary2→3 and capstones5→6; full original interception, only eligible returns before3, full status-mechanic return after3, delayed damage fraction captured once; no reflection chain/extra charge; Arrow always breaks mirrors and damage stays1. Cover unused expiry vs consumption/dispel/match-end refunds, cast-time floor and queued-action timing. Compare equivalent primary progression and mixed novice/veteran progression across races. Human4→7 entitlement stays unchanged.
 
 ### Phase E — progression and content-pack compatibility
 

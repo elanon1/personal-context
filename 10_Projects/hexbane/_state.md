@@ -54,9 +54,13 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 `git status`, w tym skasowana stara historia migracji `000001..000016` zastąpiona świeżym baseline
 `000001..000003`). Snapshot repo: [[repos-and-branches]].
 
-**Content:** 13 zachowanych ikon pokrywa 14 obecnych zaklęć; VFX samych zaklęć obejmuje Mirror Reflection z przywróconymi dźwiękami oraz nowy Magic Arrow (błękitna Arkana, grot, smuga i krystaliczne trafienie). Nowe animacje castingu i presety zachowane. Stare VFX/SFX i assety generatora usunięte 2026-09-08. → [[spell-vfx-configuration]]
+**Content:** 13 zachowanych ikon pokrywa 14 obecnych zaklęć; VFX samych zaklęć obejmuje Mirror Reflection z przywróconymi dźwiękami oraz Magic Arrow (Arkana) i Firebolt/Fireball (Żar) ze wspólnym cyklem życia pocisku. Nowe animacje castingu i presety zachowane. Stare VFX/SFX i assety generatora usunięte 2026-09-08. → [[spell-vfx-configuration]]
 
 ## Decisions log
+
+- **2026-09-08 — Fireball jako alias Firebolt, wspólny cykl życia pocisków.** Nowy ognisty efekt natury Żar; `SpellProjectile` i wspólny manager obsługują oba pociski, `ProjectilePreview` oba podglądy. Jeden preset `firebolt.tres` oraz metadane offline zgodne z YAML. **Why:** zachowanie nomenklatury użytkownika bez rozdzielania efektów i konfiguracji między widokami; `travel_time: 0` pozostaje decyzją serwera.
+
+- **2026-09-08 — Primary jako graf6 poziomów.** Użytkownik chce słabszy start, rozwidlenia oraz dodatkowe efekty na checkpointach3 i6; odbijanie osłabień i czarów okresowych lustrem dopiero od3 poziomu. **Why:** rozwój ma otwierać nowe możliwości i różnicować buildy. Nowe wartości startowe, bonusy węzłów i efekty końcowe pozostają propozycjami w [[2026-09-08-race-primary-progression-redesign]].
 
 - **2026-09-08 — Rozwój primary i start Humana.** Użytkownik wybrał rozwój Mirror: pełna ochrona przed przechwyconym trafieniem od startu, odbijane obrażenia25%→100% oraz druga ścieżka czasu trwania. Arrow również ma dostać dwie ścieżki. Human zaczyna z4 slotami. **Why:** rozwój primary ma zwiększać różnorodność buildów, a dodatkowy slot jest cechą Humana od początku. Budżety punktów i konkretne rangi to nadal propozycja w [[2026-09-08-race-primary-progression-redesign]].
 
@@ -163,7 +167,7 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
   10 wysyła listę zaklęć przeciwnika jako „prywatny” widok. Błąd czy akceptowalne w 1v1?
 - **Sekrety w repo** (serwer `.env.dist` klucz OpenAI, `helm/hexbane/values.yaml` PAT GitHub,
   klient `.env` pakowany do builda) — nadal obecne, nie rotowane.
-- **Nowe VFX dla pozostałych zaklęć**: aktualne ikony są zachowane, stare VFX/SFX i generator n8n usunięte. Przyszłe efekty wymagają nowych implementacji. Preset `fireball.tres` nadal dotyczy castingu starego aliasu, a aktualne id to `firebolt`. → [[spell-vfx-configuration]]
+- **Nowe VFX dla pozostałych zaklęć**: aktualne ikony są zachowane, stare VFX/SFX i generator n8n usunięte. Przyszłe efekty wymagają nowych implementacji. Alias `fireball` korzysta z kanonicznego `firebolt.tres` i wspólnej implementacji Firebolt. → [[spell-vfx-configuration]]
 - **`visual_key`** — klient czyta, serwer nie wysyła (backend do zrobienia). → [[spell-visual-key]]
 - **Baseline balansu** `balance-v2.json` opisuje `duel_v2.1`, kod ma `duel_v2.2` — przeliczyć?
 - Czy prod na k8s ma żyć (chart + Argo istnieją, nic ich nie opisuje poza [[infra-and-deploy]])?

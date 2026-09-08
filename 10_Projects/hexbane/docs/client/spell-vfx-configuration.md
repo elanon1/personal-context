@@ -19,7 +19,7 @@ Current catalog: `magic_arrow, mirror_reflection, firebolt, heavy_bolt, delayed_
 |---|---|---|---|
 | magic_arrow | magic_arrow | MagicArrow.tscn | none |
 | mirror_reflection | mirror_ward | MirrorWard.tscn | formation.wav, shatter.wav |
-| firebolt | fireball | none | none |
+| firebolt | fireball | Firebolt.tscn | none |
 | heavy_bolt | flamestrike | none | none |
 | delayed_hex | explosion | none | none |
 | poison | poison_dart | none | none |
@@ -36,14 +36,14 @@ Each icon folder contains only `<folder>.png` and its Godot import metadata. Gen
 
 ## Effect configuration after 2026-09-08 cleanup
 
-`mirror_ward` and `magic_arrow` are registered and implemented. The legacy FX ids in the icon mapping are **icon folder aliases only**. Other legacy `Game/FX` scenes, scripts, particle/texture assets and spell SFX were deleted; Magic Arrow was subsequently implemented as a new procedural shader effect. The current 14-spell gameplay catalog was not removed. See [[spell-effect-system]].
+`mirror_ward`, `magic_arrow` and `firebolt` are registered and implemented. The legacy FX ids in the icon mapping are **icon folder aliases only**. Other legacy `Game/FX` scenes, scripts, particle/texture assets and spell SFX were deleted; Magic Arrow was subsequently implemented as a new procedural shader effect. The current 14-spell gameplay catalog was not removed. See [[spell-effect-system]].
 
 ## Cast presentation (gesture, not the projectile)
 
 Independent of the table above, the caster's animation and hand effect are chosen per spell:
 
 1. **`visual_key`** on the `Spell` object (`Core/Spells/Spell.cs:71`), a self-contained 43-char `vfx1_…` string authored in `Dev/ArenaMaps/ArenaMapsDev.tscn` ("Kopiuj klucz"), decoded by `Game/ScenesV3/Components/SpellVisualKey.cs`. Wire format (28 bytes, big-endian binary32 floats): animation id 0–10, effect profile 0–10, flags (tint, trails), ground ring, intensity 0–3, scale 0.5–2, RGBA. Backend storage of this field is **not implemented**; the client only reads it.
-2. **Local preset** `Resources/SpellVisuals/<spell_id>.tres` (`SpellVisualPreset`: `Animation`, `Effect` 0=auto/1–11, `OverrideColor`, `Tint`, `Intensity`, `EffectScale`, `Trails`, `GroundRing`; directory constant at `SpellVisualPreset.cs:19`). Present today: `fireball`, `magic_arrow`, `magic_reflection`, `mirror_reflection`, `_template.tres`. Note `fireball` is keyed by the FX id, not the server id `firebolt`, and `magic_reflection` matches nothing.
+2. **Local preset** `Resources/SpellVisuals/<spell_id>.tres` (`SpellVisualPreset`: `Animation`, `Effect` 0=auto/1–11, `OverrideColor`, `Tint`, `Intensity`, `EffectScale`, `Trails`, `GroundRing`; directory constant at `SpellVisualPreset.cs:19`). Present today: `firebolt`, `magic_arrow`, `magic_reflection`, `mirror_reflection`, `_template.tres`. `fireball` resolves to the single `firebolt.tres` preset; the former alias file was replaced. `magic_reflection` still matches nothing.
 3. **Defaults**: `CastAnimationResolver.Resolve` (`spell.animation` from the server if the race has the clip → `attack_1h_01` → `spell_throw`), and the gesture effect assigned to that clip.
 
 Priority is key → preset → default; malformed keys fall back silently. Presets and keys change only the cast look, never timing, damage, projectile or barrier.
