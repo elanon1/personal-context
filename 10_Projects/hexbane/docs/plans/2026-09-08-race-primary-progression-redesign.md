@@ -12,7 +12,7 @@ tags: [hexbane, design, races, stats, primary-spells, progression]
 
 ## Confirmed user direction
 
-The current14 spells are the **first content pack**, not the complete future catalog. Races were designed for the old spells and need redesign. Every character always has two primary spells: Magic Arrow and Mirror Reflection, plus a progressing set of additional slots, starting at3 and reaching6 (Human7). Magic Arrow primarily breaks mirrors and should deal only1–2 damage. Explore primary upgrades, replacement spells and racial modifications. The user requested a plan, not immediate implementation.
+The current14 spells are the **first content pack**, not the complete future catalog. Races were designed for the old spells and need redesign. Every character always has two primary spells: Magic Arrow and Mirror Reflection, plus a progressing set of additional slots, starting at3 and reaching6 (Human starts at4 and reaches7). Magic Arrow primarily breaks mirrors and should deal only1–2 damage. The user now selects primary progression: Mirror blocks100% of the intercepted damage at baseline but returns25%, with a development path to100%; another path extends its duration. Arrow should also have two development paths. Human starts with4 additional slots. Branch budgets, intermediate values and unlock pacing remain proposed. The user requested a plan, not immediate implementation.
 
 This supersedes the assumption in [[2026-09-08-balance-review]] that the present neutral catalog should define the permanent racial design. Its measurements remain valid for today's pack and code; they are not evidence that future elemental design should be abandoned.
 
@@ -22,9 +22,9 @@ Use three independently understandable layers:
 
 1. **Stats** determine investment in survival, spell power/resources and tempo. Same spendable budget for every race; soft diminishing returns prevent a single-stat extreme from dominating.
 2. **Race** supplies a small set of recognizable mechanical affinities/tradeoffs. It does not forbid stat allocations or rely exclusively on content absent from the first pack.
-3. **Loadout** has two permanent primary roles plus3–6 drafted/selected spells (Human7). Primary variants are horizontal options; collection and slot entitlement remain separate.
+3. **Loadout** has two permanent primary roles plus3–6 drafted/selected spells (Human7). Primary spells have two development branches each; collection and slot entitlement remain separate.
 
-This is a design proposal. Coefficients, new race passives and primary variants below have not been balance-tested or approved for implementation.
+This is a design proposal. Coefficients, new race passives and primary progression coefficients below have not been balance-tested or approved for implementation.
 
 ## 1. Stat budget and caps
 
@@ -62,58 +62,68 @@ Design one primary mechanic and, only if needed, one small secondary mechanic pe
 | Gnome | spell efficiency | modest cost or cast-efficiency advantage with a visible tradeoff | account for ceil rounding on cheap spells; avoid best mana and cast speed simultaneously |
 | Orc | durability and resistance to disruption | moderately higher survival / shorter control | stop making the same STR investment buy full damage and outsized HP; prototype all races using INT for spell power |
 
-These are directions, not a list of all passives to apply together. For the first pass, keep primary effects themselves identical across races. Race identity should work without multiplying the combinations of race × primary variant × future spell pack immediately.
+These are directions, not a list of all passives to apply together. For the first pass, keep primary effects themselves identical across races. Race identity should work without multiplying the combinations of race × primary allocation × future spell pack immediately.
 
 Separate mechanical school/damage-type metadata from cosmetic nature. A future pack can introduce new mechanical affinities through explicit contracts. Do not infer them from names or silently repurpose lore fields. Test every new pack with the old one, not only in isolation.
 
 ## 3. Primary spells: a permanent tactical foundation
 
-### Magic Arrow — proposed baseline
+### Shared progression proposal
 
-- Fixed1 damage on an unblocked hit (within the user's1–2 target); no STR, INT, Magery, school or race damage amplification.
-- Preserve the interaction ordering: a hostile Arrow consumes the target mirror before the final reflected target's dodge is resolved. It remains a reliable way to spend a mirror charge, not a new way to bypass reflection.
-- Shield may absorb it; dodge may prevent final damage; a reflected Arrow deals the same tiny amount. No true-damage or shield-bypass feature is introduced.
-- Keep existing cost3, cast.6s and recovery.3s as the initial control values. Revisit cost/timing only after measuring the anti-mirror loop with low damage.
-- Do not reward damaging-skill training from repetitive Arrow probing; define training eligibility explicitly instead of making players farm a utility spell.
-- Test1 HP lethal, reflection, dodge, absorption and skill100/high-stat/extreme-race cases. It must never become a normal scaling attack again.
+User correction supersedes the earlier recommendation for horizontal-only variants. Primary upgrades may increase power from a weaker baseline. To preserve distinct mature builds, propose a **limited allocation budget per primary**, rather than eventually maximizing both branches. For the first prototype: two spendable points per primary, two ranks per branch; valid mature allocations are2/0,1/1,0/2. Each point advances one rank. This budget and the ranks below are proposals, not user-approved numbers.
 
-### Mirror Reflection — proposed baseline
+Mirror and Arrow have independent point budgets, so developing one does not force abandoning the other. Earn points from explicit progression milestones, not cast spam. Permit redistribution outside a match; freeze both allocations when a match starts. Exact unlock milestones are to be set with the XP redesign. These points neither consume magic points nor alter optional spell slots in this proposal. Keep the default0/0 state valid for existing characters and define any retrospective grants from earned milestones during implementation.
 
-- Keep one charge, three seconds, existing cost9/cast.5s/recovery.4s as the initial control configuration.
-- No progression to multiple charges and no immunity to Arrow.
-- Define whether reflected offensive spells use their original offensive potency or the reflector's. Current code uses reflector stats. Recommended prototype: preserve the original spell's offensive potency, but transfer ownership/target for interaction rules; reflection then counters the opponent's spell rather than becoming hidden racial burst. This is a separate effect-context change, not necessary for the Arrow damage fix.
+### Mirror Reflection — confirmed direction and proposed ranks
 
-### Development options
+Mirror intercepts one hostile spell package. Baseline protection is already100% for that intercepted package, **not immunity to all attacks during its active window**. The offensive return starts at25%. It remains breakable by Arrow at every rank, has one charge and expires if unused.
 
-1. **Vertical ranks:** +damage, +charges, lower cost without a drawback. Easy progression, but breaks common tactical expectations and adds veteran power. Reject for primary combat power; cosmetic mastery is fine.
-2. **Horizontal variants — recommended:** keep the two roles; unlock alternatives selected before a match, one variant per primary. Every variant has a cost and keeps the baseline variant competitive.
-3. **Unrestricted replacement with ordinary spells:** introduces loadouts without a mirror counter or without the promised two-primary foundation. Reject initially. A future alternative can replace Arrow/Mirror only if it fulfills the same role and passes the same interaction tests.
+| Branch | Rank0 | Rank1 | Rank2 |
+|---|---:|---:|---:|
+| Returned damage fraction |25%|60%|100%|
+| Active duration |3s|4s|5s|
 
-Prototype one alternate per role first, not a large upgrade tree:
+The25%→100% endpoints are user direction. The intermediate60%,3/4/5s duration values and two-point budget are prototype proposals. Keep base cost9, cast.5s and recovery.4s while testing these branches. No extra charges or Arrow immunity.
 
-| Role | Baseline | Alternate hypothesis | Invariant |
-|---|---|---|---|
-| Arrow | current tempo/cost,1 damage | faster release for higher mana cost, or slower release for lower cost; pick one prototype | always breaks a mirror, damage remains1–2, tradeoff crosses a real100 ms threshold |
-| Mirror | current cast/window, one charge | shorter cast with shorter active window, **or** longer window with higher cost; prototype one | one charge, Arrow still consumes it, no stacking |
+At a two-point budget, examples are100% return/3s duration,60%/4s, or25%/5s. The first rewards precise counter timing; the last extends the opportunity to catch a spell but also gives the opponent longer to remove it with Arrow. Longer duration is not automatic invulnerability.
 
-Variants use only their primary slot and do not consume the3–6/7 optional slots. Selection is fixed for a match. Unlocks add options, not mandatory rank upgrades. Availability should be the same for all races in the first iteration. Racial primary modifications can be tested later as substitutes for another racial trait, never as a free third layer of bonuses. At most one modifier applies; no hidden stacking with primary upgrades.
+Proposed damage contract:
+
+- Snapshot the incoming spell's offensive potency from its original caster, then multiply by the mirror's return fraction. The new target applies its own mitigation once. Do not amplify again using the reflector's INT/STR/Magery/race.
+- Example before defender mitigation: an incoming40-damage spell is fully intercepted; rank0 sends10 damage back, rank2 sends40. No30-damage remainder leaks onto the protected player.
+- Transfer reflected ownership/target as current interactions require, but retain offensive potency separately. Keep the no-reflection-chain rule.
+- Proposed status policy to settle in the design: reflect hostile statuses fully as today; the fraction scales only their damage. Poison pulses and delayed hex detonation retain the fraction captured at reflection, not a newly looked-up rank. Paralysis duration continues to use the final target's rules. This avoids an accidental ambiguous "25% paralysis" mechanic. Status reflection at baseline is therefore stronger than25% of the overall utility of such spells and must be measured separately.
+- Arrow's1-damage utility hit remains1 even when reflected; it consumes the mirror regardless of the returned-damage rank. Explicitly test minimum-damage rounding rather than silently relying on it.
+
+### Magic Arrow — proposed baseline and two branches
+
+Fixed1 damage on an unblocked hit, within the user's1–2 target. No STR/INT/Magery/school/racial damage amplification and no damage-growth branch. Shield and dodge still work; mirror consumption remains before the final target's dodge roll. Do not give damaging-skill training for utility Arrow probing.
+
+| Branch | Rank0 | Rank1 | Rank2 |
+|---|---:|---:|---:|
+| Base cast time |.6s|.5s|.4s|
+| Base mana cost |3|2|1|
+
+Recovery remains.3s. All values are prototype proposals. With two points, a player chooses a.4s/cost3 fast probe, a.5s/cost2 hybrid, or a.6s/cost1 economical probe. All deal1 damage. These casting steps deliberately cross100 ms tick boundaries; test actual final timings after stat and race effects. Mana cost never reaches zero.
+
+Primary damage remains independent of race, while any generic cost/cast modifiers must be applied once and shown in effective metadata. Prototype racial primary-specific modifiers only after these branches work; if introduced, they replace part of another racial trait's power budget rather than providing a free extra bonus.
+
+### Replacement scope
+
+Keep exactly the two primary roles and their existing spell identities for this iteration. No unrestricted replacement with ordinary spells, additional primary slots or mid-match redistribution. A later spell replacing a primary must fulfill its tactical role and pass the same counterplay tests.
 
 ## 4. Slot and collection progression
 
-The two primaries are separate from additional spell slots at every level. Pack purchases/unlocks increase the owned pool, not the number of slots. An owned spell need not be drafted. Primary variants live in their own selection UI.
-
-User's phrasing starts players at3 additional slots. Current code instead starts Human at4 and others3. Proposed target honoring the shared3-slot start:
+User correction is explicit: **Human starts at4**, other races at3. Preserve the existing slot ladder and starting ownership rules:
 
 | Level | Other races | Human |
 |---|---:|---:|
-| 1 | 3 | 3 |
-| 4 | 4 | 5 |
-| 8 | 5 | 6 |
-| 12 | 6 | 7 |
+|1|3|4|
+|4|4|5|
+|8|5|6|
+|12|6|7|
 
-Human's racial slot activates with the first slot unlock. This is an explicit proposal replacing the current4-slot Human start; early-level racial budgets must be tested because Human lacks that advantage before4. Do not silently change starting ownership from4 to3 for existing characters: ownership can exceed match slots and stays preserved. For new creation, offer3 starter selections to every race under this proposal.
-
-Do not mix primary variant unlocks with slot unlocks in the first tuning pass. Add variants after the basic3→6/7 curve and two unchanged primary roles work. Exact unlock milestone should be selected against the revised XP pace, not the current8.5-million-XP cap.
+The two primary spells are carried on top at every level. Primary development does not occupy optional slots. New packs expand the owned spell pool, not the maximum slot count. Human's extra starter and match slot are available from creation; the earlier proposed shared3-slot start is withdrawn.
 
 ## 5. Delivery sequence and validation gates
 
@@ -131,15 +141,17 @@ Gate: legal balanced/specialized builds at levels1/4/8/12/30, skills0/50/100; ev
 
 ### Phase C — races and migration
 
-Select one working trait per race, establish a common power budget, test each in pack1 and with synthetic future-pack combinations. Update descriptions and add a **new** data migration rather than editing an already-applied seed migration. Deliver reallocation flow before switching saved characters to new caps/budgets. Adjust Human slot ladder and creation consistently if the proposed3-slot start is accepted.
+Select one working trait per race, establish a common power budget, test each in pack1 and with synthetic future-pack combinations. Update descriptions and add a **new** data migration rather than editing an already-applied seed migration. Deliver reallocation flow before switching saved characters to new caps/budgets. Preserve Human's4-slot/4-starter creation and4→7 entitlement.
 
 Gate: all15 race pairings with multiple build archetypes, both seats, shared draft samples, alternate AI policies and targeted human playtests. Raw aggregate wins are insufficient. Test early Human separately, and test Human slot value again as new packs arrive.
 
-### Phase D — one variant per primary role
+### Phase D — primary development branches
 
-Implement pre-match selection, persistence, ownership/unlock rules and effective metadata for the two alternate prototypes. No mid-match replacement. Keep defaults valid for existing characters; expand the client/server catalog contract deliberately. Profile-derived runtime values must not mutate shared spell definitions.
+Implement the weaker Mirror baseline and two branches for each primary. Deliver stored per-primary point grants/allocations, server validation of earned budgets/rank caps, out-of-match redistribution and immutable match-entry snapshots. Define retroactive point grants for existing characters. Update character progression UI, primary tooltips, effective match metadata, reflection events and supported catalog version together.
 
-Gate: all primary-pair interactions and all races; no variant removes the mirror counter, becomes universally better or turns Arrow into an attack. Only then consider racial primary modifiers.
+The effect context must distinguish original offensive potency from reflected ownership and retain the selected return fraction through poison/hex scheduling. This is a small amount of new content, but affects more than YAML numbers. Relevant areas: character persistence/RPCs, combat damage context, match setup, effect queue/events, client primary selection and combat display.
+
+Gate: baseline25% interception causes zero leaked damage; final100% and hybrid fractions calculate once; poison/hex carry the captured fraction; status policy and Arrow's1-damage exception are explicit; no reflection chain or extra charge; allocations cannot exceed the earned budget or change mid-match. Compare0/0 beginners, mixed ranks and all2/0,1/1,0/2 endpoints across races and spell packs. Only then consider additional racial primary modifiers.
 
 ### Phase E — progression and content-pack compatibility
 

@@ -153,3 +153,16 @@ Końcowa walidacja po ustaleniu rodzica bariery przed Play: MirrorWard ponownie 
 ## 2026-09-08 — Codex — plan redesignu ras/statcapów/primary
 
 Uwzględniono doprecyzowanie użytkownika: obecny katalog to pierwsza paczka, stare rasy do przeprojektowania, Arrow1–2 dmg jako mirror breaker, dwa stałe primary i3→6/7 dodatkowych slotów. Sprawdzono walidację level-upu i obecną drabinkę slotów. Zapisano propozycję [[2026-09-08-race-primary-progression-redesign]]: wspólny budżet, softcapy zamiast zakazów rasowych, tożsamości ras, poziome warianty primary i etapy wdrożenia. Jawnie wskazano obecną różnicę Human4 na starcie i proponowane3 dla wszystkich. Zaktualizowano indeks, doprecyzowanie audytu i decyzje użytkownika w _state. Bez zmian kodu. Pozostało: wybór/akceptacja projektu, potem osobne plany wykonawcze i strojenie.
+
+
+## 2026-09-08 — Codex — skill tworzenia animacji czarów
+
+Utworzono osobisty `~/.codex/skills/hexbane-spell-animation/SKILL.md` i `agents/openai.yaml`. Zakres: natura/paleta i kontrakt serwera, projekt etapów efektu, wspólna konfiguracja/factory/SpellPresentation, zgodność z eventami i cleanup, rzeczywiste przyciski ArenaMapsDev, pozostałe preview, kontrola GPU oraz zapis do vaulta. Skill odsyła do dokumentacji; nie kopiuje katalogu ani nie narzuca wyglądu/czasu Magic Arrow innym czarom. Bez generatorów i zbędnych plików pomocniczych.
+
+Walidacja struktury `quick_validate.py`: PASS. Niezależne zastosowanie read-only do scenariusza Poison poprawnie wybrało venom/status zamiast niepotrzebnego pocisku; wskazało brak offline metadanych niestandardów i wymaganie presetu dla przycisków zapisanych czarów. Uzupełniono skill o te warunki i różnicę między zwykłymi Cast (Magic Arrow) a testem wskazanego id. Bazowe błędy integracji, które skill adresuje, zostały odtworzone w tej sesji przed jego utworzeniem (cztery niedziałające ścieżki ArenaMapsDev, późny burst po Stop, własność bariery).
+
+Notatki: legacy-and-tooling (lokalizacja i przykład użycia), _state, dziennik. Nie zmieniano kodu gry, nie commitowano i nie publikowano skilla. Wywołanie: `$hexbane-spell-animation zrób animację Poison`.
+
+## 2026-09-08 — Codex — korekta planu rozwoju primary
+
+Na podstawie uwag użytkownika przepisano sekcje primary i slotów w [[2026-09-08-race-primary-progression-redesign]]: Mirror chroni w100% przed jednym pakietem, siła odbicia25%→100% lub rozwój czasu; Arrow dwie proponowane gałęzie: tempo/koszt, bez wzrostu dmg. Zaproponowano ograniczony budżet na czar i build hybrydowy. Przywrócono w planie Human4 na starcie (zgodnie z obecnym kodem). Zapisano decyzje użytkownika w_state, rozróżniając propozycje rang i polityki statusów. Kod bez zmian. Pozostało zatwierdzenie szczegółów i implementacja z testami odbić/DoT/hex oraz progresji.

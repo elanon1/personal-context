@@ -94,7 +94,7 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 
 ## Plany (`docs/plans/`)
 
-- [[2026-09-08-race-primary-progression-redesign]] — propozycja redesignu ras, wspólnego budżetu statów i wariantów dwóch primary spelli.
+- [[2026-09-08-race-primary-progression-redesign]] — propozycja redesignu ras, wspólnego budżetu statów i dwóch ścieżek rozwoju primary spelli.
 
 - [[2026-09-08-fallback-player-design]] — projekt naturalnego przeciwnika zastępczego: kolejka, persony, lobby i AI.
 - [[2026-09-08-fallback-player-plan]] — plan wdrożenia i weryfikacji fallbacku (propozycja, bez implementacji).

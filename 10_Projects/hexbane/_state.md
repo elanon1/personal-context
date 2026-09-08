@@ -58,6 +58,10 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+- **2026-09-08 — Rozwój primary i start Humana.** Użytkownik wybrał rozwój Mirror: pełna ochrona przed przechwyconym trafieniem od startu, odbijane obrażenia25%→100% oraz druga ścieżka czasu trwania. Arrow również ma dostać dwie ścieżki. Human zaczyna z4 slotami. **Why:** rozwój primary ma zwiększać różnorodność buildów, a dodatkowy slot jest cechą Humana od początku. Budżety punktów i konkretne rangi to nadal propozycja w [[2026-09-08-race-primary-progression-redesign]].
+
+- **2026-09-08 — Skill `hexbane-spell-animation`.** Proces tworzenia VFX zapisany jako osobisty skill Codex w `~/.codex/skills/`, z odsyłaczami do kontraktów vaulta zamiast kopii katalogu czarów. **Why:** powtarzalne tworzenie efektów zgodnych z naturą i wspólnym playbackiem, z kontrolą rzeczywistych widoków użytkownika.
+
 - **2026-09-08 — Kontrakt kolejnych paczek i primary spelli.** Użytkownik doprecyzował, że14 czarów to pierwsza paczka; rasy wymagają redesignu po starym katalogu. Arrow służy głównie do rozbijania luster (docelowo1–2 dmg), Mirror i Arrow pozostają zawsze dostępnymi primary. **Why:** balans i rasy muszą wspierać przyszłe paczki oraz stały podstawowy zestaw kontr. Zmiany statcapów i warianty primary są dopiero propozycją w [[2026-09-08-race-primary-progression-redesign]], nie zatwierdzoną implementacją.
 
 - **2026-09-08 — Jeden katalog i wspólne odtwarzanie VFX we wszystkich widokach.** Walka i podglądy korzystają z `SpellEffectConfigurations.Resolve` / `SpellEffectFactory`, a widoki z aktorami z `SpellPresentation`; czasy castingu podglądu pochodzą ze wspólnego resolvera metadanych. **Why:** użytkownik wykrył brak Magic Arrow w ArenaMapsDev i wymaga eliminacji rozjazdów między widokami.
