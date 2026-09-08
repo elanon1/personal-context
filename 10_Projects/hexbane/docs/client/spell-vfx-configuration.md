@@ -17,7 +17,7 @@ Current catalog: `magic_arrow, mirror_reflection, firebolt, heavy_bolt, delayed_
 
 | Server id | Retained icon folder | Spell VFX | SFX |
 |---|---|---|---|
-| magic_arrow | magic_arrow | none | none |
+| magic_arrow | magic_arrow | MagicArrow.tscn | none |
 | mirror_reflection | mirror_ward | MirrorWard.tscn | formation.wav, shatter.wav |
 | firebolt | fireball | none | none |
 | heavy_bolt | flamestrike | none | none |
@@ -36,7 +36,7 @@ Each icon folder contains only `<folder>.png` and its Godot import metadata. Gen
 
 ## Effect configuration after 2026-09-08 cleanup
 
-Only `mirror_ward` is registered and implemented. The legacy FX ids in the icon mapping below are **icon folder aliases only**. All other `Game/FX` scenes, scripts, particle/texture assets and other spell SFX were deleted. The current 14-spell gameplay catalog was not removed. See [[spell-effect-system]].
+`mirror_ward` and `magic_arrow` are registered and implemented. The legacy FX ids in the icon mapping are **icon folder aliases only**. Other legacy `Game/FX` scenes, scripts, particle/texture assets and spell SFX were deleted; Magic Arrow was subsequently implemented as a new procedural shader effect. The current 14-spell gameplay catalog was not removed. See [[spell-effect-system]].
 
 ## Cast presentation (gesture, not the projectile)
 
@@ -47,6 +47,8 @@ Independent of the table above, the caster's animation and hand effect are chose
 3. **Defaults**: `CastAnimationResolver.Resolve` (`spell.animation` from the server if the race has the clip → `attack_1h_01` → `spell_throw`), and the gesture effect assigned to that clip.
 
 Priority is key → preset → default; malformed keys fall back silently. Presets and keys change only the cast look, never timing, damage, projectile or barrier.
+
+Magic Arrow uses an explicit Arcana-blue Impulse cast preset (intensity 0.85, scale 0.8, hidden ground ring), plus the independently registered projectile/impact. Runtime timing, reflection and preview controls: [[spell-effect-system]].
 
 ## Adding future VFX
 

@@ -185,6 +185,7 @@
   },
   "active": "111b7bc93f46ae6d",
   "lastOpenFiles": [
+    "10_Projects/hexbane/docs/plans/2026-09-08-fallback-player-design.md",
     "10_Projects/hexbane/docs/server/combat-stat-rules.md",
     "10_Projects/hexbane/docs/plans/2026-09-08-client-legacy-cleanup.md",
     "10_Projects/hexbane/docs/plans/2026-09-08-combat-restoration.md",
@@ -211,7 +212,6 @@
     "99_Archive/Projects/hexbane-notes-2026-08-31/protokol-klient-serwer.md",
     "99_Archive/Projects/hexbane-notes-2026-08-31/zasady-gry.md",
     "99_Archive/Projects/hexbane-notes-2026-08-31/assety-i-pipeline.md",
-    "99_Archive/Projects/hexbane-notes-2026-08-31/infra-i-deploy.md",
     "99_Archive/Projects/hexbane-notes-2026-08-31",
     "99_Archive/Projects",
     "10_Projects/hexbane/docs/protocol",

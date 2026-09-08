@@ -167,4 +167,4 @@ Client storytelling was removed: `Application/EndlessStory`, `Application/Module
 
 Retired combat handlers (11–15, 21–28) and unused DTOs were removed. Casting/accepted/failed DTOs remain because current development previews and HUD compatibility code still consume them; their old network handlers are gone. The dispatcher still drops the retired numeric ranges.
 
-Spell VFX now consists only of MirrorWard (formation/shatter audio restored at the user’s request); new cast/gesture/meditation effects and current catalog icons remain. See [[spell-effect-system]].
+Spell VFX consists of MirrorWard (formation/shatter audio restored at the user’s request) and the new procedural Magic Arrow projectile/impact; new cast/gesture/meditation effects and current catalog icons remain. See [[spell-effect-system]].
