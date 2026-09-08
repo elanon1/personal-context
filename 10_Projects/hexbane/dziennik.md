@@ -227,3 +227,13 @@ Notatki: duel-v2-client (sekcja „Catalog2.4 progression UI”), character-deta
 - Testy: build 0 błędów/9 wcześniejszych ostrzeżeń; VerifySpellFields GPU 146/146 (oba przyciski ArenaMapsDev dla 11 czarów, VfxTest tile/swap/clear, lifecycle i 24 pikselowe asercje okluzji 6 ras × 2 strony); Magic Arrow 25/25, Firebolt 25/25, MirrorWard GPU 60/60. Obejrzano zrzuty `verification/spell-fields/`. Przegląd kodu zakończony po poprawkach dwóch usterek.
 - Notatki: `spell-effect-system`, `spell-vfx-configuration`, `vfx-and-race-animation`, plan `2026-09-08-remaining-spell-vfx`, `_index`, `_state`.
 - Pozostało: rzeczywisty mecz Nakama i pomiar na urządzeniu Android. Nie dodawano nowych SFX. Nie zmieniano mechanik ani balansu serwera.
+
+
+## 2026-09-08 — Cleanse płynność i brakujące VFX tutorialu
+
+- Zdiagnozowano gest Cleanse (`area_2h_02`, release po 3–4 klatkach dla większości ras); preset przełączony na `cast_2h` z 24 klatkami przed wypuszczeniem, bez zmiany palety/mechaniki.
+- `Core/Tutorial/TrainingBattle.cs`: kanoniczne `cast_released`, stabilne action id w całym cyklu i snapshotach, brakujące trafienia mentora/odbicia, status applied/removed z instance id, poprawne owner id trucizny i damage pulse. Absorpcja poprzedza usunięcie bariery; ponowny status zastępuje poprzedni zgodnie z odświeżonym lokalnym terminem.
+- `TutorialScreen.cs`: jednosekundowe wybrzmienie trafienia/oczyszczenia przed planszą następnej lekcji; model i wejście pozostają zatrzymane.
+- Testy: czerwony test potwierdził brak canonical release przed poprawką; `Tests/Tutorial` PASS po poprawce (w tym action identity/reflection/status refresh). `VerifyCleanse` 18/18 dla 6 ras. Rzeczywisty `TutorialVerification` GPU, 1360×612, syntetyczny dotyk, katalog/auth z lokalnego Nakama7350: PASS do Summary, z asercjami wspólnych pocisków/impactów oraz widocznych Poison/Cleanse. Wyjście przed ukończeniem konta i tworzeniem postaci (`TUTORIAL_VFX_ONLY=1`). Build 0 błędów, 9 wcześniejszych ostrzeżeń. Zrzut Cleanse w tutorialu obejrzany; logi i obrazy w `verification/tutorial-vfx/`.
+- Przegląd wychwycił dwa problemy lokalnego lifecycle (duplikaty statusu i kolejność depletion/damage); poprawione i sprawdzone. Notatki: `client-tutorial`, `spell-vfx-configuration`, `spell-effect-system`, `_state`.
+- Pozostało: fizyczny Android nie był testowany. Nie zmieniano zasad sieciowego pojedynku.

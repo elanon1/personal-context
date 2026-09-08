@@ -85,3 +85,5 @@ New spell VFX need a new implementation and deliberate integration into the duel
 - client:Game/FX/MirrorWard.cs
 - client:Resources/Spells/
 - client:Resources/SpellVisuals/
+
+Cleanse casting correction (2026-09-08): `cleanse.tres` selects `cast_2h` instead of `area_2h_02`, retaining the vitality Pressure wave profile and palette. This avoids the 3–4-frame wind-up in most race area clips. See [[client-tutorial]] for local tutorial playback fixes.

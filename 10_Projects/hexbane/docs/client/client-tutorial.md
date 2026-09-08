@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-08
+verified: 2026-09-08
 tags: [hexbane, client, tutorial, onboarding]
 sources: ["client:docs/superpowers/specs/2026-09-06-tutorial-design.md", "client:docs/superpowers/plans/2026-09-06-local-tutorial.md", "client:docs/client/tutorial-verification.md"]
 ---
@@ -69,3 +69,15 @@ From the design/plan: nothing from the approved local variant is outstanding. Th
 - `client:Game/Autoloads/SceneManager.cs` — gating on `TrainingCompleted`
 - `client:Game/ScenesV3/Settings/SettingsScreen.cs` — replay entry points
 - `client:Tests/Tutorial/*`, `client:Game/ScenesV3/Dev/TutorialVerification.cs` — verification
+
+## Shared spell presentation repair (2026-09-08)
+
+The local model now emits the same `cast_released` kind as duel presentation (the retired local `spell_release` was ignored). Cast start, snapshot action, release, damage/reflection and impact share a stable action id. Mentor Firebolt emits a final `spell_impact`, including the reflected target, so the shared projectile resolves rather than fading unresolved. Status application/removal carries instance id and ownership; poison damage references its actual status instance. Damage with absorption precedes shield depletion, matching server event ordering. Tutorial recasts replace the prior same-kind status to match its refreshed local deadline.
+
+`TutorialScreen` keeps the resolved arena visible for one second before the next explanation covers it. The lesson clock and input are already paused during this feedback interval; no combat result is delayed. Persistent poison is restored by the shared manager from status events/snapshots. No tutorial-specific renderer or duplicate spell effects are introduced.
+
+Cleanse now uses the shared `cast_2h` preset gesture: 24 pre-release frames for each race. The previous `area_2h_02` had release frame 3–4 on most races and stretched those few frames across the cast, then compressed the remaining frames into recovery. The golden cleansing sweep, cast duration and gameplay remain unchanged.
+
+Verification: `Tests/Tutorial` additionally checks the canonical event contract, stable action identities, reflected impact and status refresh; `VerifyCleanse.tscn` checks motion, recovery and field expiry on all six races. `TUTORIAL_VFX_ONLY=1` makes `TutorialVerification.tscn` stop at Summary, before account completion/character creation tests; it exercises real controls and asserts shared Arrow/Firebolt release/impact, visible Poison/Cleanse and the unobscured feedback interval. Finale verification uses Firebolt, since the current one-damage Magic Arrow cannot remove 24 HP with the initial 100 mana alone. Evidence: `verification/tutorial-vfx/`.
+
+Validation 2026-09-08: build 0 errors / 9 existing warnings; Core tutorial tests PASS; Cleanse GPU-independent motion/lifecycle verifier 18/18; real tutorial GPU/touch acceptance at 1360×612 PASS through Summary using local Nakama authentication/catalog. Shared VFX assertions included. Physical Android untested.

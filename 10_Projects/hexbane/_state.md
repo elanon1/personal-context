@@ -58,6 +58,8 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+- **2026-09-08 — Tutorial produces the shared VFX event contract.** Canonical releases, stable action ids, complete impacts and status lifecycle replace incompatible local emissions. **Why:** using the same scene/factory is insufficient if the tutorial never supplies the events those effects require. Show the last impact before the next modal, while keeping simulation/input paused. Cleanse uses a gesture with adequate pre-release frames for every race.
+
 - **2026-09-08 — Complete spell VFX catalog with actor depth layers.** Eleven remaining spells use distinct field forms and canonical scenes/presets; Arrow/Firebolt remain projectiles. **Why:** geometry should express mechanics/nature, and every view must resolve the same implementation. Rear/front passes surround the animated sprite to prevent effects behind the body shining through it. Authoritative persistent effects await server removal so late hex damage can still detonate.
 
 
