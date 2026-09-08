@@ -48,3 +48,9 @@ This is a Godot desktop-rendered simulation of landscape mobile/tablet logical v
 - `client:Game/ScenesV3/Dashboard/DashboardScreen.cs`, `ModeOverlay.cs`
 - `client:Game/ScenesV3/Settings/SettingsScreen.cs`, `Lobby/LobbyScreen.cs`, `GameOver/GameOverScreen.cs`
 - `client:Game/ScenesV3/Dev/MobileLayoutVerification.cs`, `.tscn`
+
+## Follow-up: visible, touch-friendly arcane scrollbars
+
+Implemented shared amber/gold runic bars with 48-unit input lanes, 24-unit visible thumbs and a subtle animated glow/glint. Restored bars previously hidden by Dashboard/News/Social/Lobby. Adjusted creation summary, Social and Lobby below 1100 wide for the additional lane width.
+
+Validation: build 0 errors / 9 existing warnings; ScrollbarVerification PASS for native mouse drag, synthetic touch drag including the gutter, visible 48-unit target and minimum thumb length for very long content. MobileLayoutVerification reports 0 overflows at 960×432, 1088×612, 1360×612 and 1920×1080. Actual GPU rendering at 1360×612 produced 55 animation frames; scroll value stayed unchanged and frame pixels vary. Screenshots inspected; code review found no definite regressions. Evidence: client `verification/arcane-scrollbar/`. No physical Android validation or deployment was performed.

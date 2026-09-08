@@ -91,8 +91,19 @@ Compaction uses the larger pressure from **height 1000→612** and **width 2200�
 
 Verification harness: `Game/ScenesV3/Dev/MobileLayoutVerification.tscn`; `MOBILE_SIZE=1360x612`, optional `MOBILE_CAPTURE=/absolute/output` for rendered PNGs, `MOBILE_RESIZE=1` to exercise detail-tab resizing. It uses offline fixtures, no account mutation. See [[2026-09-08-mobile-layout-review]] for coverage and limitations.
 
+## Arcane scrollbars (2026-09-08)
+
+`ArcaneScrollGlow.ApplyTo` skins native vertical/horizontal ScrollContainer bars and active RichTextLabel bars. ResponsiveLayout applies it in compact and desktop layouts, including newly wrapped content. Dashboard, News, Social and Lobby no longer hide their scrollbar or disable its input. Fit-content RichText content directly inside a ScrollContainer uses the outer scroll.
+
+- Touch lane: 48 design units; visible rounded bronze/gold thumb: 24; dark bronze-bordered track: 8. Minimum thumb length: 48 even for very long lists. Hover/pressed/focus states remain visible.
+- A central etched diamond rune, a subtle 4.5-second amber breathing glow and a 5.5-second traveling glint make the handle discoverable. Decoration ignores input, redraws at most 30 times per second and stops processing while hidden. Animation never changes scroll position or layout.
+- Native Godot mouse, touch and keyboard scrolling are retained. The transparent gutter around the visible thumb accepts dragging.
+- Below 1100 wide, creation summary columns and Social content stack; Social content scrolls. Lobby uses two spell columns and a smaller book minimum to accommodate the wider scroll lane.
+
+Verification: `Dev/ScrollbarVerification.tscn` checks visibility, 48-unit target, native mouse and synthetic touch drag (including the gutter), and minimum grabber size with long content. MobileLayoutVerification optionally records the animation with `SCROLL_ANIMATION_CAPTURE=/absolute/output` and asserts the scroll value stays fixed. Rendered screenshots, animation GIF and logs: `verification/arcane-scrollbar/` in the client workspace. Physical Android touch/DPI remains a manual follow-up.
+
 ## Source of truth in code
 - `client:Game/ScenesV3/_Themes/m_charcreate_theme.tres`, `m_auth_card_theme.tres`, `m_auth_theme.tres` — fonts, variations, styleboxes
-- `client:Game/ScenesV3/_Common/ResponsiveLayout.cs`, `UiKit.cs` — compact layout and shared builders
+- `client:Game/ScenesV3/_Common/ResponsiveLayout.cs`, `UiKit.cs`, `ArcaneScrollGlow.cs` — compact layout, shared builders and animated native scrollbar skin
 - `client:Game/ScenesV3/GameOver/GameOverScreen.cs` — Cinzel Bold/Black display fonts
 - `client:Resources/Fonts/*/static/` — the shipped static faces

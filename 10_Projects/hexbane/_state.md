@@ -58,6 +58,8 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+- **2026-09-08 — Shared runic scrollbar with a wider touch lane.** Native ScrollBar keeps input/range semantics; a mouse-transparent procedural overlay supplies the rune and restrained amber animation. The target is 48 design units while the visible thumb is 24. **Why:** easier finger targeting and clearer scroll affordance without an oversized visual handle; one shared skin prevents screens from hiding or independently styling their bars.
+
 ### 2026-09-08 — Mobilne menu po redesignie
 
 Zachować styl gry, dopasowywać układ do szerokości i wysokości; długie sekcje przewijać, a nawigację kreatora/postaci/dashboardu pozostawić na ekranie. Usunąć prezentację wycofanych limitów ras. **Why:** skalowanie wyłącznie według wysokości i przywracanie desktopowych marginesów po wyborze powodowały przepełnienie; dalsze zmniejszanie tekstu pogarszałoby czytelność. Weryfikacja i ograniczenia: [[2026-09-08-mobile-layout-review]].

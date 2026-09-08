@@ -247,3 +247,12 @@ Notatki: duel-v2-client (sekcja „Catalog2.4 progression UI”), character-deta
 - Build:0 błędów/9 wcześniejszych ostrzeżeń. Kontrola rozmiarów960×432..2400×1080, wypełnione primary/spellbook/respec/wyniki oraz zmiany rozmiaru otwartych zakładek; końcowe kluczowe przebiegi bez przepełnień. StarterSelectionCheck PASS, aktywny reference HUD DuelV2Preview PASS. Przegląd kodu i renderowane PNG w verification/mobile-layout.
 - Notatki: design-system, race-selection (usunięto nieaktualny kontrakt sprzed redesignu), character-details, redesign-implementation, nowy audyt mobile-layout-review, _index, _state.
 - Pozostało: playtest na fizycznym Androidzie (DPI, klawiatura, notch, dotyk) i żywy mecz Nakama. Szczegóły dowodów i ograniczeń w audycie.
+
+
+## 2026-09-08 — Widoczny magiczny pasek przewijania
+
+- Dodano wspólny ArcaneScrollGlow: złoto-bursztynowy uchwyt z runą, delikatny puls i przesuwająca się iskra. Obszar dotyku 48 jednostek, widoczny uchwyt 24, minimum długości 48; animacja działa tylko przy widocznym pasku i nie przechwytuje wejścia.
+- Wpięto przez ResponsiveLayout; przywrócono ukryte paski Dashboard/News/Social/Lobby. Dopasowano wąskie układy podsumowania kreatora, Social i Lobby do szerszego obszaru przewijania.
+- Pliki: ArcaneScrollGlow.cs, ResponsiveLayout.cs, CreateCharacterScreen, DashboardScreen, NewsScreen, SocialScreen, LobbyScreen; ScrollbarVerification.cs/.tscn i rozszerzenie MobileLayoutVerification. Podgląd GIF, PNG i logi w verification/arcane-scrollbar/.
+- Walidacja: test przed zmianą wykazał szerokość tylko 8; po zmianie PASS mysz/syntetyczny dotyk także poza widocznym uchwytem, minimum uchwytu dla długiej treści. Build 0 błędów/9 wcześniejszych ostrzeżeń. Układy 960×432, 1088×612, 1360×612, 1920×1080: 0 przepełnień. Render GPU i 55 klatek animacji, stała pozycja przewijania; przegląd kodu bez wykrytych regresji.
+- Notatki: design-system, mobile-layout-review, _state. Pozostało: sprawdzenie fizycznego Androida. Bez commita/deployu.
