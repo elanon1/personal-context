@@ -94,6 +94,8 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 
 ## Plany (`docs/plans/`)
 
+- [[2026-09-08-remaining-spell-vfx]] — komplet animacji zaklęć, różnorodne formy i wspólne odtwarzanie.
+
 - [[2026-09-08-xp-ranked-progression]] — szybki rozwój do rankedów, łagodnie rosnące koszty poziomów i dalszy rozwój skilli/MP bez blokady wejścia.
 
 - [[2026-09-08-race-primary-progression-redesign]] — propozycja redesignu ras, wspólnego budżetu statów i grafów rozwoju primary spelli (6 poziomów, checkpointy3/6).
