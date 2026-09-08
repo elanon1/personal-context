@@ -70,3 +70,11 @@ co zrobione — notatki/pliki — co zostało**. Decyzje z uzasadnieniem idą do
 
 **Zostało / do decyzji** — lista *Open questions* w [[10_Projects/hexbane/_state|_state]]; nic nie
 zacommitowane (ani repo, ani vault).
+
+
+## 2026-09-08 — Magic Arrow: rozpoznanie i kierunek VFX
+
+- Prośba: efekt samego zaklęcia o jakości docelowej AAA, bez animacji castingu.
+- Przeczytano indeks i dokumentację klienta: spell-effect-system, spell-vfx-configuration, vfx-and-race-animation; sprawdzono MagicSparkle.cs i mapowanie magic_arrow → magic_sparkle.
+- Przygotowano propozycję: ostry świetlisty grot, warstwowa smuga energii, kierunkowe trafienie z krótkim błyskiem i wygasającymi odłamkami.
+- Zmieniono wyłącznie dziennik; kod i assety bez zmian. Pozostało zatwierdzenie kierunku wymagane przez skill brainstorming, implementacja, build i ocena efektu w Godot.
