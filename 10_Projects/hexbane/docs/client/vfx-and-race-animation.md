@@ -64,7 +64,7 @@ Mobile layout: players are positioned from the HUD safe-area transform with feet
 
 | Scene | Purpose |
 |---|---|
-| `ArenaMaps/ArenaMapsDev.tscn` | offline playground: map selector, **Losuj / Pauza / Ograniczony ruch**, per-side race + gesture + effect + tempo (0.25–1.5×), **Animacja + VFX gracza/przeciwnika**, loop toggle, **Bariera 3 s** / **Trafienie w barierę**, preset save/load (`Resources/SpellVisuals/<id>.tres`), **Kopiuj/Wczytaj klucz** (`visual_key`), **Rzuć zapisany czar**. Never sends match commands. |
+| `ArenaMaps/ArenaMapsDev.tscn` | offline playground: map selector, **Losuj / Pauza / Ograniczony ruch**, per-side race + gesture + effect + tempo (0.25–1.5×), **Animacja + VFX gracza/przeciwnika**, loop toggle, **Bariera 3 s** / **Trafienie w barierę**, preset save/load (`Resources/SpellVisuals/<id>.tres`), **Kopiuj/Wczytaj klucz** (`visual_key`), **Rzuć zapisany czar**. Both Cast buttons and saved-spell casts use shared `SpellPresentation` for full spell VFX (default Magic Arrow); the animation/VFX profile controls remain gesture-only. Never sends match commands. |
 | `RaceAnimTest.tscn` | pick race and clip |
 | `MeditationTest.tscn` | headless: `Godot --headless --fixed-fps 60 --path . Game/ScenesV3/Dev/MeditationTest.tscn`, 12 race/resolution combos + Player snapshot wiring |
 | `MeditationVfxPreview.tscn` | all six races; **M** meditate, **X** stop; `-- --capture` writes `docs/client/meditation/energy-preview.png` |

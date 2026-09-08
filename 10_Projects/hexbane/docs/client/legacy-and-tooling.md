@@ -71,6 +71,12 @@ Removed on 2026-09-08: `prompt.md`, `vfx.md`, `spell_output.md`, root `magic_spa
   project memory, not in the repo.
 - `Scripts/remove_bg.py` (rembg via `uv`) removes backgrounds for generated art.
 
+## Spell animation skill (Codex)
+
+Personal skill: `/Users/elanon/.codex/skills/hexbane-spell-animation/SKILL.md`, with UI metadata in `agents/openai.yaml`. Invoke, for example: `$hexbane-spell-animation zrób animację Poison`.
+
+The skill covers nature/palette research, visual intent, shared catalog/factory/actor playback, authoritative lifecycle, real ArenaMapsDev controls, GPU inspection and vault updates. It uses [[spell-effect-system]], [[spell-vfx-configuration]], [[spell-lore]] and current source code rather than copying a spell catalog. It is scoped to Hexbane spell VFX, not balance changes or standalone icons. The file is installed locally; it is not distributed with the client repository.
+
 ## Source of truth in code
 - `client:Game/Autoloads/SceneManager.cs` — route table incl. dead keys
 - `client:project.godot` — autoload list, `[hexbane]` settings

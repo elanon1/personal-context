@@ -12,6 +12,10 @@ tags: [hexbane, balance, races, stats, spells, simulation]
 
 Review of the current uncommitted `duel_v2.3` server. This is an audit and a proposed tuning direction; **no gameplay parameters or production code were changed**. Contracts read: [[progression]], [[combat-stat-rules]], [[spell-system]], [[combat-v2]].
 
+## User clarification after review
+
+The14-spell catalog is the first content pack, not the full future catalog. Races were designed for the old spells and should be redesigned for expanding content. Magic Arrow is primarily a mirror breaker, with a target of1–2 damage; Mirror and Arrow remain the two always-available primary roles. Revised proposed direction: [[2026-09-08-race-primary-progression-redesign]]. Measurements below describe pack1 only; recommendations to build permanently around neutral-only content are superseded by this clarification.
+
 ## Verdict
 
 The restored progression formulas and the redesigned spell catalog do not currently form a balanced system. The largest problems are structural: full flat stat damage on every cheap cast, STR buying both Orc survival and offense, very low HP ceilings for several races, and skill resistance changing the damage/healing economy. Tuning individual spell base values first would hide these problems and need repeating later.

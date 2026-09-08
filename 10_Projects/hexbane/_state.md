@@ -58,6 +58,10 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+- **2026-09-08 — Kontrakt kolejnych paczek i primary spelli.** Użytkownik doprecyzował, że14 czarów to pierwsza paczka; rasy wymagają redesignu po starym katalogu. Arrow służy głównie do rozbijania luster (docelowo1–2 dmg), Mirror i Arrow pozostają zawsze dostępnymi primary. **Why:** balans i rasy muszą wspierać przyszłe paczki oraz stały podstawowy zestaw kontr. Zmiany statcapów i warianty primary są dopiero propozycją w [[2026-09-08-race-primary-progression-redesign]], nie zatwierdzoną implementacją.
+
+- **2026-09-08 — Jeden katalog i wspólne odtwarzanie VFX we wszystkich widokach.** Walka i podglądy korzystają z `SpellEffectConfigurations.Resolve` / `SpellEffectFactory`, a widoki z aktorami z `SpellPresentation`; czasy castingu podglądu pochodzą ze wspólnego resolvera metadanych. **Why:** użytkownik wykrył brak Magic Arrow w ArenaMapsDev i wymaga eliminacji rozjazdów między widokami.
+
 - **2026-09-08 — Propozycja fallback AI: kolejka serwerowa i wspólny silnik walki.** Przygotowano [[2026-09-08-fallback-player-design]] i [[2026-09-08-fallback-player-plan]], bez wdrożenia. Rekomendacja: trwałe fikcyjne persony, legalne buildy, opóźniony draft, AI utility z ograniczoną obserwacją i kontekstowymi błędami; roboczo zwykła kolejka po 35–55 s. **Why:** obecny bot ma stałą tożsamość i natychmiastowe wybory, a timeout po stronie klienta ryzykuje podwójny przydział meczu. To kierunek projektowy do przeglądu, nie zatwierdzona zmiana zachowania.
 
 - **2026-09-08 — Magic Arrow: błękitna Arkana i krótki przelot wizualny.** Nowy proceduralny shader używa `#64B5FF` / `#EAF4FF`; efekt lotu trwa 0.14 s, odbicia 0.10 s, bez zmian mechanik. **Why:** natura `arcana` wymaga kryształu i geometrii, a serwer ma `travel_time: 0`; prezentacja nie może opóźniać obrażeń ani zmieniać kolejności zdarzeń.

@@ -50,6 +50,8 @@ Priority is key → preset → default; malformed keys fall back silently. Prese
 
 Magic Arrow uses an explicit Arcana-blue Impulse cast preset (intensity 0.85, scale 0.8, hidden ground ring), plus the independently registered projectile/impact. Runtime timing, reflection and preview controls: [[spell-effect-system]].
 
+All views resolve spell ids through `SpellEffectConfigurations.Resolve` and instantiate through `SpellEffectFactory`; actor views additionally use `SpellPresentation` for the same anchoring/scaling. Preview scenes must not duplicate scene paths or default effect durations. See [[spell-effect-system]].
+
 ## Adding future VFX
 
 New spell VFX need a new implementation and deliberate integration into the duel presentation path. Removed legacy scenes and sound files must not be referenced. Cast presets remain independent; adding a preset does not create a projectile or impact.

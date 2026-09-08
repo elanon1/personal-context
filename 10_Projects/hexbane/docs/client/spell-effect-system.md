@@ -30,6 +30,18 @@ Cast presentation is independent and preserved: `RaceSpriteAnimator`, `CastCharg
 - Magic Arrow release, reflection, impact and pending snapshots are handled by `SpellEffectManager.MagicArrow.cs`; see the timing rules below. No duplicate reflection shell is spawned on impact.
 - Match end/disposal stops active effects and clears status tracking.
 
+## One playback path for every view
+
+`SpellEffectConfigurations.Resolve(spellId)` is the VFX catalog entry point: it normalizes mirror aliases, honours registered overrides, and returns a copy so a preview cannot accidentally mutate the catalog. Scene paths and default effect durations live only in `GetDefaultConfigurations`.
+
+Actor-based views (live match manager, `ReferenceHud.AnimateCast` used by ArenaMapsDev, the dedicated MagicArrowPreview, and `RaceSpriteAnimator.ShowReflection`) all call `Game/FX/SpellPresentation.Play`. It resolves the catalog, delegates instantiation/play to `SpellEffectFactory`, places/scales the projectile from palm to target bounds and parents protection shells to their protected actor. This ownership also makes ArenaMapsDev’s barrier-impact controls work consistently.
+
+Point-based tools (`VfxTestScreen` and generic `FxPreview`) use the same resolver/factory; they supply positions instead of actors. VfxTest’s explicit Inspector edits still apply to its local playback instance. `FxPreview` selects a spell id, with no separate packed-scene/default-duration settings. Adding another implemented spell should extend this catalog/shared playback, not add a second implementation in a preview.
+
+Preview casts use `SpellPresentation.BeginPreviewCast` → `DuelProtocol.PresentationSpell` → `RaceSpriteAnimator.BeginCast`. Live server spell data takes precedence; missing standard-spell metadata falls back to the existing `StandardSpells.Fallback` for all callers. Preview code no longer hardcodes 0.75-second casts or a Magic Arrow clip; visual_key/preset resolution remains inside RaceSpriteAnimator. Live cast deadlines still come from the server.
+
+ArenaMapsDev: **Cast gracza** and **Cast przeciwnika** both cast Magic Arrow, and **Rzuć zapisany czar** uses the entered id (initially `magic_arrow`). These play casting, projectile and impact. The separate **Animacja + VFX** controls are deliberately gesture-profile editors, not full spell casts.
+
 ## Interfaces and previews
 
 `ISpellEffect` exposes `IsPlaying`, `Stop`, `GetPosition`. `IStaticEffect` adds `Play(position, duration, parameters)`, `OnStarted`, `OnFinished`. `IProjectileEffect` exposes `Play(from, to, duration, parameters)` and `OnFinished`, implemented by Magic Arrow. Area/beam interfaces remain removed.
@@ -48,7 +60,7 @@ Cast presentation is independent and preserved: `RaceSpriteAnimator`, `CastCharg
 
 Preview: open `Game/FX/_Previews/MagicArrowPreview.tscn` and press F6. It loops with cast animation on the real arena; `1` hit, `2` reflection, `3` dodge, `Tab` reverse, `Space` replay. `-- --capture` writes five PNGs to `verification/magic-arrow/`; the flight capture uses 0.30 seconds to make the frame easier to inspect (normal playback remains 0.14 seconds).
 
-Validation: `dotnet build hexbane.csproj --no-restore`; `Godot --headless --path . res://Game/ScenesV3/Dev/ArenaMaps/VerifyMagicArrow.tscn`. GPU preview captures verify shader compilation and visual alignment. Recorded 2026-09-08: build 0 errors / 9 existing warnings; Magic Arrow 13/13 checks, MirrorWard 60/60 and WardAudio 10/10. Local event/snapshot fixtures cover lifecycle; a live Nakama duel and physical Android performance have not been tested for this effect.
+Validation: `dotnet build hexbane.csproj --no-restore`; `Godot --headless --path . res://Game/ScenesV3/Dev/ArenaMaps/VerifyMagicArrow.tscn`. GPU preview captures verify shader compilation and visual alignment. Recorded 2026-09-08: build 0 errors / 9 existing warnings; Magic Arrow / shared arena playback 25/25 checks, MirrorWard 60/60 and WardAudio 10/10. Local event/snapshot fixtures cover lifecycle; a live Nakama duel and physical Android performance have not been tested for this effect.
 
 ## Source of truth in code
 - client:Core/Spells/ISpellEffect.cs
@@ -64,3 +76,7 @@ Validation: `dotnet build hexbane.csproj --no-restore`; `Godot --headless --path
 - client:Application/Modules/Spell/Effects/SpellEffectManager.MagicArrow.cs
 - client:Game/FX/_Previews/MagicArrowPreview.cs
 - client:Game/ScenesV3/Dev/ArenaMaps/VerifyMagicArrow.cs
+- client:Game/FX/SpellPresentation.cs
+- client:Game/FX/_Previews/FxPreview.cs
+- client:Game/ScenesV3/ReferenceDuel/ReferenceHud.cs
+- client:Game/ScenesV3/Dev/ArenaMaps/ArenaMapsDev.cs

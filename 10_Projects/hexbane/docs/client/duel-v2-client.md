@@ -40,6 +40,8 @@ Wire contract: [[combat-v2]] (opcodes 29–32) and [[opcodes]]. This note covers
 - `BeginMatch(id)` resets sequences only when the match id changes (line 90), so a socket replacement keeps the sequence.
 - Snapshot/event DTOs are in the same file (`DuelSnapshot`, `DuelPlayer`, `DuelAction`, `DuelEvent`).
 
+`DuelProtocol.PresentationSpell` reads server spell data first and falls back to the shared `StandardSpells.Fallback` for missing standard metadata; arena previews use the same resolver for cast timing/visual keys.
+
 Events → visuals: `Application/Modules/Spell/Effects/SpellEffectManager.DuelV2.cs` handles MirrorWard removal/reflection shatter; `SpellEffectManager.MagicArrow.cs` handles Magic Arrow release, reflection, impact/dodge and snapshot reconciliation. Its short flight is cosmetic because the current server spell has zero travel time. Spell id → FX id mapping is in [[spell-vfx-configuration]].
 
 ## Reconnect
