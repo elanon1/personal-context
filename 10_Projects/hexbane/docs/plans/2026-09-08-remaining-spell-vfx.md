@@ -2,7 +2,7 @@
 type: project
 project: Hexbane
 area: plans
-status: in-progress
+status: completed
 created: 2026-09-08
 updated: 2026-09-08
 verified: 2026-09-08
@@ -23,3 +23,5 @@ Goal: all 14 catalog spells have nature-correct casting and full effects through
 - client:Game/FX/SpellField.cs and SpellField.gdshader
 - client:Application/Modules/Spell/Effects/SpellEffectManager.Fields.cs
 - client:Game/ScenesV3/Dev/ArenaMaps/VerifySpellFields.cs
+
+Validation 2026-09-08: build **0 errors / 9 existing warnings**; full GPU `VerifySpellFields` **146/146**, including 24 front/rear pixel assertions for six races × both sides. Adjacent regressions: Magic Arrow **25/25**, Firebolt **25/25**, GPU MirrorWard **60/60**. Two review findings fixed and rechecked (late hex damage, barrier absorption). Rear pass contributes zero measured RGB difference on fully opaque sampled body pixels; front pass visibly changes those pixels. All eleven ArenaMapsDev captures inspected. Live Nakama and physical Android performance remain untested.

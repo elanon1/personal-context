@@ -85,12 +85,12 @@ Errors come back as `{"success":false,"message":"…","modifiers":[],"racial_tra
 | `spellbook.spell_slots_max` | `MaxSpellSlots (6) + race spell_slot_bonus` (7 for Human). |
 | `cooldown` | **Removed**. Not in the struct. |
 
-## Client DTO gaps (`GetCharacterDetailsQuery.cs`)
+## Client DTO notes (`GetCharacterDetailsQuery.cs`, 2026-09-08)
 
-- `SpellbookDto` maps `spell_slots_used` and `spell_slots_max` only; `spells_learned` and
-  `spell_slots_unlocked` are dropped.
+- `ProgressionDto` maps `study_xp`, `ranked_eligible`, `primary_tier`; `SpellbookDto` maps `spells_learned` and `spell_slots_unlocked` (used for the spellbook subtitle "draft slots N").
 - `SpellDetailsDto` declares `starter`, which the server does not send here (always `false`).
 - `combat_ruleset` is not mapped (harmless duplicate of `ruleset_id`).
+- Modifier `unit` identifiers are rendered as suffixes by the client (`percent`→`%`, `mana_per_second`→` mana/s`, `multiplier`→`×`, `slots`); zero-valued modifiers are hidden on the summary.
 
 ## Related menu RPCs
 
@@ -101,7 +101,7 @@ Errors come back as `{"success":false,"message":"…","modifiers":[],"racial_tra
 
 ## Primary path and reallocation UI
 
-The separate `get_primary_progression` response supplies both versioned graphs, selected paths and resolved base configs. `set_primary_path` saves a legal prefix; `respec_stats` redistributes the full400+5×(level−1) budget with min 10. Both reject active-match mutation with code 9. Details refresh after saving. Spell descriptions remain catalog prose; the graph response is authoritative for selected window/return/checkpoint values. See [[rpcs]].
+The separate `get_primary_progression` response supplies both versioned graphs, selected paths and resolved base configs. `set_primary_path` saves a legal prefix; `respec_stats` redistributes the full400+5×(level−1) budget with min 10. Both reject active-match mutation with code 9. Details refresh after saving. Spell descriptions remain catalog prose; the graph response is authoritative for selected window/return/checkpoint values. See [[rpcs]]. Client side: the **Primary** tab and the inline **Reallocate** mode on Stats — [[duel-v2-client]] "Catalog2.4 progression UI".
 
 ## Source of truth in code
 - `server:modules/character/details.go` — request/response structs, all field derivations.

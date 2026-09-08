@@ -13,7 +13,7 @@ sources: ["client:Application/ArcaneDuel/README.md"]
 
 # Spell effect runtime after legacy cleanup
 
-The client implements **Mirror Reflection** (`Game/FX/MirrorWard.*`), **Magic Arrow** (`Game/FX/MagicArrow.*`) and **Firebolt** (`Game/FX/Firebolt.*`). Other old projectile/static VFX and their assets were removed on 2026-09-08. Magic Arrow is a new procedural effect, not a restored legacy asset.
+The client implements all fourteen catalog spells. **Mirror Reflection** (`Game/FX/MirrorWard.*`), **Magic Arrow** (`Game/FX/MagicArrow.*`) and **Firebolt** (`Game/FX/Firebolt.*`) retain their dedicated implementations; the other eleven use their own scenes and shared `SpellField` lifecycle with distinct shader geometry/material profiles. Other old projectile/static VFX and their assets were removed on 2026-09-08. Magic Arrow is a new procedural effect, not a restored legacy asset.
 
 Mirror Reflection audio was restored at the user’s request: `WardAudio` plays `formation.wav` at creation and `shatter.wav` on rupture. The formation fades on cancellation/impact; the scene-owned rupture tail survives the shell and frees itself when finished. The SpellFX bus is used with a Master fallback. `VerifyWardAudio.tscn` checks this lifecycle.
 
@@ -46,7 +46,7 @@ ArenaMapsDev: **Cast gracza** and **Cast przeciwnika** both cast Magic Arrow, an
 
 `ISpellEffect` exposes `IsPlaying`, `Stop`, `GetPosition`. `IStaticEffect` adds `Play(position, duration, parameters)`, `OnStarted`, `OnFinished`. `IProjectileEffect` exposes `Play(from, to, duration, parameters)` and `OnFinished`, implemented by Magic Arrow. Area/beam interfaces remain removed.
 
-`Game/ScenesV3/VfxTest/VfxTestScreen.tscn` lists MirrorWard and Magic Arrow; projectile previews support position swapping and clearing. `Game/FX/_Previews/MirrorWardPreview.tscn` previews the same shell. `Game/ScenesV3/Dev/ArenaMaps/VerifyMirrorWard.tscn` verifies race attachment, lifetime, directional shatter and live snapshot/event integration.
+`Game/ScenesV3/VfxTest/VfxTestScreen.tscn` lists all fourteen catalog effects; projectile previews support position swapping and clearing. `Game/FX/_Previews/MirrorWardPreview.tscn` previews the same shell. `Game/ScenesV3/Dev/ArenaMaps/VerifyMirrorWard.tscn` verifies race attachment, lifetime, directional shatter and live snapshot/event integration.
 
 
 ## Shared projectile lifecycle
@@ -100,3 +100,19 @@ Validation: `dotnet build hexbane.csproj --no-restore`; `Godot --headless --path
 - client:Core/Spells/SpellPresentationCatalog.cs
 - client:Resources/SpellVisuals/firebolt.tres
 - client:Game/ScenesV3/Dev/ArenaMaps/VerifyFirebolt.cs
+
+## Actor-bound fields and utility effects — 2026-09-08
+
+`SpellField.cs/.gdshader` implements the eleven newly covered spells from [[spell-vfx-configuration]]. `SpellPresentation` parents non-projectile fields to the selected actor before playback, follows protection bounds and scales with the actor. The canonical resolver/factory serves live duel, ArenaMapsDev saved-spell controls and VfxTest; no view-local spell implementation exists.
+
+Rendering uses two meshes: rear at actor-relative z=0, animated sprite z=1, front z=2. Orbital sections choose their pass from virtual depth; atmospheric body volumes are behind the silhouette, surface glints are in front. The current sprite's alpha naturally masks the rear pass, including idle/cast frames, race changes and mirroring. QuadMesh UV y is inverted explicitly so flames and motes rise and the healing crown appears above the character.
+
+`SpellEffectManager.Fields.cs` maps status kinds `shield → barrier`, `paralyze → paralysis`, and poison/regeneration/delayed_hex directly; reflection retains MirrorWard. `effect_applied` and reconnect snapshots reuse the same instance. Delayed hex uses `due_tick` when provided, otherwise `end_tick`. Snapshot deadlines update the countdown. **Authoritative persistent nodes wait for server removal/snapshot absence**; a local deadline alone never deletes the node before a late damage event. An expired/removed snapshot without damage simply fades and never detonates.
+
+Damage events trigger Heavy Bolt/Consume Venom hits and delayed-hex detonation; heal events trigger Mend/Greater Heal and Regeneration pulses. Poison pulses follow actual damage. Absorbed damage separately finds the target's Barrier (the attacking effect id is not the shield id) and pulses it. Cleanse/Dispel show an execution sweep on non-dodged spell impact; actual status removal remains event/snapshot-owned. Consume Venom without eligible owned poison produces no implosion. Duplicate transient events use a bounded 512-entry identity cache. Completion removes active tracking; cancellation/disposal/match end clears effects without inventing hits. Offline previews simulate periodic pulses and hex detonation for inspection.
+
+`VerifySpellFields.tscn` exercises both real saved-spell buttons for every new spell, target anchors, offline metadata/presets, VfxTest tiles/swap/clear, status/event deduplication, removals, snapshot-only reconnect, delayed authoritative damage, shield absorption and no-op/dodge semantics. GPU-only pixel checks compare rear/front passes over opaque sprite pixels for all six races in both orientations. Use `-- --occlusion-only` for just the pixel suite. Captures live under `verification/spell-fields/` (ignored artifacts).
+
+Source of truth: `client:Game/FX/SpellField.cs`, `SpellField.gdshader`, individual field scenes; `client:Application/Modules/Spell/Effects/SpellEffectManager.Fields.cs`; `client:Game/ScenesV3/Dev/ArenaMaps/VerifySpellFields.cs`; `client:Game/ScenesV3/VfxTest/VfxTestScreen.cs`.
+
+Validation 2026-09-08: build **0 errors / 9 existing warnings**; full GPU `VerifySpellFields` **146/146**, including 24 front/rear pixel assertions for six races × both sides. Adjacent regressions: Magic Arrow **25/25**, Firebolt **25/25**, GPU MirrorWard **60/60**. Two review findings fixed and rechecked (late hex damage, barrier absorption). Rear pass contributes zero measured RGB difference on fully opaque sampled body pixels; front pass visibly changes those pixels. All eleven ArenaMapsDev captures inspected. Live Nakama and physical Android performance remain untested.

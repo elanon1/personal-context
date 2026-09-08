@@ -96,3 +96,7 @@ Last recorded results (README claims, Godot 4.5.2 Compatibility on macOS, not re
 - `client:Game/ScenesV3/ReferenceDuel/ArenaCatalog.cs`, `ArenaMatch.cs`, `LivingArena.cs`, `ArcaneMotes.cs`, `*.gdshader` — arena
 - `client:Game/ScenesV3/Dev/**`, `ReferenceDuel/VerifyPreview.cs` — dev scenes and verifiers
 - `client:export_presets.cfg` — per-platform sprite set exclusion
+
+## Remaining spell fields and body occlusion (2026-09-08)
+
+All fourteen spells now have full shared playback and canonical casting presets. The eleven newly added fields are described in [[spell-vfx-configuration]] and [[spell-effect-system]]. Rear and front geometry render on opposite sides of the animated race sprite (z=0/1/2), so effects behind the character disappear under its current alpha silhouette while foreground sections remain visible. `VerifySpellFields.tscn` covers both ArenaMapsDev saved-spell buttons, VfxTest controls and GPU pixel occlusion for six races × both orientations. Evidence: `verification/spell-fields/`.

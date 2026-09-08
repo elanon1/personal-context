@@ -54,9 +54,14 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 `git status`, w tym skasowana stara historia migracji `000001..000016` zastąpiona świeżym baseline
 `000001..000003`). Snapshot repo: [[repos-and-branches]].
 
-**Content:** 13 zachowanych ikon pokrywa 14 obecnych zaklęć; VFX samych zaklęć obejmuje Mirror Reflection z przywróconymi dźwiękami oraz Magic Arrow (Arkana) i Firebolt/Fireball (Żar) ze wspólnym cyklem życia pocisku. Nowe animacje castingu i presety zachowane. Stare VFX/SFX i assety generatora usunięte 2026-09-08. → [[spell-vfx-configuration]]
+**Content:** 13 zachowanych ikon pokrywa 14 obecnych zaklęć; VFX obejmuje wszystkie 14 zaklęć: Mirror Reflection z przywróconymi dźwiękami, Magic Arrow i Firebolt/Fireball ze wspólnym cyklem życia pocisku oraz 11 różnorodnych efektów na postaci z warstwami przed/za sylwetką. Nowe animacje castingu i presety zachowane. Stare VFX/SFX i assety generatora usunięte 2026-09-08. → [[spell-vfx-configuration]]
 
 ## Decisions log
+
+- **2026-09-08 — Complete spell VFX catalog with actor depth layers.** Eleven remaining spells use distinct field forms and canonical scenes/presets; Arrow/Firebolt remain projectiles. **Why:** geometry should express mechanics/nature, and every view must resolve the same implementation. Rear/front passes surround the animated sprite to prevent effects behind the body shining through it. Authoritative persistent effects await server removal so late hex damage can still detonate.
+
+
+- **2026-09-08 — Klient progresji: 4. zakładka `Primary` + inline respec, bez popupów.** Ekran postaci dostał zakładkę Primary (drabinka poziomów + dwa edytory grafu z podglądem „Pending/Saved” liczonym po stronie klienta z modyfikatorów węzłów) oraz tryb „Reallocate all points” na tych samych wierszach Stats; ranked jako trzeci przycisk w scenie ModeOverlay z blokadą i podpowiedzią; dashboard pokazuje „Primary Path Ready”. **Why:** użytkownik chce widoczności i możliwości progresji w tym samym moodzie i skalowalnie pod telefon poziomy — okienka `Window` z surowymi SpinBoxami z pierwszej implementacji nie przechodziły przez ResponsiveLayout ani theme. Zweryfikowano live (zapis ścieżki i respec trafiły do DB) na 1360×612 i 1920×1080. Szczegóły: [[duel-v2-client]].
 
 - **2026-09-08 — Implementacja przebudowy zatwierdzona i wykonana w kodzie obu repo.** Wspólne statystyki/softcap, nowe cechy6ras, primary DAG6tierów, XP120/70 i6177do30, sloty7/11/16, MPpo capie+milestones, ranked od30. **Why:** użytkownik polecił wdrożyć wszystkie ustalenia; rasy muszą działać z bieżącą paczką i pozwalać na swobodne buildy. Szczegółowe rozstrzygnięcia i wyniki: [[2026-09-08-redesign-implementation]]. Testy/race/vet/buildy i migracje testowe PASS; bez deploya.45.4%timeoutów w symulacji wymaga dalszego strojenia, nie oznacza gotowego balansu.
 
@@ -180,7 +185,7 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
   10 wysyła listę zaklęć przeciwnika jako „prywatny” widok. Błąd czy akceptowalne w 1v1?
 - **Sekrety w repo** (serwer `.env.dist` klucz OpenAI, `helm/hexbane/values.yaml` PAT GitHub,
   klient `.env` pakowany do builda) — nadal obecne, nie rotowane.
-- **Nowe VFX dla pozostałych zaklęć**: aktualne ikony są zachowane, stare VFX/SFX i generator n8n usunięte. Przyszłe efekty wymagają nowych implementacji. Alias `fireball` korzysta z kanonicznego `firebolt.tres` i wspólnej implementacji Firebolt. → [[spell-vfx-configuration]]
+- **VFX — walidacja urządzeń i serwera live**: wszystkie 14 zaklęć mają animacje i wspólny playback, sprawdzony w lokalnych fixture’ach oraz GPU na desktopie. Pozostały testy rzeczywistego pojedynku Nakama i wydajności na Androidzie. SFX poza Mirror Reflection nadal nie są zaimplementowane. → [[spell-vfx-configuration]]
 - **`visual_key`** — klient czyta, serwer nie wysyła (backend do zrobienia). → [[spell-visual-key]]
 - **Baseline balansu** `balance-v2.json` opisuje `duel_v2.1`, kod ma `duel_v2.2` — przeliczyć?
 - Czy prod na k8s ma żyć (chart + Argo istnieją, nic ich nie opisuje poza [[infra-and-deploy]])?
