@@ -30,22 +30,22 @@ Every spell RPC response, character details and the tutorial RPC embed `combat_p
 
 Catalog baseline below; primary definitions reverified against YAML and graph code on 2026-09-08. Every spell has `school: neutral`, `level_requirement: 1`, `travel_time: 0`. Times are seconds.
 
-| ID | Name | Nature | Mana | Cast | Recovery | MP cost | Flags | Effect (type, value, timing, target) |
-|---|---|---|---:|---:|---:|---:|---|---|
-| `magic_arrow` | Magic Arrow | arcana | 5 | 0.8 | 0.4 | 0 | standard | fixed damage 1, enemy |
-| `mirror_reflection` | Mirror Reflection | arcana | 9 | 0.5 | 0.4 | 0 | standard | one mirror charge, 10% return, 1.5 s, self |
-| `firebolt` | Firebolt | ember | 9 | 1.0 | 0.4 | 5 | starter | damage 16, enemy |
-| `heavy_bolt` | Heavy Bolt | ember | 18 | 1.9 | 0.5 | 5 | starter | damage 32, enemy |
-| `poison` | Poison | venom | 12 | 1.0 | 0.4 | 5 | starter | poison 2/pulse, duration 6, interval 1, enemy |
-| `cleanse` | Cleanse | vitality | 6 | 0.9 | 0.3 | 5 | starter | cure, self |
-| `mend` | Mend | vitality | 10 | 0.8 | 0.4 | 5 | starter | heal 14, self |
-| `barrier` | Barrier | arcana | 12 | 0.9 | 0.4 | 5 | starter | shield 22, 3 s, self |
-| `delayed_hex` | Delayed Hex | hex | 16 | 1.2 | 0.4 | 5 | — | delayed_hex 28, delay 2.5, enemy |
-| `paralysis` | Paralysis | hex | 18 | 1.0 | 0.4 | 5 | — | paralyze, 1 s, enemy |
-| `greater_heal` | Greater Heal | vitality | 19 | 1.8 | 0.5 | 5 | — | heal 32, self |
-| `regeneration` | Regeneration | vitality | 13 | 1.1 | 0.4 | 5 | — | regeneration 5/pulse, duration 6, interval 1, self |
-| `dispel` | Dispel | arcana | 8 | 0.9 | 0.3 | 5 | — | dispel, enemy |
-| `consume_venom` | Consume Venom | venom | 9 | 0.9 | 0.4 | 5 | — | consume_venom 18, enemy |
+| ID                  | Name              | Nature   | Mana | Cast | Recovery | MP cost | Flags    | Effect (type, value, timing, target)               |
+| ------------------- | ----------------- | -------- | ---: | ---: | -------: | ------: | -------- | -------------------------------------------------- |
+| `magic_arrow`       | Magic Arrow       | arcana   |    5 |  0.8 |      0.4 |       0 | standard | fixed damage 1, enemy                              |
+| `mirror_reflection` | Mirror Reflection | arcana   |    9 |  0.5 |      0.4 |       0 | standard | one mirror charge, 10% return, 1.5 s, self         |
+| `firebolt`          | Firebolt          | ember    |    9 |  1.0 |      0.4 |       5 | starter  | damage 16, enemy                                   |
+| `heavy_bolt`        | Heavy Bolt        | ember    |   18 |  1.9 |      0.5 |       5 | starter  | damage 32, enemy                                   |
+| `poison`            | Poison            | venom    |   12 |  1.0 |      0.4 |       5 | starter  | poison 2/pulse, duration 6, interval 1, enemy      |
+| `cleanse`           | Cleanse           | vitality |    6 |  0.9 |      0.3 |       5 | starter  | cure, self                                         |
+| `mend`              | Mend              | vitality |   10 |  0.8 |      0.4 |       5 | starter  | heal 14, self                                      |
+| `barrier`           | Barrier           | arcana   |   12 |  0.9 |      0.4 |       5 | starter  | shield 22, 3 s, self                               |
+| `delayed_hex`       | Delayed Hex       | hex      |   16 |  1.2 |      0.4 |       5 | —        | delayed_hex 28, delay 2.5, enemy                   |
+| `paralysis`         | Paralysis         | hex      |   18 |  1.0 |      0.4 |       5 | —        | paralyze, 1 s, enemy                               |
+| `greater_heal`      | Greater Heal      | vitality |   19 |  1.8 |      0.5 |       5 | —        | heal 32, self                                      |
+| `regeneration`      | Regeneration      | vitality |   13 |  1.1 |      0.4 |       5 | —        | regeneration 5/pulse, duration 6, interval 1, self |
+| `dispel`            | Dispel            | arcana   |    8 |  0.9 |      0.3 |       5 | —        | dispel, enemy                                      |
+| `consume_venom`     | Consume Venom     | venom    |    9 |  0.9 |      0.4 |       5 | —        | consume_venom 18, enemy                            |
 
 - Two **standard** spells are carried by every player in every match, never drafted, never learned, never charged MP (`server:modules/spell_system/spell.go:18-22`, `server:modules/spellbook/rpc.go:156-162`, `server:modules/match/engine/state/player_state.go:421-431`).
 - Six **starter** spells form the creation pool: a new character picks 3 (Human 4) distinct starters; only those become ownership rows. Unchosen starters cost 5 MP later like every other selectable spell (`server:modules/character/validate.go:106-129`, `server:modules/character/db.go:49-75`).
