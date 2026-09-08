@@ -185,3 +185,11 @@ Zastąpiono propozycję2 punktów grafem6 poziomów z rozwidleniami i ponownym �
 ## 2026-09-08 — Codex — XP i wejście do rankedów
 
 Przygotowano [[2026-09-08-xp-ranked-progression]]: kandydat kosztu kolejnego poziomu50+10*(L−2),5510 XP do30,120/90 XP za wynik, ok.53 meczów przy50% zwycięstw. Zweryfikowano sumy krzywej. Uwzględniono doprecyzowanie użytkownika: skille/MP nie blokują rankedów i rozwijają się dalej, bez automatycznej normalizacji/maxowania skilli. Wskazano konieczność nowego źródła MP po30, testów różnic siły i migracji starego XP. Dodano link w planie grafów, indeks i decyzję użytkownika. Kod i baza bez zmian; współczynniki i zasady ekonomii pozostają propozycją.
+
+## 2026-09-08 — Codex — ekonomia MP pod draft
+
+Uwzględniono cel większej kolekcji niż slotów (6/10/15 wobec4/5/6). Przeliczono bazowy budżet przy cenie5 MP:15/35/60 do poziomów4/8/12, potem2 MP/level do96 na30. Zaproponowano po capie500 XP postępu→5 MP, bez dodatkowych leveli, oraz jednorazowe+5 MP za progi25/50/75/100 każdego skilla. Zaznaczono limit bieżącej paczki12 opcjonalnych czarów, brak gate'u ranked i brak podwójnego naliczania nagród. Zaktualizowano oba plany i_state. Kod bez zmian. Pozostało strojenie podaży względem cen/paczek oraz testy progów i migracji.
+
+## 2026-09-08 — Codex — korekta czasu levelowania do80 meczów
+
+Zaktualizowano [[2026-09-08-xp-ranked-progression]]: proponowany koszt kolejnego poziomu50+17*(L−2),8352 XP do30. Przy120/90 XP i40 wygranych/40 przegranych suma8400 osiąga cap. Zweryfikowano próg każdego poziomu, końcowy koszt526, skrajne70 zwycięstw/93 porażki, czasy slotów i checkpointu primary3. Decyzja użytkownika zapisana w_state. Nagrody MP, dalsze skille i brak ich gate'u ranked pozostają bez zmian. Kod bez zmian.

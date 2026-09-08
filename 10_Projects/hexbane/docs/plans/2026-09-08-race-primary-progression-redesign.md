@@ -150,6 +150,8 @@ User correction is explicit: **Human starts at4**, other races at3. Preserve the
 |8|5|6|
 |12|6|7|
 
+Draft ownership must outgrow slot count: the user targets roughly6/10/15 known optional spells for4/5/6 slots through MP purchases. The front-loaded MP proposal, post-cap study rewards and skill milestones are in [[2026-09-08-xp-ranked-progression]]. A one-free-spell-per-slot model is withdrawn; the first pack only supplies12 optional spells.
+
 The two primary spells are carried on top at every level. Primary development does not occupy optional slots. New packs expand the owned spell pool, not the maximum slot count. Human's extra starter and match slot are available from creation; the earlier proposed shared3-slot start is withdrawn.
 
 ## XP and ranked progression clarification

@@ -58,6 +58,10 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+- **2026-09-08 — Około80 meczów do maksymalnego poziomu.** Użytkownik ustalił docelowy czas progresji na około80 rozegranych meczów do max levelu. **Why:** szybki początek ma przejść w dłuższy rozwój przed rankedami. Propozycja krzywej8352 XP przy120/90 XP daje około80 gier przy50% zwycięstw; zastępuje wcześniejszy cel53 gier. Rozwój MP/skilli po capie pozostaje niezależny.
+
+- **2026-09-08 — Draft wymaga nadmiaru poznanych czarów.** Użytkownik odrzucił model1 darmowego czaru na nowy slot; cel to orientacyjnie6/10/15 poznanych zaklęć przy4/5/6 slotach, zależnie od zakupów za MP. **Why:** draft ma wymuszać rezygnację z części dostępnych opcji. Zwiększone wczesne MP, dochód po capie i bonusy za progi skilli są propozycjami w [[2026-09-08-xp-ranked-progression]], nie zatwierdzonymi wypłatami.
+
 - **2026-09-08 — Skille i MP nie blokują rankedów.** Użytkownik chce szybkie początkowe poziomy, stopniowe spowolnienie i osiągalny szybko maksymalny poziom postaci. Rozwój skilli do capu i zdobywanie MP mają trwać niezależnie od wejścia do rankedów. **Why:** ranked ma być dostępnym etapem gry, a nie nagrodą za ukończenie całego grindu. Krzywa5510 XP, nagrody120/90 i próg30 to propozycje w [[2026-09-08-xp-ranked-progression]], nie wdrożone reguły.
 
 - **2026-09-08 — Fireball jako alias Firebolt, wspólny cykl życia pocisków.** Nowy ognisty efekt natury Żar; `SpellProjectile` i wspólny manager obsługują oba pociski, `ProjectilePreview` oba podglądy. Jeden preset `firebolt.tres` oraz metadane offline zgodne z YAML. **Why:** zachowanie nomenklatury użytkownika bez rozdzielania efektów i konfiguracji między widokami; `travel_time: 0` pozostaje decyzją serwera.
