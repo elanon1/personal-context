@@ -58,6 +58,10 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+- **2026-09-08 — Porażka70 XP.** Użytkownik obniżył proponowane XP za porażkę z90 do70. **Why:** zwycięstwo powinno być wyraźniej premiowane. Wygrana pozostaje120, remis proponowany jak porażka; nowa proponowana krzywa6177 XP utrzymuje około65 gier przy50% zwycięstw oraz późniejsze sloty.
+
+- **2026-09-08 — Wolniejsze sloty, około65 meczów do capu.** Użytkownik ustalił slot4 po około4–5 grach, slot5 po10, slot6 po20 oraz skrócił drogę do maksymalnego poziomu do około65 meczów. **Why:** dłużej rozwijać draft, ale szybciej dojść do końca levelowania. Proponowane progi7/11/16 i6728 XP do30 są w [[2026-09-08-xp-ranked-progression]]; MP dopasowane do nowych progów. Human zachowuje dodatkowy slot od startu.
+
 - **2026-09-08 — Około80 meczów do maksymalnego poziomu.** Użytkownik ustalił docelowy czas progresji na około80 rozegranych meczów do max levelu. **Why:** szybki początek ma przejść w dłuższy rozwój przed rankedami. Propozycja krzywej8352 XP przy120/90 XP daje około80 gier przy50% zwycięstw; zastępuje wcześniejszy cel53 gier. Rozwój MP/skilli po capie pozostaje niezależny.
 
 - **2026-09-08 — Draft wymaga nadmiaru poznanych czarów.** Użytkownik odrzucił model1 darmowego czaru na nowy slot; cel to orientacyjnie6/10/15 poznanych zaklęć przy4/5/6 slotach, zależnie od zakupów za MP. **Why:** draft ma wymuszać rezygnację z części dostępnych opcji. Zwiększone wczesne MP, dochód po capie i bonusy za progi skilli są propozycjami w [[2026-09-08-xp-ranked-progression]], nie zatwierdzonymi wypłatami.

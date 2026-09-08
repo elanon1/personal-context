@@ -193,3 +193,11 @@ Uwzględniono cel większej kolekcji niż slotów (6/10/15 wobec4/5/6). Przelicz
 ## 2026-09-08 — Codex — korekta czasu levelowania do80 meczów
 
 Zaktualizowano [[2026-09-08-xp-ranked-progression]]: proponowany koszt kolejnego poziomu50+17*(L−2),8352 XP do30. Przy120/90 XP i40 wygranych/40 przegranych suma8400 osiąga cap. Zweryfikowano próg każdego poziomu, końcowy koszt526, skrajne70 zwycięstw/93 porażki, czasy slotów i checkpointu primary3. Decyzja użytkownika zapisana w_state. Nagrody MP, dalsze skille i brak ich gate'u ranked pozostają bez zmian. Kod bez zmian.
+
+## 2026-09-08 — Codex — wolniejsze sloty i65 gier do capu
+
+Przeliczono propozycję XP:50+13*(L−2),6728 XP do30;64 gry przy równym bilansie dają6720, więc kolejna osiąga cap. Sloty proponowane na poziomach7/11/16 odpowiadają około4,7/10,3/20,1 gier. MP przesunięto do15/35/60 przy tych progach,88 do30; stały dochód po capie i skill milestone bonuses bez zmian. Zaktualizowano plan XP, drabinkę w planie primary i_state. Kod bez zmian.
+
+## 2026-09-08 — Codex — obniżenie XP za porażkę
+
+W planie XP zmieniono nagrody na120/70 i przeliczono krzywą45+12*(L−2),6177 XP do30. Przy50% zwycięstw średnia95 XP daje około65 gier; skrajnie52 zwycięstwa lub89 porażek. Sloty7/11/16 pozostają około5/10/20 gier. Uwzględniono wolniejsze zasilanie post-cap MP (500 XP to około5,3 meczu). Kod bez zmian.

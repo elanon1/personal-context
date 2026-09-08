@@ -141,14 +141,14 @@ Keep exactly two primary spell identities. Unrestricted replacement, extra prima
 
 ## 4. Slot and collection progression
 
-User correction is explicit: **Human starts at4**, other races at3. Preserve the existing slot ladder and starting ownership rules:
+User correction is explicit: **Human starts at4**, other races at3. Preserve starting ownership and the extra Human slot. User-requested slower unlocks replace the old4/8/12 ladder with proposed7/11/16:
 
 | Level | Other races | Human |
 |---|---:|---:|
 |1|3|4|
-|4|4|5|
-|8|5|6|
-|12|6|7|
+|7|4|5|
+|11|5|6|
+|16|6|7|
 
 Draft ownership must outgrow slot count: the user targets roughly6/10/15 known optional spells for4/5/6 slots through MP purchases. The front-loaded MP proposal, post-cap study rewards and skill milestones are in [[2026-09-08-xp-ranked-progression]]. A one-free-spell-per-slot model is withdrawn; the first pack only supplies12 optional spells.
 
