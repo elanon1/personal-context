@@ -4,7 +4,7 @@ project: Hexbane
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-09
+updated: 2026-09-10
 tags: [hexbane, docs, index, moc]
 aliases: [hexbane-docs, hexbane-index]
 ---
@@ -81,6 +81,7 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 - [[vfx-and-race-animation]] — sprite’y ras, `RaceSpriteAnimator`, gesty, cast-charge, okluzja,
   medytacja, bariera, areny; sceny dev i weryfikatory (`verification/` w repo)
 - [[combat-ui-profiles]] — PC/mobile combat layouts, configurable physical keys, offline previews and verification workflow
+- [[duel-loading-screen]] — illustrated arena loading, real progress, random tip, responsive layout and verification
 - [[design-system]] — tokeny UI, fonty, motywy (`ui-designer` jest do niego przywiązany)
 - [[social-sign-in]] — Google sign-in na PC i Androidzie, konfiguracja, znane luki
 - [[client-tutorial]] — lokalny tutorial

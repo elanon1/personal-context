@@ -129,3 +129,8 @@ The active HUD now sends `game_hud_ready` after its first rendered frame and aft
 Verification: `Dev/DuelLaunchVerification.tscn` replaces the actual lobby through `LobbyStartGameHandler`, injects countdown before HUD creation, checks completed transition/visible countdown/zero clearing, and can capture `/tmp/hexbane-duel-launch.png` with a rendering backend. The regression failed before buffering and passes afterward. Server `phase/loading/phase_test.go` covers slow loading, PvP/AI readiness, irrelevant/invalid/spoofed readiness, full 2/1/0 sequence, and timeout cancellation. `Tests/DuelV2/Live.cs` acknowledges opcode 6 before awaiting opcode 7.
 
 Rollout: server readiness barrier deployed on 2026-09-10 as `sha-b8773ad` (see [[infra-and-deploy]]). Client source is updated locally; rebuild/install clients to include the presentation-ready acknowledgement and buffered countdown. Existing installed applications are unchanged.
+
+
+## Illustrated duel loading (2026-09-10)
+
+See [[duel-loading-screen]] for the persistent blue/emerald loading illustration, threaded resource progress, one stable random tip, responsive mobile layout and retry/cancellation verification. This user-requested background is a deliberate exception to shared menu artwork. It replaces only the arrangement-to-arena black transition.

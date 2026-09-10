@@ -444,3 +444,12 @@ Notatki: duel-v2-client (sekcja „Catalog2.4 progression UI”), character-deta
 ## 2026-09-10 — Android app icon assets
 
 Prepared four PNG variants in client `Resources/Images/AppIcon/`: `main_192x192.png`, `adaptive_foreground_432x432.png`, `adaptive_background_432x432.png`, `adaptive_monochrome_432x432.png`. Main is resized from `hexbane-icon-v1.png`; adaptive layers generated with built-in ImageGen using the original icon as reference. Prompts: extract fiery X onto transparency; reconstruct volcanic stone/rune background without X; create white X silhouette on transparency, then simplify its edges. Verified exact dimensions and alpha channels (foreground/monochrome transparent; main/background opaque). Original retained. Export presets not changed. Remaining: assign assets in export settings and inspect on Android launcher.
+
+
+## 2026-09-10 — Ilustrowany ekran ładowania PC/mobile (Codex)
+
+- Użytkownik zamówił loading zamiast czerni, pasek postępu, jeden losowy tip i responsywność; odrzucił złoty portal, wybrał paletę błękit/szmaragd i inny motyw.
+- ImageGen: zatopione sanktuarium z lewitującym kryształem; plik `Resources/Images/Loading/emerald_sanctuary.png`. Natywny ekran `ScenesV3/Loading/DuelLoadingScreen`, preview F6; SceneManager partial ładuje zasoby w tle, utrzymuje ilustrację przez podmianę scen i odsłania gotową arenę. Tip stabilny przez cały load, status etapów, pasek postępu, retry oraz anulowanie przy nawigacji.
+- Walidacja: build 0 błędów/11 istniejących ostrzeżeń; test regresyjny przejścia FAIL przed zmianą, PASS po; renderowane 6 viewportów (w tym 844×390 i 390×844), retry po naprawieniu pliku, anulowanie i ponowne ładowanie PASS. Przegląd wykrył retencję tokenów threaded loadera; naprawione i przetestowane. Podglądy `verification/loading-screen/`.
+- Dokumentacja: nowa `docs/client/duel-loading-screen.md` z pełnym promptem, design-system, duel-v2-client, client-architecture, `_index`, `_state` i dziennik w vaultcie.
+- Pozostało: build/instalacja klienta mobilnego i sprawdzenie fizycznego safe area/touch. Backend bez zmian, kolejny deploy niepotrzebny.

@@ -172,3 +172,8 @@ Spell VFX consists of MirrorWard (formation/shatter audio restored at the userâ€
 ## Duel launch readiness (2026-09-10)
 
 See [[duel-v2-client#Arena launch/countdown repair (2026-09-10)]]. The active HUD acknowledges its first rendered frame and completed scene transition; the server waits for every human arena before counting down. MatchContext also buffers early opcode 16 values alongside game-load data.
+
+
+## Illustrated duel loading (2026-09-10)
+
+See [[duel-loading-screen]] for the persistent blue/emerald loading illustration, threaded resource progress, one stable random tip, responsive mobile layout and retry/cancellation verification. This user-requested background is a deliberate exception to shared menu artwork. It replaces only the arrangement-to-arena black transition.

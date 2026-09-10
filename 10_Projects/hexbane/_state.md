@@ -58,6 +58,11 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+### 2026-09-10 — Illustrated persistent loading handoff
+- **Decision:** blue/emerald crystal sanctuary per user preference, one stable random tip, native progress fed by threaded resource loading. CanvasLayer belongs to SceneManager and survives the scene swap.
+- **Why:** the old black fade covered synchronous arena initialization and looked like a broken game. Persistence and presentation-ready acknowledgement keep the loading phase visible without spending the fight countdown; a stable tip remains readable on mobile.
+
+
 ### 2026-09-10 — Gate duel countdown on rendered human arenas
 - **Decision:** server loading waits for protocol-2 `game_hud_ready` from every non-bot player (30 s cancellation timeout); client sends it after rendering and transition completion, buffers early countdown events.
 - **Why:** the one-tick loading phase consumed the short countdown while clients were still loading behind a black fade. A local fake countdown would hide a fight already running on the server.

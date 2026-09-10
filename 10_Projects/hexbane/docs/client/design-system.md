@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-09
-verified: 2026-09-09
+updated: 2026-09-10
+verified: 2026-09-10
 tags: [hexbane, client, ui, design-system, themes]
 sources: ["client:docs/DESIGN_SYSTEM.md"]
 ---
@@ -113,3 +113,8 @@ Verification: `Dev/ScrollbarVerification.tscn` checks visibility, 48-unit target
 See [[combat-ui-profiles]] for the shared profile mechanism, configurable keyboard actions, preview scenes and validation. Desktop uses the bottom action bar and visible keycaps; mobile keeps touch rails. The tutorial follows the chosen profile and respects configured keys and target gates.
 
 Pre-match arrangement now shares `ReferenceSpellSlot` and `CombatSlotGeometry` with combat. It uses the existing screen background and a scrollable spell detail card, without character HUD. See [[combat-ui-profiles#Pre-match spell arrangement (2026-09-09)]].
+
+
+## Illustrated duel loading (2026-09-10)
+
+See [[duel-loading-screen]] for the persistent blue/emerald loading illustration, threaded resource progress, one stable random tip, responsive mobile layout and retry/cancellation verification. This user-requested background is a deliberate exception to shared menu artwork. It replaces only the arrangement-to-arena black transition.
