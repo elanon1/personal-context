@@ -102,6 +102,16 @@ Verification harness: `Game/ScenesV3/Dev/MobileLayoutVerification.tscn`; `MOBILE
 
 Verification: `Dev/ScrollbarVerification.tscn` checks visibility, 48-unit target, native mouse and synthetic touch drag (including the gutter), and minimum grabber size with long content. MobileLayoutVerification optionally records the animation with `SCROLL_ANIMATION_CAPTURE=/absolute/output` and asserts the scroll value stays fixed. Rendered screenshots, animation GIF and logs: `verification/arcane-scrollbar/` in the client workspace. Physical Android touch/DPI remains a manual follow-up.
 
+## Summary touch scrolling (HEX-7, 2026-09-10)
+
+CharacterDetail's Summary passes pointer input from its portrait, card panels, generated icons/text and View all spells button through to the enclosing native ScrollContainer. A drag moves the whole Summary content with Godot's existing inertia and drag threshold; a tap on View all spells still opens Spellbook. Header navigation remains outside the content scroll, and the scrollbar remains available as a position indicator and direct control.
+
+`EnableSummaryTouchScroll` changes only `MouseFilter.Stop` to `Pass`, preserving existing Ignore controls. It runs after wrapping/reflow and `CompactRefresh`, including asynchronous creation of learned-spell rows. Other tabs and shared control factories are unchanged. Desktop mouse-wheel input continues to work over the content.
+
+Verification scene: `Dev/SummaryScrollVerification.tscn`, optional `MOBILE_SIZE=1360x612` and `SUMMARY_CAPTURE=/absolute/file.png`. It exercises the real screen with generated spell data and native emulated-touch input over portrait, stat/spell/skill/modifier icons and labels, button drag, button tap and desktop wheel. All 12 interaction checks pass at 1360×612, 1088×612 and 844×390, and in a rendered 1360×612 run. Build: zero errors / 11 existing warnings. Logs and screenshot: client `verification/summary-scroll/`. Physical Android touch remains a follow-up. An exploratory 390×844 portrait fixture exposed existing horizontal clipping (Summary minimum width exceeds the viewport); that layout issue is outside this gesture fix, and offscreen synthetic touches are not counted as coverage.
+
+Source: `client:Game/ScenesV3/CharacterDetail/CharacterDetailScreen.Responsive.cs`, `client:Game/ScenesV3/CharacterDetail/CharacterDetailScreen.cs`, `client:Game/ScenesV3/Dev/SummaryScrollVerification.cs`.
+
 ## Source of truth in code
 - `client:Game/ScenesV3/_Themes/m_charcreate_theme.tres`, `m_auth_card_theme.tres`, `m_auth_theme.tres` — fonts, variations, styleboxes
 - `client:Game/ScenesV3/_Common/ResponsiveLayout.cs`, `UiKit.cs`, `ArcaneScrollGlow.cs` — compact layout, shared builders and animated native scrollbar skin

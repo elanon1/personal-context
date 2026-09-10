@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-09
-verified: 2026-09-09
+updated: 2026-09-10
+verified: 2026-09-10
 tags: [hexbane, client, auth, google, android]
 sources: ["client:docs/client/social-sign-in.md", "client:CLAUDE.md"]
 ---
@@ -82,6 +82,18 @@ Verified old/new adapters against the same production session (existing test acc
 `dotnet build Tests/Auth/Auth.csproj`, then Godot 4.5.2 .NET headless with `--path Tests/Auth` runs regression checks against real session persistence and LoginService, with a controlled HTTP adapter for failures. `-- write` then `-- read` verifies persistence across processes. `-- live-write` then `-- live-read` uses local Nakama at 127.0.0.1:7350, creates an isolated test email account, restores it in another process, refreshes using its real refresh token, and verifies revocation. The test project uses a separate Godot user-data directory.
 
 All checks passed; main build has 0 errors and 9 existing warnings. The service test harness emits a Godot ObjectDB cleanup warning at exit (verbose output identifies the LoginService signal object). Full browser Google OAuth and physical Android restart were not exercised in this task.
+
+## Runtime connection recovery (HEX-6, 2026-09-10)
+
+`NakamaClientManager.EnsureConnected` serializes recovery, refreshes an access token expiring within one minute, and connects a replacement socket when disconnected. The SDK updates the session in place; LoginService's existing `ReceivedSessionUpdated` subscription persists token rotations. Recovery checks that both the session object and selected client still match before publishing the socket, preventing a pending connection from restoring a logged-out session. Connection establishment has a ten-second timeout; closing the previous transport is bounded to three seconds.
+
+`GameContext` uses recovery in the existing 30-second health check. Mobile `NotificationApplicationResumed` forces transport replacement, including connections that still appear open after suspension. Temporary network failures preserve the character and cached session. A missing/nonrenewable session or rejected refresh returns through the login flow; it does not silently delete cached credentials on a transient outage.
+
+Both AI and PvP matchmaking await recovery before using the current socket. ModeOverlay awaits and handles creation failures for AI, PvP and requeue, returning to mode selection with an error dialog. Cancel is disabled while initial creation is pending. Replacing a socket emits the close/established lifecycle so notification subscriptions rebind. Active PvP queue intent is restored on the replacement socket; cancel/logout invalidates pending requests, late tickets are removed, and obsolete failures do not overwrite the current UI. A different user's session cannot inherit queue intent.
+
+Verification: `Game/ScenesV3/Dev/ConnectionRecoveryVerification.tscn` runs against local seeded Nakama with `HEXBANE_IGNORE_ENV_FILE=1 DEV_AUTO_LOGIN=false NAKAMA_HOST=127.0.0.1`. It covers closed-socket AI/PvP, expired-token renewal, concurrent recovery, synthetic app resume, queued resume/cancellation, notification socket rebinding, cancellation during queue creation, logout invalidation and error-overlay recovery. The original AI reproduction failed with `Socket is not connected` before the fix. Existing Auth tests cover persistence and refresh/cache failure policies. Physical Android suspension and notification delivery remain manual follow-ups; the headless run reports an audio playback/resource warning for `Resources/Music/menu/game_found.wav` at exit. Build: zero errors and 11 existing warnings. Live regression: 10 checks pass; existing Auth verifier: 21 checks pass. Logs are in client `verification/connection-recovery/`.
+
+Source files: `client:Application/Nakama/NakamaClientManager.cs`, `client:Game/Autoloads/GameContext.cs`, `client:Application/ArcaneDuel/{Bot/BotMatchManager,Normal/MatchManager}.cs`, `client:Game/ScenesV3/Dashboard/ModeOverlay.cs`, `client:Game/ScenesV3/Dev/ConnectionRecoveryVerification.cs`.
 
 ## Source of truth in code
 - `client:Application/Authentication/Social/GoogleOAuthSignIn.cs` — loopback flow, Android intent redirect, retry policy

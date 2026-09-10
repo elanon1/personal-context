@@ -58,6 +58,14 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+### 2026-09-10 — Native whole-content touch scrolling in Summary (HEX-7)
+
+Let Summary controls pass pointer events to the existing ScrollContainer, and reapply after layout/data refresh. **Why:** Stop-filter portraits/icons blocked finger drags; native scrolling already supplies inertia and cancels button activation during drag, so a separate gesture recognizer would duplicate working engine behavior. Keep header navigation fixed and preserve button taps and desktop wheel. See [[design-system]].
+
+### 2026-09-10 — Restore runtime transport and preserve renewable sessions (HEX-6)
+
+Recover before matchmaking and during health checks; force a fresh transport after app resume. Serialize connection attempts and invalidate pending queue work on cancel/logout. **Why:** socket existence does not prove connectivity after mobile suspension, and failed AI creation previously left the overlay searching. Temporary connectivity loss must not discard character state or renewable credentials. Details and verification: [[social-sign-in]].
+
 ### 2026-09-10 — Optimize measured allocations without weakening combat presentation
 
 Use cached native names/scratch buffers and change-driven slot drawing; make Cleanse field arithmetic portable. Server snapshots use typed JSON payloads with unchanged cadence/privacy. **Why:** measured allocation/CPU savings address GC pressure and concurrent match cost without altering combat rules or reducing visual quality. Synthetic resident-set benchmarks are not a production capacity guarantee; physical Android and end-to-end staging profiling remain necessary. See [[2026-09-10-performance]].

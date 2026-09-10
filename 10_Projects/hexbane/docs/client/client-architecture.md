@@ -135,6 +135,10 @@ Build: `dotnet build hexbane.csproj`. No formatter/linter; `.editorconfig` only 
 
 Four-space indent, file-scoped namespaces, `_camelCase` private fields, PascalCase public members, scene sub-components may be `_Name.cs`, signal delegates end in `EventHandler`. Services via `DIHost.Services` or `GameContext.Instance`.
 
+## Runtime socket recovery (2026-09-10)
+
+See [[social-sign-in#Runtime connection recovery (HEX-6, 2026-09-10)]] for serialized token/socket recovery, background resume, health checks and matchmaking cancellation/logout guards. The live regression scene is `Dev/ConnectionRecoveryVerification.tscn`; both match managers verify connectivity before queue creation.
+
 ## Source of truth in code
 - `client:project.godot` — autoload order, `[hexbane]` settings, display/stretch, main scene
 - `client:Game/DI/ServiceBootstrapper.cs` — every DI registration, keyed match managers, social sign-in factory

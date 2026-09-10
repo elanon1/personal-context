@@ -458,3 +458,20 @@ Prepared four PNG variants in client `Resources/Images/AppIcon/`: `main_192x192.
 ## 2026-09-10 — Optymalizacja klienta i serwera, Cleanse
 
 Zbadano zgłoszenie nieregularnych przycięć na OnePlus 13. Poprawiono nieprzenośne obliczenia shadera Cleanse/shared fields, alokacje StringName/tymczasowych tablic VFX, zbędną okluzję bezczynnych postaci i odrysowania slotów. Dodano verifier CPU/GPU oraz testy odrysowania. Backend: typed snapshots i benchmarki aktywnych/równoległych meczów oraz 100/1000/10000 rezydujących stanów. Test pól: 146/146; Go test/race/vet zaliczone. Dokumentacja: [[2026-09-10-performance]], vfx-and-race-animation, combat-ui-profiles, server-architecture, _index i _state. Zakończono: gesty 8899/8899, okluzja HD/SD 12398/12398, HUD (30 kombinacji), regresja wyłączenia tutorial pulse oraz APK debug (~840 MiB, podpis i poprawiony shader zweryfikowane). Backend commit f64b8fe, CI 34447986929, GitOps 2741f6f i wdrożenie sha-f64b8fe: Healthy/Synced, 0 restartów, healthcheck + RPC 200. Pozostaje fizyczny Android oraz pomiar wydajności całej Nakamy z DB/siecią.
+
+
+## 2026-09-10 — Linear HEX-6: odzyskiwanie połączenia po pobycie w menu (Codex)
+
+- Przejrzano TODO HEX-6–HEX-9; rozpoczęto od HEX-6 (AI zawieszone na wyszukiwaniu po rozłączeniu). Reprodukcja na lokalnej Nakamie zakończyła się `Socket is not connected`.
+- Poprawiono NakamaClientManager/INakamaClientManager, GameContext, oba ArcaneDuel match managery i ModeOverlay: serializowane odnawianie tokenu/transportu, sprawdzenie połączenia przed matchmakingiem, wymiana po resume, zachowanie sesji przy braku sieci, obsługa błędów AI/PvP. Przywracanie kolejki ma generację anulowania i ochronę przed wylogowaniem/zmianą konta; powiadomienia przepinają socket.
+- Przegląd wykrył utratę ticketu PvP oraz subskrypcji powiadomień po resume, wyścig Cancel/requeue i spóźniony błąd starej generacji — poprawione. Dodano `Dev/ConnectionRecoveryVerification.cs/.tscn`, uzupełniono adapter `Tests/Auth/AuthVerification.cs`.
+- Walidacja: build 0 błędów/11 istniejących ostrzeżeń, 10 live kontroli regresji PASS (AI, refresh, PvP, współbieżność, resume, ticket, powiadomienia, cancel, logout, błąd overlay), 21 kontroli Auth PASS; diff check poprawny. Logi `verification/connection-recovery/`. Headless przy wyjściu zgłasza zachowany playback/resource `game_found.wav`; nie jest to błąd połączenia.
+- Notatki: client/social-sign-in, client/client-architecture, _state i dziennik. Nie zmieniano backendu ani nie instalowano klienta. Pozostało: fizyczny Android background/resume i odbiór powiadomień; następne TODO HEX-7 (scroll summary), HEX-8 (reorganizacja summary), HEX-9 (redesign primary).
+
+
+## 2026-09-10 — Linear HEX-7: przewijanie Summary gestem (Codex)
+
+- Reprodukcja: przeciągnięcie portretu nie przesuwało Summary (0 → 0). Przyczyna: domyślny MouseFilter.Stop portretu, ikon i kontrolek blokował zdarzenia przed ScrollContainer.
+- `CharacterDetailScreen.Responsive.cs`: scoped EnableSummaryTouchScroll zmienia Stop na Pass tylko wewnątrz przewijanego Summary; uruchamiane po reflow oraz z `CharacterDetailScreen.cs` po wrap/CompactRefresh, także dla nowych wierszy spelli. Zachowane natywne inertia/threshold, kliknięcia i scrollbar.
+- Nowa scena `Dev/SummaryScrollVerification.cs/.tscn`: po 12 kontroli interakcji PASS na 1360×612, 1088×612, 844×390 i w renderowanym 1360×612. Portret, staty, ikony/opisy spelli, skills/modifiers, drag przycisku, tap i kółko myszy. Build 0 błędów/11 istniejących ostrzeżeń, scoped diff check poprawny, przegląd bez istotnych uwag. Logi/screenshot `verification/summary-scroll/`.
+- Dokumentacja: client/design-system, _state, dziennik. Pozostało fizyczne sprawdzenie Androida; build nie został zainstalowany. Exploracyjny 390×844 ujawnił istniejące poziome obcięcie Summary (minimalna szerokość 535); nie zaliczano dotyku poza viewportem jako testu. Zakres HEX-7 nie obejmuje reorganizacji układu (HEX-8).
