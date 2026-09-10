@@ -61,7 +61,7 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 ### 2026-09-10 — Gate duel countdown on rendered human arenas
 - **Decision:** server loading waits for protocol-2 `game_hud_ready` from every non-bot player (30 s cancellation timeout); client sends it after rendering and transition completion, buffers early countdown events.
 - **Why:** the one-tick loading phase consumed the short countdown while clients were still loading behind a black fade. A local fake countdown would hide a fight already running on the server.
-- **Status:** source and regression tests prepared locally; server deployment and rebuilt clients required.
+- **Status:** backend deployed 2026-09-10 (`sha-b8773ad`, Argo Synced/Healthy); client source and regression tests prepared locally, rebuilt clients still required.
 
 
 - **2026-09-09 — Google return intent uses installed Android package.** Read the application id through AndroidRuntime before opening Chrome. **Why:** local and Play presets have distinct ids; hardcoding the local id breaks return to the Play installation. Keep the shared intent scheme and scope both return links to the running package.

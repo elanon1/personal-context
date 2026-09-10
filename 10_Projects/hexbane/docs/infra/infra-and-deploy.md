@@ -5,8 +5,8 @@ area: infra
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-09
-verified: 2026-09-09
+updated: 2026-09-10
+verified: 2026-09-10
 tags: [hexbane, infra, deploy, docker, helm, argocd, ci]
 sources: ["vault:10_Projects/hexbane/infra-i-deploy.md", "server:Makefile", "server:docker-compose.yml", "server:docker-compose.debug.yml", "server:docker-compose.prod.yml", "server:Dockerfile", "server:Dockerfile.debug", "server:local.yml", "server:.github/workflows/docker-publish.yml", "server:helm/hexbane/**", "server:deploy/argocd/*", "server:docs/spell_system/database-v2.md", "client:deploy.sh", "client:CLAUDE.md", "client:export_presets.cfg"]
 ---
@@ -83,6 +83,16 @@ At the user's request, manually ran the existing seed script against public HTTP
 ### Historical local-only context (2026-09-07; superseded by authorization above)
 
 The phrase is not written down in the vault or either repo; this is the observable state. Both repos sit on feature branches (`feat/spell-system-redesign`, `feat/duel-v2-client`) with the whole duel_v2 redesign uncommitted. CI only publishes from `main` and Argo auto-syncs the chart at `HEAD` of the default branch, so **nothing of the redesign has reached the cluster**. The server migration set was rewritten as a "fresh development baseline, not an upgrade" (`docs/spell_system/database-v2.md:3`): the working tree deletes the tracked `000001..000009` + `000012..000016` (28 files; `000010`/`000011` were never committed) and adds `000001_initial_schema`, `000002_reference_data`, `000003_local_tutorial`. Pushing that to `main` would make the `migrate-custom` init container run against a database whose migration history is at version 16 (unverified behaviour of golang-migrate in that case; expect a failed or dirty state and a stuck rollout). Until a prod migration strategy exists, the redesign is local-only by necessity, not just by preference.
+
+## Countdown readiness rollout (2026-09-10)
+
+At the user's explicit request, deployed server commit `b8773ad78ccbbee9211534765f1fe510044036e6` (`fix(match): wait for human arenas before combat countdown`) to the existing cluster. Only loading readiness and its regression tests changed; no database reset or migration changes.
+
+- Local `go test ./...`, CI-scoped `go test -race`, and `go vet ./...` passed. GitHub Actions run `34442050711` completed successfully and published `ghcr.io/elanon1/hexbane-server:sha-b8773ad`.
+- GitOps commit `9767ea8acc7380ad34968e9456b70a6aa2e71645` updates `gitops/argo/apps/hexbane.yaml` to `image.tag=sha-b8773ad`. Applied the Application and requested one-time Argo sync, as required by the existing root/self-heal configuration.
+- Deployment rollout succeeded. Pod `hexbane-774b5fb78-tbpzg`: ready, zero restarts, digest `sha256:0702e8762688365ba455c5961817859250ab480303e42d7aa0ad0068e85121fb`. Argo `Synced / Healthy`, operation `Succeeded`, source revision `b8773ad78ccbbee9211534765f1fe510044036e6`.
+- Startup logs confirm Go plugin initialization, six races, all 14 spells and `Startup done`; no error/fatal entries in inspected startup logs. Public HTTPS `/healthcheck`, RPC `healthcheck` and RPC `get_entry_spells` all HTTP 200; RPC status ok/success.
+- No live duel or physical-device test was run in this deployment session. Client source already contains the presentation-ready acknowledgement/buffer fix but installed applications still require an updated build.
 
 ## Client build and deploy
 

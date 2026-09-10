@@ -430,3 +430,17 @@ Notatki: duel-v2-client (sekcja „Catalog2.4 progression UI”), character-deta
 - **Walidacja:** regresje klienta i serwera FAIL przed poprawką, PASS po niej; build klienta 0 błędów/11 wcześniejszych ostrzeżeń; testy modelu DuelV2 PASS; `go test ./...` PASS; renderowana scena pokazuje arenę, postacie i cyfrę 2 (zrzut `/tmp/hexbane-duel-launch.png`). Headless zgłasza też ostrzeżenia o zasobach przy zamknięciu; renderowany test kończy się bez tych błędów. Niezależny przegląd nie znalazł błędów blokujących.
 - **Notatki:** client/duel-v2-client, client/client-architecture, server/server-architecture, protocol/opcodes i op_02/06/07/09/16 oraz `_state.md` (uzasadnienie).
 - **Pozostało:** wdrożyć backend i zbudować/zainstalować klientów. Nie wykonano live testu przeciw zmienionemu Nakama ani na fizycznym telefonie: lokalny Docker nie działa, brak urządzenia ADB. Nie zmieniano działającego serwera ani zainstalowanych aplikacji.
+
+
+## 2026-09-10 — Wdrożenie poprawki odliczania na serwer (Codex)
+
+- Na wyraźne polecenie użytkownika opublikowano backend `b8773ad78ccbbee9211534765f1fe510044036e6`; GitHub Actions `34442050711` zakończone sukcesem, obraz `sha-b8773ad`.
+- GitOps `9767ea8acc7380ad34968e9456b70a6aa2e71645`: `gitops/argo/apps/hexbane.yaml`; zastosowano Application i wykonano sync Argo. Rollout ukończony, `Synced / Healthy / Succeeded`, nowy pod ready bez restartów. Bez resetu danych i bez zmian migracji.
+- Walidacja: testy Go, race i vet lokalnie oraz w CI; poprawny startup pluginu/6 ras/14 zaklęć; publiczny healthcheck i RPC healthcheck/get_entry_spells HTTP 200.
+- Dokumentacja: infra-and-deploy, duel-v2-client, op_02_client_ready, `_state.md`.
+- Pozostało: zbudować/zainstalować aktualnego klienta; test pełnego pojedynku na urządzeniu. Nie wykonywano live meczu w tej sesji.
+
+
+## 2026-09-10 — Android app icon assets
+
+Prepared four PNG variants in client `Resources/Images/AppIcon/`: `main_192x192.png`, `adaptive_foreground_432x432.png`, `adaptive_background_432x432.png`, `adaptive_monochrome_432x432.png`. Main is resized from `hexbane-icon-v1.png`; adaptive layers generated with built-in ImageGen using the original icon as reference. Prompts: extract fiery X onto transparency; reconstruct volcanic stone/rune background without X; create white X silhouette on transparency, then simplify its edges. Verified exact dimensions and alpha channels (foreground/monochrome transparent; main/background opaque). Original retained. Export presets not changed. Remaining: assign assets in export settings and inspect on Android launcher.

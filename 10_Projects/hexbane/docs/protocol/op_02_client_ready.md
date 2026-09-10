@@ -60,4 +60,4 @@ sources: ["client:docs/opcodes/op_02_client_ready.md", "server:docs/opcodes/op_0
 
 ## Loading readiness (2026-09-10)
 
-Only `event_name=game_hud_ready` with `combat_protocol=2` is accepted. Acting player is `MatchData.GetUserId()`, never payload `user_id`. Bots do not wait. A 30-second timeout cancels via opcode 9; no forced start. No opcode numbers or payload fields changed. Server and client changes are prepared locally; rollout is required for the readiness barrier.
+Only `event_name=game_hud_ready` with `combat_protocol=2` is accepted. Acting player is `MatchData.GetUserId()`, never payload `user_id`. Bots do not wait. A 30-second timeout cancels via opcode 9; no forced start. No opcode numbers or payload fields changed. Server readiness barrier deployed on 2026-09-10 as `sha-b8773ad`; the corresponding client changes still require rebuilt applications.
