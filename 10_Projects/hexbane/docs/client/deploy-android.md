@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-09
+verified: 2026-09-09
 tags: [hexbane, client, android, deploy]
 sources: ["client:CLAUDE.md", "client:AGENTS.md", "client:deploy.sh", "client:export_presets.cfg"]
 ---
@@ -21,7 +21,7 @@ Server-side infra (docker, Nakama ports) is in [[infra-and-deploy]].
 ./deploy.sh
 ```
 `deploy.sh` (verified 2026-09-07):
-1. Uses `GODOT` (default `/Applications/Godot.app/Contents/MacOS/Godot`) and `ADB` (default `~/Library/Android/sdk/platform-tools/adb`); both must be executable (lines 7-18).
+1. Uses `GODOT` (default `/Applications/Godot_mono47.app/Contents/MacOS/Godot`) and `ADB` (default `~/Library/Android/sdk/platform-tools/adb`); both must be executable (lines 7-18).
 2. Refuses to build unless `adb devices` shows an authorized `device` (lines 20-25).
 3. Reads `network/local_host` from the `[hexbane]` section of `project.godot` and warns when `http://$HOST:7350/` does not answer (lines 29-34).
 4. Exports preset **Android** in debug, headless, to `hexbane1.apk` in the repo root, then `adb install -r` (lines 36-48).
@@ -44,11 +44,48 @@ network/local_host="192.168.1.34"
 | Windows Desktop | Windows | SD race sheets + `frames_sd.tres` | `../export/test.exe` |
 | Android | Android, package `pl.elanon.hexbane` (line 110) | HD race sheets + `frames.tres` (line 82) | `./hexbane1.apk` |
 | macOS | macOS | SD set | `../export/test_mac.app` |
-| iOS | iOS | HD set | (none) |
+| iOS | iOS | HD set + Rider editor plugin | `../export/ios/hexbane.ipa` (see [[deploy-ios]]) |
 
 Race sprite selection at runtime: [[vfx-and-race-animation]].
 
 Enabled editor plugins (`project.godot:64`): `ColorPreview`, `godot_mcp`, `hexbane_android`. `addons/hexbane_android/export_plugin.gd` injects the `hexbane://` intent filter needed by Google sign-in ([[social-sign-in]]); it must stay enabled. `GodotPlayGameServices` is **disabled**; re-enabling it without a Play Console game id breaks the AAPT step (`string/game_services_project_id not found`). Toggle plugins from the editor, not by editing `project.godot` while the editor is open.
+
+## Godot 4.7 and Google Play API 36 (2026-09-09)
+
+Use `/Applications/Godot_mono47.app/Contents/MacOS/Godot` (4.7 stable .NET).
+Main/test project SDK is `Godot.NET.Sdk/4.7.0`, targeting .NET 9. Matching Android,
+iOS, Windows templates were installed; existing matching macOS template retained.
+Android build template was replaced with stock 4.7, preserving the old tree at
+`~/Library/Caches/hexbane/godot-4.7-upgrade/android-build-4.5.2`.
+When replacing it manually, preserve/create `android/build/.gdignore` and executable
+permission on `gradlew`; preferably use Godot's Install Android Build Template action.
+Do not scan generated Android assets as Godot resources.
+
+Stock 4.7 Android defaults: compileSdk **36**, targetSdk **36**, build tools **36.1.0**,
+AGP 8.6.1, Gradle 8.11.1, Kotlin 2.1.21. Android SDK platform 36 installed during build.
+Godot 4.7 editor Java SDK setting is
+`/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home`;
+Android SDK is `~/Library/Android/sdk`.
+
+Both Android presets explicitly target API 36 and exclude the desktop Rider plugin.
+`Android Play`: AAB, package `com.dev.hexbane`, version code **5**.
+`Android`: development APK, package `pl.elanon.hexbane`.
+
+```bash
+mkdir -p ../export/android
+/Applications/Godot_mono47.app/Contents/MacOS/Godot --headless --path . \
+  --export-release "Android Play" ../export/android/hexbane-godot47-api36-v5.aab
+```
+
+Verified export exit 0, bundletool API36/version5, signature verification; the Godot
+warning about target36 exceeding default35 is absent. Other general C# experimental
+support or editor shutdown warnings can still occur. No Play upload was performed.
+For next releases increment Version Code, export AAB with Export With Debug unchecked,
+and retain the same package ID and signing key.
+
+Prior version3 was rejected for API35; version4 was rebuilt with target36 on 4.5.2.
+The 4.7 upgrade also updates the underlying template defaults to36.
+Google Play policy: https://support.google.com/googleplay/android-developer/answer/11926878
 
 ## Things that must stay as they are
 

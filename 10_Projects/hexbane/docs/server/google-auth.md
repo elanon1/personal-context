@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-09
+verified: 2026-09-09
 tags: [hexbane, server, auth, google, nakama]
 sources: ["server:docs/client/google-auth.md", "server:docs/superpowers/specs/2026-09-04-google-auth-design.md", "client:CLAUDE.md"]
 ---
@@ -50,9 +50,9 @@ Server hook (`server:modules/auth/social_hooks.go:37-45`): `credentialKind` clas
 
 - Nakama runs with `--session.token_expiry_sec 7200` (`server:docker-compose.yml`), refresh tokens on
   every provider.
-- Client caches the session (`SessionStore`) with provider and server name; `TryRestoreSession`
+- Client caches email and social sessions (`SessionStore`) with provider and server name; `TryRestoreSession`
   (`LoginService.cs:188-221`) ignores a cache from another server, refreshes via `SessionRefreshAsync`
-  when within 5 minutes of expiry, and falls back to the sign-in screen on any failure.
+  when within 5 minutes of expiry, and falls back to the sign-in screen on failure. Transient failures retain the cache; HTTP 401/403 refresh rejection discards it. Explicit logout clears the cache. See [[social-sign-in]] for restart verification against local Nakama.
 - After every sign-in: `SetupSocket` → `socket.ConnectAsync(session, appearOnline: true, 60)`
   (`client:Application/Nakama/NakamaClientManager.cs:53-70`).
 

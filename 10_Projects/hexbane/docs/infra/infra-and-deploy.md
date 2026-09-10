@@ -5,8 +5,8 @@ area: infra
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-09
+verified: 2026-09-09
 tags: [hexbane, infra, deploy, docker, helm, argocd, ci]
 sources: ["vault:10_Projects/hexbane/infra-i-deploy.md", "server:Makefile", "server:docker-compose.yml", "server:docker-compose.debug.yml", "server:docker-compose.prod.yml", "server:Dockerfile", "server:Dockerfile.debug", "server:local.yml", "server:.github/workflows/docker-publish.yml", "server:helm/hexbane/**", "server:deploy/argocd/*", "server:docs/spell_system/database-v2.md", "client:deploy.sh", "client:CLAUDE.md", "client:export_presets.cfg"]
 ---
@@ -58,7 +58,29 @@ Triggers: push to `main`, tags `v*` / `release-*`, `workflow_dispatch`. Jobs: `t
 | `synology` | `192.168.1.9:7350` | http |
 | `prod` | `hexbane.elanon.pl:443` | https |
 
-## "Local only" policy (what it means in practice)
+## Cluster rollout status (2026-09-09)
+
+The user explicitly authorized pushing the server and deploying to their existing cluster, including a full reset of **Hexbane** data if required. Server `main` and `feat/spell-system-redesign` were pushed to `a480c8dfcb77d97a57761f8263de3cf7718ac23f`; remote refs were verified. The merge preserves remote history and keeps the current flat 14-spell catalog; remote edits to retired `mirror_ward` and `restore` YAML remain available in commit `02e509a`.
+
+Local verification passed: `go test ./...`, CI-scoped `go test -race`, `go vet ./...`, and `helm lint helm/hexbane`. GitOps source `/Users/elanon/PycharmProjects/argocd/gitops/argo/apps/hexbane.yaml` matches the server Application example and tracks default-branch `HEAD` with automated sync. It was subsequently updated as described below.
+
+Deployment completed in the cluster after connectivity was restored on 2026-09-09. The old running pod was 152 days old and used digest `a436db6a...`; Argo had already compared server commit `a480c8d` but no chart-template change required a rollout. A preflight pod successfully pulled `sha-a480c8d`, verified Nakama 3.27.0, migrations 1–5 and the 14-spell catalog.
+
+GitOps commit `4ad3d8c` in `elanon1/argocd` sets `spec.sources[0].helm.parameters` → `image.tag: sha-a480c8d` in `gitops/argo/apps/hexbane.yaml`. The source Application was applied to the cluster. The root Application `apps-root` has **no automated sync policy**; changing the GitOps repo alone does not automatically apply its child Application definitions. The child has `automated: {}`, but the controller explicitly skipped this parameter/object update because `selfHeal` is disabled; a one-time Argo sync operation completed the rollout. Do not claim that pushing server code alone automatically deploys new images. Future releases need a published immutable image tag update and application synchronization (or a separately implemented image-promotion automation).
+
+Reset performed only for Hexbane: scaled Deployment to zero, waited for the old pod to terminate, dropped/recreated database `nakama` on its existing dedicated PostgreSQL instance, then synced Argo. Nakama init migrations ran first; application migrations 1–5 completed, `schema_migrations = (5, false)`, six races and zero characters. PVC and PostgreSQL instance retained; old Hexbane accounts/game data removed as authorized.
+
+Verified rollout: Argo `hexbane` **Synced / Healthy**, operation **Succeeded**, source revision `a480c8dfcb77d97a57761f8263de3cf7718ac23f`; pod `hexbane-79c597f85b-r4rr4` ready 1/1 with zero restarts. Image `ghcr.io/elanon1/hexbane-server:sha-a480c8d`, pulled digest `sha256:1304a6758e1b00c220a35ff9d38d46e4805bd9df5daf26fe3d08ae4a9b1ba7ce`. Logs show successful plugin startup, six races and all 14 spells. Through a temporary local service port-forward: `/healthcheck` HTTP 200, `healthcheck` RPC HTTP 200/status ok, `get_entry_spells` RPC HTTP 200/success/count 6/protocol 2/catalog `duel_v2.4`/ruleset `duel_v2`. Preflight pod removed. No gameplay/account-creation smoke test performed.
+
+**Public HTTPS restored 2026-09-09:** the user added DNS-only A records for `hexbane` and `hexbane-console` to `195.42.99.130` in Cloudflare. Public/authoritative DNS resolves both. Cluster recursive DNS still cached NXDOMAIN, so temporarily appended `--acme-http01-solver-nameservers=1.1.1.1:53` to the cert-manager controller for HTTP-01 self-checks. Public challenge endpoints responded correctly. The 32-day-old ACME authorizations/order had expired; removed only failed CertificateRequest `hexbane-tls-3` and triggered immediate renewal with official `cmctl renew -n hexbane hexbane-tls` to bypass failure backoff. New certificate revision 4 is Ready, valid until **2026-12-08T12:58:39Z**, renewal scheduled 2026-11-08. Removed temporary controller flag, verified its rollout and Argo `cert-manager` Synced/Healthy, and deleted diagnostic pod. No persistent cert-manager configuration change.
+
+Public verification with normal hostname resolution and TLS validation: `https://hexbane.elanon.pl/healthcheck` HTTP 200; `healthcheck` and `get_entry_spells` RPCs HTTP 200, six starters, protocol 2/catalog `duel_v2.4`. Console HTTPS returned 200 with valid certificate using explicit address resolution (`curl --resolve`, no TLS bypass); the local macOS resolver still cached NXDOMAIN for console while Cloudflare/public DNS already resolved it. Clients retaining a negative DNS cache may need to wait for expiry. Test-account login and character retrieval were subsequently verified during seeding below; WebSocket/gameplay validation remains separate. No public DNS credentials were handled by the agent.
+
+### Cluster test accounts (2026-09-09)
+
+At the user's request, manually ran the existing seed script against public HTTPS after reset: six race-specific `@test.pl` accounts, default test password, six level-1 characters and 19 starter spell ownership rows. Repeat run authenticated all six and preserved existing characters. The deployment does not automatically seed accounts; PostgreSQL persists them across normal rollouts, but a future database reset must be followed by the seed script. Subsequently, at the user's request, deleted the six seeded characters while retaining all six test accounts/passwords; character creation is now left to the client. Details and credentials: [[database#Test accounts on the cluster (2026-09-09)]].
+
+### Historical local-only context (2026-09-07; superseded by authorization above)
 
 The phrase is not written down in the vault or either repo; this is the observable state. Both repos sit on feature branches (`feat/spell-system-redesign`, `feat/duel-v2-client`) with the whole duel_v2 redesign uncommitted. CI only publishes from `main` and Argo auto-syncs the chart at `HEAD` of the default branch, so **nothing of the redesign has reached the cluster**. The server migration set was rewritten as a "fresh development baseline, not an upgrade" (`docs/spell_system/database-v2.md:3`): the working tree deletes the tracked `000001..000009` + `000012..000016` (28 files; `000010`/`000011` were never committed) and adds `000001_initial_schema`, `000002_reference_data`, `000003_local_tutorial`. Pushing that to `main` would make the `migrate-custom` init container run against a database whose migration history is at version 16 (unverified behaviour of golang-migrate in that case; expect a failed or dirty state and a stuck rollout). Until a prod migration strategy exists, the redesign is local-only by necessity, not just by preference.
 

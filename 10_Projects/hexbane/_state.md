@@ -6,8 +6,8 @@ status: active
 state: active
 repo: https://github.com/elanon1/hexbane
 created: 2026-08-31
-updated: 2026-09-08
-verified: 2026-09-08
+updated: 2026-09-09
+verified: 2026-09-09
 tags: [hexbane, gamedev, godot, csharp, nakama, go, kubernetes, ai-art]
 aliases: [hexbane, hexbane-server]
 ---
@@ -38,8 +38,8 @@ się wybór zaklęć, kolejkowanie akcji (cast time + recovery, brak cooldownów
   → [[progression]], [[spell-system]], [[combat-v2]]
 - **Protokół:** opcode’y 0–10, 16, 70, 50, 199 bez zmian; walka to 29 (komenda) → 30 (prywatny
   wynik) / 31 (zdarzenia) / 32 (snapshot). Opcode’y 11–15 i 21–28 **wycofane**. → [[opcodes]], [[rpcs]]
-- **Infra:** obecnie **tylko lokalnie** (docker compose, `NAKAMA_SERVER=local`); chart Helm + Argo CD
-  na własny k8s (`hexbane.elanon.pl`) istnieją, ale nie są celem prac. → [[infra-and-deploy]]
+- **Infra:** wdrożenie na własny k8s jest zatwierdzone (2026-09-09); kod serwera wypchnięty,
+  backend działa (Argo Synced/Healthy); publiczne HTTPS i RPC zweryfikowane, TLS odnowiony. → [[infra-and-deploy]]
 
 Decyzja fundamentalna (26.06.2025): klient przepisany z GDScript na C#.
 
@@ -57,6 +57,38 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 **Content:** 13 zachowanych ikon pokrywa 14 obecnych zaklęć; VFX obejmuje wszystkie 14 zaklęć: Mirror Reflection z przywróconymi dźwiękami, Magic Arrow i Firebolt/Fireball ze wspólnym cyklem życia pocisku oraz 11 różnorodnych efektów na postaci z warstwami przed/za sylwetką. Nowe animacje castingu i presety zachowane. Stare VFX/SFX i assety generatora usunięte 2026-09-08. → [[spell-vfx-configuration]]
 
 ## Decisions log
+
+- **2026-09-09 — Google return intent uses installed Android package.** Read the application id through AndroidRuntime before opening Chrome. **Why:** local and Play presets have distinct ids; hardcoding the local id breaks return to the Play installation. Keep the shared intent scheme and scope both return links to the running package.
+
+
+- **2026-09-09 — Explicit native .NET Nakama WebSocket adapter.** Use `WebSocketStdlibAdapter` in the client. **Why:** Nakama3.16 factory chooses the legacy adapter and rejects production TLS; identical session connects with native adapter while preserving certificate validation. Verified in actual Godot login flow.
+
+
+### 2026-09-09 — Godot 4.7 as the client baseline
+- SDK4.7.0/.NET9, editor `/Applications/Godot_mono47.app`, matching export templates and simulator engine; Android compile/target36.
+- **Why:** requested engine upgrade removes the old default35 target-SDK warning while retaining the established C# platform and game behavior. Builds/tests, AAB metadata/signature and simulator startup verified; no app-store upload.
+
+- **2026-09-09 — Pre-match arrangement reuses actual combat slots and geometry.** Filled draft slots swap by mouse or native touch; clicking inspects, primary positions remain fixed, pending primary numeric metadata is omitted. **Why:** the player should prepare the exact positional/keyboard layout used in combat, and fallback primary costs must not masquerade as character-specific values.
+
+- **2026-09-09 — Shared combat presenter with Auto/Desktop/Mobile profiles and local physical-key bindings.** Desktop gets a bottom action bar; mobile retains touch controls. Draft positions and primary actions have independent stable bindings; shared modal uses Apply/Cancel and conflict validation. **Why:** UI can evolve per device without duplicated combat/network behavior, primary keys must not move with race capacity, and narrowing a desktop window should not switch input paradigms. Offline preview scenes force profiles independently of stored preferences.
+
+### 2026-09-09 — Publish server and resume cluster deployment
+
+- User authorized deployment of current server code and a full reset of Hexbane data. **Why:** replace the old installation with the current redesign and its rewritten database baseline. The former local-only deployment constraint is superseded.
+- Pushed and verified server `main` and feature branch at `a480c8d`; local tests, race tests, vet and Helm lint pass. After connectivity returned, reset the authorized Hexbane database and deployed the published image, verified Argo Synced/Healthy and HTTP/RPC checks. GitOps image pin: `4ad3d8c`. User restored DNS; public API HTTPS/RPC verified and TLS renewed through 2026-12-08. Details: [[infra-and-deploy]].
+
+### 2026-09-09 — ARM64 iPhone simulator without project upgrade
+- Build/cache the Godot 4.5.2 Mono ARM64 simulator library and merge it into the exported XCFramework via `deploy-ios-simulator.sh`; use ad-hoc library signing and unsigned simulator Xcode builds.
+- **Why:** stock template contains only Intel simulator code, but installed iOS 26.5 accepts ARM64 only. This preserves the project SDK and avoids unnecessary physical-device provisioning. Build, installation and auth-screen rendering verified. See [[deploy-ios]].
+
+### 2026-09-09 — Remember email and Google login sessions
+
+- Cache both providers, restore the saved server, and persist renewed tokens. Explicit logout forgets the session; transient refresh/socket failure retains it. **Why:** restarting the game or temporarily losing connectivity should not require another email/Google login. This supersedes the earlier deliberate email-cache exclusion for test-account switching; use Logout to switch accounts.
+- Verification and limits: [[social-sign-in]].
+
+### 2026-09-08 — iOS export name and editor-plugin exclusion
+- Export iOS to `../export/ios/hexbane.ipa` and exclude `addons/rider-plugin/*`.
+- **Why:** the dotted `apk.app.ipa` basename produced a mismatched AOT framework path; Rider ships desktop native libraries and is editor tooling. After the user clarified simulator testing, enable Export Project Only to avoid the physical-device archive/signing step. See [[deploy-ios]].
 
 - **2026-09-08 — Shared runic scrollbar with a wider touch lane.** Native ScrollBar keeps input/range semantics; a mouse-transparent procedural overlay supplies the rune and restrained amber animation. The target is 48 design units while the visible thumb is 24. **Why:** easier finger targeting and clearer scroll affordance without an oversized visual handle; one shared skin prevents screens from hiding or independently styling their bars.
 

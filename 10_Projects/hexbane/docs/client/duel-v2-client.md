@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-08
-verified: 2026-09-08
+updated: 2026-09-09
+verified: 2026-09-09
 tags: [hexbane, client, duel-v2, combat, hud]
 sources: ["client:docs/opcodes/duel-v2.md", "client:docs/opcodes/duel-v2-verification.md", "client:docs/client/reference-duel/README.md"]
 ---
@@ -66,7 +66,7 @@ Events → visuals: `Application/Modules/Spell/Effects/SpellEffectManager.DuelV2
 
 - 6 draftable slots, 7 for Human (`StatAllocation.BaseSpellSlots = 3` plus lobby capacity from the payload; `RequiredStarterSpells` in creation is 3/4, `CreateCharacterScreen.cs:378`), plus the two standards `magic_arrow` and `mirror_reflection` (`Core/Spells/StandardSpells.cs:17-20`), deduplicated by id (`DuelLoadout.DistinctById`).
 - Fillable count comes from `spell_slots`, unlocked entitlement from `max_spell_slots`; empty unlocked slots show "Unlocked · no learned spell available", locked ones "Locked by progression" (`ReferenceHud.cs:699-703`).
-- Keys: `1`–`9` cast slot N (left to right, then standards), `Space` or `M` meditate, `X` sends `clear_queue` (`ReferenceHud.cs:605-607`). Swipe up also meditates. Fixed meditate and clear-queue buttons exist.
+- Keys are configurable and persisted locally: draft 1–5/R/F, Magic Arrow Q, Mirror Reflection E, meditate Space, clear queue X by default. Primary bindings are stable across race capacities. Auto/Desktop/Mobile HUD profiles and in-duel Esc settings are described in [[combat-ui-profiles]]. Swipe up also meditates; both profiles retain clickable actions.
 - Gating: mana, casting, paralysis, death, loading gate both buttons and shortcuts; casting/recovery do **not** block queuing. Status rows: mirror charge, barrier capacity, hex deadline, paralysis, control immunity.
 - `TutorialControl(key)` / `TutorialTarget(key)` expose slot rects for the tutorial (`ReferenceHud.cs:215-221`, key `standards` merges both standard slots).
 - Arena is chosen per match by `ArenaCatalog.ForMatch(matchId)` (see [[vfx-and-race-animation]]).
@@ -113,3 +113,7 @@ Historical results (2026-09-06, from `docs/opcodes/duel-v2-verification.md`, log
 - `client:Game/ScenesV3/ReferenceDuel/ReferenceHud*.cs`, `ReferenceSpellSlot.cs` — HUD rules and keys
 - `client:Application/Modules/Spell/Effects/SpellEffectManager.DuelV2.cs` — event → visual
 - `client:Tests/DuelV2/*`, `client:Game/ScenesV3/Dev/DuelV2Preview.cs` — validation harnesses
+
+## Combat desktop/mobile profiles (2026-09-09)
+
+See [[combat-ui-profiles]] for the shared profile mechanism, configurable keyboard actions, preview scenes and validation. Desktop uses the bottom action bar and visible keycaps; mobile keeps touch rails. The tutorial follows the chosen profile and respects configured keys and target gates.

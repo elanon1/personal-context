@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-09
+verified: 2026-09-09
 tags: [hexbane, client, auth, google, android]
 sources: ["client:docs/client/social-sign-in.md", "client:CLAUDE.md"]
 ---
@@ -45,11 +45,13 @@ Both settings are present in `project.godot:70-72` (needed because `.env` is not
 
 1. `OS.ShellOpen` the Google auth URL; a `TcpListener` on `127.0.0.1:<port>` waits for the redirect (`GoogleOAuthSignIn.cs:106-111`). `HttpListener` is avoided (unreliable on Android .NET, needs URL reservations on Windows).
 2. The redirect is captured on the thread pool (`Task.Run`, `ConfigureAwait(false)`, lines 135-167), because on Android the Godot main loop stops iterating while Chrome is in front.
-3. On Android the redirect is answered with `302` to `intent://signed-in#Intent;scheme=hexbane;package=pl.elanon.hexbane;S.browser_fallback_url=http://127.0.0.1:<port>/done;end` (lines 210-212); the fallback page `/done` offers a "Return to the game" button. The scheme resolves only because the export plugin adds the `VIEW/BROWSABLE` intent filter (`export_plugin.gd:35-46`); hand-edits to `android/build/AndroidManifest.xml` are dropped by the manifest merger.
+3. On Android the redirect is answered with `302` to `intent://signed-in#Intent;scheme=hexbane;package=<running-application-id>;S.browser_fallback_url=http://127.0.0.1:<port>/done;end` (lines 210-212); the fallback page `/done` offers a "Return to the game" button. The scheme resolves only because the export plugin adds the `VIEW/BROWSABLE` intent filter (`export_plugin.gd:35-46`); hand-edits to `android/build/AndroidManifest.xml` are dropped by the manifest merger.
 4. The code exchange runs only once the game is in front again (OEMs cut DNS for backgrounded apps). Connection-level failures are retried with a 2 s delay (`ExchangeRetryDelay`, line 73); anything that may have reached Google is not retried.
-5. `GoogleAuthGateway` calls `AuthenticateGoogleAsync(idToken)`; the session (with refresh token) is cached in `SessionStore`, tagged with the issuing server. Email sessions are deliberately not cached so the per-race test accounts can be switched.
+5. `GoogleAuthGateway` calls `AuthenticateGoogleAsync(idToken)`; the session (with refresh token) is cached in `SessionStore`, tagged with the issuing server. Email sessions are cached as well, including test-account sign-ins. Use Logout to switch accounts. Passwords and Google credentials are not stored in this cache.
 
-Startup order: cached session (refreshed via `SessionRefreshAsync` if expired) → silent platform sign-in (nothing implements it today) → show the button.
+Startup order: select the cached session's server if supported by the selector (unless dev auto-login is enabled) → cached session (refreshed via `SessionRefreshAsync` within five minutes of access-token expiry) → silent platform sign-in (nothing implements it today) → show the button. Controls cannot switch server or start a test-account login during restoration.
+
+The cache is `user://auth_session.cfg` and contains access/refresh tokens, provider and server name. Existing Google cache files remain compatible. A refresh rejection with HTTP 401/403 or a fully expired session removes the cache; network errors and server outages retain it for a later launch. Explicit Logout removes it. Session-health failure returns through the login flow while retaining renewable credentials. Successful SDK-triggered token refreshes are also persisted. A failed socket connection returns a failed login result and clears in-memory authentication while retaining the saved tokens.
 
 Related Android settings: `application/config/quit_on_go_back=false` plus `SceneManager._Notification` (Back navigates instead of quitting and exposing the leftover Chrome tab). The Chrome tab stays in the app switcher after sign-in; harmless.
 
@@ -57,11 +59,29 @@ Related Android settings: `application/config/quit_on_go_back=false` plus `Scene
 
 `Resources/Images/Auth/icon_google.png` is Google's `googleg_standard_color_128dp` (2x), stored unmodified as their terms require; the white disc is a separate node built in `LoginPanel.ApplyProviderMark`.
 
+## Android return package (2026-09-09)
+
+`AuthConfig.AndroidPackage` reads `Engine.GetSingleton("AndroidRuntime").getApplicationContext().getPackageName()` on the main thread. Both the automatic intent redirect and fallback button target that application id. Local preset uses `pl.elanon.hexbane`, Android Play uses `com.dev.hexbane`; previously the local package was hardcoded and Play's return intent targeted the wrong app. The `hexbane` scheme remains declared by the Android export plugin. Missing runtime/package now fails sign-in explicitly and closes the loopback listener instead of opening an invalid return link.
+
+Regression verification: mocked AndroidRuntime bridge with each package, checked both generated intent links. Before fix both Play checks failed; after fix all21 auth checks pass. Main/Auth compilation: zero errors,11 existing warnings. No ADB device connected; real Chrome/Google return and Play-installed build not exercised. Re-export and upload a higher versionCode to distribute this client fix.
+
+## Production WebSocket TLS (2026-09-09)
+
+`NakamaClientManager.SetupSocket` explicitly uses `Socket.From(client, new WebSocketStdlibAdapter())`. NakamaClient 3.16.0's parameterless-adapter factory still selects the legacy `WebSocketAdapter`; against production it rejected the certificate with `RemoteCertificateValidationCallback`, although HTTPS email authentication succeeded. Native .NET WebSocket connected successfully with standard certificate validation. Do not disable TLS verification to work around this error.
+
+Verified old/new adapters against the same production session (existing test account, create=false), then real Godot4.7 LoginPanel → LoginService → NakamaClientManager production login: socket connected and login succeeded. Main/Auth build: zero errors, 11 existing warnings; all 17 auth regression checks pass. Existing exported applications need rebuilding to receive the fix; physical-device and full duel checks were not performed.
+
 ## Known gaps
 
-- Mid-session expiry is not handled: `GameContext.CheckSessionHealth` (`GameContext.cs:117-125`) logs the player out instead of refreshing, because the live match socket would need replacing.
+- Mid-session expiry returns through the login flow to refresh and reconnect; seamless recovery inside an active duel is not implemented.
 - One account per provider: Nakama matches on provider id, never email, so Google and email logins are different accounts. Account linking is a server plan.
 - No silent sign-in exists.
+
+## Verification (2026-09-09)
+
+`dotnet build Tests/Auth/Auth.csproj`, then Godot 4.5.2 .NET headless with `--path Tests/Auth` runs regression checks against real session persistence and LoginService, with a controlled HTTP adapter for failures. `-- write` then `-- read` verifies persistence across processes. `-- live-write` then `-- live-read` uses local Nakama at 127.0.0.1:7350, creates an isolated test email account, restores it in another process, refreshes using its real refresh token, and verifies revocation. The test project uses a separate Godot user-data directory.
+
+All checks passed; main build has 0 errors and 9 existing warnings. The service test harness emits a Godot ObjectDB cleanup warning at exit (verbose output identifies the LoginService signal object). Full browser Google OAuth and physical Android restart were not exercised in this task.
 
 ## Source of truth in code
 - `client:Application/Authentication/Social/GoogleOAuthSignIn.cs` — loopback flow, Android intent redirect, retry policy
@@ -71,3 +91,5 @@ Related Android settings: `application/config/quit_on_go_back=false` plus `Scene
 - `client:Game/DI/ServiceBootstrapper.cs` — provider choice
 - `client:addons/hexbane_android/export_plugin.gd` — manifest intent filter
 - `client:project.godot` — `[hexbane] auth/*`, `quit_on_go_back`
+
+- `client:Tests/Auth/` — isolated Godot regression and local Nakama integration checks

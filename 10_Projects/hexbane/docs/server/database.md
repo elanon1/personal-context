@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-09
+verified: 2026-09-09
 tags: [hexbane, server, database, migrations, postgres]
 sources: ["server:docs/spell_system/database-v2.md", "server:docs/progression/progression.md", "client:docs/Server/progression/races_seed.sql"]
 ---
@@ -49,6 +49,14 @@ Startup order everywhere is Nakama migrations → application migrations → bac
 `user_id UUID PK → users(id) CASCADE`, `training_completed`, `reward_claimed`, `progression_completed BOOL`, `reward_receipt JSONB '{}'`, `updated_at`. Account-scoped so training can precede character creation; rows are upserted by the `tutorial` RPC (`server:modules/character/tutorial.go:47`). `complete_progression` also sets `characters.tutorial_completed = TRUE`.
 
 Spell ids in `character_spells` and `playstyle_slots` intentionally have no foreign key (the catalog is not in SQL); raw SQL can insert invalid ids, so writes must go through server validation.
+
+## Test accounts on the cluster (2026-09-09)
+
+After the authorized reset, the cluster had no `@test.pl` accounts. Ran `NAKAMA_URL=https://hexbane.elanon.pl bash scripts/seed_dev_accounts.sh` at the user's request. All six accounts now exist: `{human,elf,dark_elf,shadow,gnome,orc}@test.pl`, password `123123123`, each with its corresponding level-1 character. Human owns four starters; the other five own three each (19 ownership rows total). A second run successfully authenticated each account and detected existing characters without duplicates.
+
+**Latest state (same day):** at the user's request, removed all six seeded characters and their cascading spell/loadout data, preserving all six login accounts/passwords. Scoped tutorial reset matched zero rows. Stopped/restarted the backend around deletion to clear in-memory match state. Each test account now has zero characters and can create one through the client.
+
+Seeding is **manual**: no CI, Docker startup or Helm hook calls this script. Normal restarts/deployments retain accounts in PostgreSQL; another full database reset requires rerunning the seed command. This verification covers seeding and login/character retrieval only; schema descriptions elsewhere in this older note were not re-audited here. See [[infra-and-deploy]] for current migration version 5 and deployment evidence.
 
 ## Development commands (`server:Makefile`)
 

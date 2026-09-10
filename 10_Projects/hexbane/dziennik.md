@@ -256,3 +256,167 @@ Notatki: duel-v2-client (sekcja „Catalog2.4 progression UI”), character-deta
 - Pliki: ArcaneScrollGlow.cs, ResponsiveLayout.cs, CreateCharacterScreen, DashboardScreen, NewsScreen, SocialScreen, LobbyScreen; ScrollbarVerification.cs/.tscn i rozszerzenie MobileLayoutVerification. Podgląd GIF, PNG i logi w verification/arcane-scrollbar/.
 - Walidacja: test przed zmianą wykazał szerokość tylko 8; po zmianie PASS mysz/syntetyczny dotyk także poza widocznym uchwytem, minimum uchwytu dla długiej treści. Build 0 błędów/9 wcześniejszych ostrzeżeń. Układy 960×432, 1088×612, 1360×612, 1920×1080: 0 przepełnień. Render GPU i 55 klatek animacji, stała pozycja przewijania; przegląd kodu bez wykrytych regresji.
 - Notatki: design-system, mobile-layout-review, _state. Pozostało: sprawdzenie fizycznego Androida. Bez commita/deployu.
+
+## 2026-09-08 — Codex — iOS export diagnosis and configuration fix
+
+- Changed only the iOS Rider exclusion and export output path in client `export_presets.cfg`; kept existing unrelated changes.
+- Reproduced dotted-basename AOT framework path failure, corrected with `hexbane.ipa`; Rider warning absent on fresh export.
+- Fresh Godot export reached Xcode/Apple provisioning: team has no registered devices; development profile cannot be created. Unsigned Xcode archive succeeded.
+- Updated `docs/client/deploy-ios.md`, `docs/client/deploy-android.md`, `_index.md`, `_state.md`, and this log.
+- Remaining: connect/register a test device, let Xcode create the profile, retry signed export and test on device.
+
+### Follow-up — simulator requested
+
+- User clarified they want a virtual iPhone, not a physical device. Enabled iOS Export Project Only.
+- ARM simulator build failed (engine template is x86_64-only). Intel simulator build succeeded,
+  but iOS 26.5 refused installation; explicit x86_64 simulator boot also refused.
+- Remaining: obtain/build a compatible ARM64 Godot .NET simulator template; app has not run
+  in the simulator. Device registration is irrelevant to the requested simulator workflow.
+- Logs: `/tmp/hexbane-ios-simulator.log`, `/tmp/hexbane-ios-simulator-x64.log`.
+
+## 2026-09-09 — Persistent login investigation
+
+- Inspected SessionStore, LoginService, LoginPanel, GameContext and DevAutoLogin against social-sign-in and google-auth notes. Email sessions are explicitly excluded from caching; refresh exceptions clear Google cache even on transient failures. Session health failure also calls logout and clears cache.
+- Proposed remembering email and Google sessions across restarts, retaining cached credentials on transient network failure, and clearing them on explicit logout or definitive invalidation. No implementation changes or runtime verification yet.
+- Touched: this journal only. Remaining: design approval required by brainstorming skill, implementation, build and restart/refresh/logout verification, contract updates.
+
+### 2026-09-09 — Persistent login implementation (approved)
+
+- Email and Google sessions now persist across restarts, including refresh tokens. Startup selects the saved server; transient refresh/socket failures retain the cache, HTTP 401/403 refresh rejection and explicit logout clear it. Health-check recovery retains credentials; SDK token renewal persists updates. Login succeeds only after socket setup. Email login and automatic restoration lock the server selector while in flight.
+- Client files: Core/Auth/SessionStore.cs; Application/Authentication/LoginService.cs, ILoginService.cs; Game/Autoloads/GameContext.cs; Game/ScenesV3/Auth/LoginPanel.cs. Added isolated Tests/Auth Godot project (separate user data).
+- Verified regression failures before fixes (email persistence, transient retention, expired-token refresh, failed socket). Final 17 regression assertions pass; separate-process write/read pass. Local Nakama email sign-in, restart restore of the same user, refresh with a real server token and revoked-token rejection pass (6 live assertions). Build 0 errors/9 existing warnings; diff whitespace check passes. Independent review found email server-switch race, fixed by busy-state handling.
+- Notes: docs/client/social-sign-in.md, docs/server/google-auth.md, _state.md, dziennik.md. Evidence: client verification/auth-session/.
+- Remaining manual verification: full Google browser OAuth and restart on physical Android; no APK deployment in this task. Service harness emits a Godot ObjectDB shutdown warning for the LoginService signal object. One isolated test email account was created on local Nakama and its session revoked. No commit made; preserved existing unrelated workspace changes.
+
+## 2026-09-09 — Google Play Games configuration guidance
+
+- Checked current official Google PGS setup/server-access documentation and client PlayGamesSignIn, AuthConfig, ServiceBootstrapper, Android export configuration. Prepared console steps for Android OAuth credentials (package pl.elanon.hexbane + signing SHA-1), game-server Web OAuth client, numeric Games project ID, testers and publishing.
+- Clarified existing cached-session restore requires no new Google credentials; native Play Games integration remains disabled and needs client/server integration after console configuration. No code or console changes. Touched: journal only.
+
+## 2026-09-09 — Codex — działający eksport do symulatora iPhone
+
+- Built Godot 4.5.2 Mono ARM64 simulator library from official source, cached in `~/Library/Caches/hexbane/ios-simulator-4.5.2/` (initial /tmp build lost after interrupted session).
+- Added `client:deploy-ios-simulator.sh`: cached engine build, Godot export, XCFramework ARM slice, unsigned Xcode build, simulator install/launch. Fixed Godot multiline-config parsing and lipo argument order during validation.
+- iOS preset: ARM64 on, Rider excluded, clean output basename, Export Project Only, debug identity `-` to avoid certificate/keychain dependency. Restarted editor after stale in-memory preset overwrote earlier edits.
+- Verified Xcode BUILD SUCCEEDED, simctl install/launch on iPhone 17 Pro iOS 26.5; authentication UI rendered. Output: `/Users/elanon/RiderProjects/export/ios-simulator/`.
+- Updated `docs/client/deploy-ios.md`, `_state.md`, and session log. Remaining: full authentication/network/gameplay validation; physical device one-click deploy is separate.
+
+## 2026-09-09 — Google Play guide from zero
+
+- Prepared first-release guide covering developer registration, app creation, upload keystore, Godot release AAB, Play App Signing SHA-1, internal testers, PGS Android/server credentials and remaining integration. Verified current official Google/Godot documentation and current export preset.
+- Notes: docs/client/google-play-first-release.md, _index.md, dziennik.md. No console actions, key generation or code/export changes. Remaining: user executes onboarding; release/integration work follows once credentials exist.
+
+## 2026-09-09 — Codex — server push and cluster deployment attempt
+
+- Merged remote main into current server work, resolved two modify/delete conflicts by retaining the current 14-spell catalog (retired VFX descriptions preserved in Git history), fast-forwarded local main and pushed both main and feat/spell-system-redesign to a480c8d. Verified remote main SHA. Server tree clean.
+- Passed go test ./..., CI-scoped race tests, go vet ./..., helm lint and whitespace validation. Inspected matching Argo Application in server and /Users/elanon/PycharmProjects/argocd; preserved unrelated GitOps working changes. latest image tag does not force a pod rollout.
+- Blocked: achify cluster API timed out repeatedly; Tailscale host offline. No Kubernetes resources/data changed. Workflow/image status unverified: GitHub connector lacked status permission and returned no workflow runs; no local GitHub HTTPS credential.
+- Updated docs/infra/infra-and-deploy.md, _index.md, _state.md and this journal. Remaining: restore host connectivity, verify CI image, inspect/reset only Hexbane database if needed, pin published image in GitOps, verify Argo sync/health, migrations, pod image and API.
+
+## 2026-09-09 — Play Console empty-release troubleshooting
+
+- User reported missing APK/AAB, upgrade incompatibility and unchanged-bundle errors together. Consulted official release preparation documentation; advised verifying an accepted AAB is included in the draft, uploading or adding from library, and inspecting the upload-specific error if rejected. Empty/rejected attachment is a hypothesis; no console inspection performed. No code changes.
+
+## 2026-09-09 — Unsigned Play bundle diagnosis
+
+- Inspected android/hexbane_play.aab: jarsigner reports jar is unsigned, no META-INF signature entries. Android Play preset has signing enabled and release path/alias/password configured; inspected password presence only. Bundle matches monoDebug Gradle output. Advised re-exporting Android Play with Export With Debug disabled and checking the resulting release bundle before upload. No signing credentials or code changed.
+
+
+## 2026-09-09 — Codex — PC combat HUD, keyboard settings and mobile profiles
+
+- Implemented Auto/Desktop/Mobile presentation profiles for the active ReferenceHud. PC uses warm resource panels and one bottom action bar with native spell icons, costs, queue/cast states and keycaps; mobile retains circular touch layout. PC bar scale 85–115%, responsive fitting and safe areas. Added profile-forced DesktopCombatPreview/MobileCombatPreview scenes for F6 and documented development workflow.
+- Added local CombatControls persistence and a shared scrollable modal reachable from Settings and duel Escape/gear. Defaults 1–5/R/F, Q/E, Space/X; stable primary actions across race slot counts; capture/conflict feedback/unbind/reset/Apply/Cancel, modifier/echo filtering. Modal blocks gameplay, stays above actual layer128 HUD, acquires/traps/restores keyboard focus. General audio preferences unchanged; in-duel master volume remains available.
+- Adapted tutorial policy to PC shortcuts and mobile touch, including target gating and desktop loadout highlights. Review found focus leakage and mobile-rail target use; both fixed with regression checks. Visual QA caught HP track layering; corrected and asserted in verifier.
+- Code: Game/ScenesV3/Settings/{CombatControls,CombatControlsDialog,SettingsScreen}.cs; ReferenceDuel/{ReferenceHud,ReferenceHud.Layout,ReferenceHud.DuelV2,ReferenceSpellSlot}.cs; Tutorial/{TutorialControls,TutorialScreen,TutorialOverlay}.cs; Dev/CombatControlsVerification.{cs,tscn}, DesktopCombatPreview.tscn, MobileCombatPreview.tscn.
+- Notes: docs/client/combat-ui-profiles.md (new), duel-v2-client.md, design-system.md, client-tutorial.md; docs/plans/2026-09-09-desktop-combat-controls.md; _index.md, _state.md, this journal. All documentation remains in vault.
+- Validation: build 0 errors / 9 existing warnings; Godot rendered acceptance PASS (30 combinations from 960×432 to 2560×1080, modal focus, config swaps/reload/cancel/defaults, physical key filtering, paralysis, stable race keys, tutorial targets and forced preview profiles). Existing DuelV2Preview PASS Human 2400×1080 and Elf 1360×612 (snapshots, effects, queue/reconnect), retaining pre-existing ObjectDB shutdown warnings. Core tutorial tests PASS. Screenshots and logs under client:verification/combat-controls/. Read-only review re-check reported no blocking issues.
+- Remaining: physical Android/iOS touch/DPI and full online duel user validation. Landscape gameplay only; mouse-button/chord/gamepad remapping not part of this implementation. No server/protocol/export changes, commits or deployment; pre-existing dirty workspace preserved.
+
+## 2026-09-09 — Codex — Google Play API 36, wersja 4
+
+- `client:export_presets.cfg`: explicit Target SDK 36 in both Android presets; Android Play version code 3 → 4.
+- Built signed release `/Users/elanon/RiderProjects/export/android/hexbane-api36-v4.aab`.
+- Verified export exit 0, bundletool targetSdkVersion=36/versionCode=4/package=com.dev.hexbane/minSdkVersion=24, jarsigner signature OK.
+- Updated `docs/client/deploy-android.md`; remaining: user upload to Play Console and Android 16 runtime testing. No upload performed.
+
+
+## 2026-09-09 — Codex — pre-match spell arrangement matches combat
+
+- Replaced lobby's alternating hand cards with SpellArrangementView using the actual ReferenceSpellSlot and shared CombatSlotGeometry. PC/mobile profile and keycaps match combat; no character HUD, resource bars or actors. Existing screen background retained.
+- Added click/tap inspection with readable scrollable description, known mana/cast values, fixed-primary explanation and unknown-stat handling; swapped spell remains selected. Native mouse/touch swaps use a drag threshold/ghost/highlights; canceled/outside/primary drops preserve order. Ready locks swaps/sort, timer/Ready callbacks remain wired, and saved order feeds real duel positions.
+- Review identified misleading fallback primary numbers; fixed by using pending authoritative standards when present and suppressing unavailable numeric metadata. Small-mobile visual QA identified a clipped description; placed a readable card in the gap between slot groups and added a minimum readable-height check.
+- Code: Lobby/SpellArrangementView.cs, LobbyScreen.cs; ReferenceDuel/CombatSlotGeometry.cs, ReferenceHud.cs, ReferenceHud.Layout.cs, ReferenceSpellSlot.cs; Dev/SpellArrangementVerification.{cs,tscn}. Notes: combat-ui-profiles.md, design-system.md, _state.md, dziennik.md.
+- Validation: build 0 errors / 9 existing warnings; rendered arrangement acceptance PASS for mouse/native touch, click detail, cancellation, fixed primary, actual HUD order handoff, Ready lock and six profile/viewport layouts (1920×1080, 1360×612, 960×432). Actual LobbyScreen entry, order persistence, timer and Ready wiring PASS. CombatControlsVerification regression PASS across all 30 profile/scale/viewport combinations after geometry extraction. Evidence: client:verification/spell-arrangement/.
+- Remaining: physical Android/iOS gesture ergonomics and full online draft→duel. No protocol/server changes, commits or deployment.
+
+## 2026-09-09 — Codex — cluster deployment after connectivity restored
+
+- Verified current Argo state and old migration version 9. Pulled sha-a480c8d in an isolated preflight pod, checked migration set/catalog/Nakama version, then deleted that pod after verification.
+- GitOps: committed/pushed 4ad3d8c, only gitops/argo/apps/hexbane.yaml (immutable image tag). Preserved unrelated local GitOps edits. Applied this Application and triggered one-time Argo sync: apps-root has no automated policy and child controller skipped object change without selfHeal.
+- Scaled Hexbane backend to zero, dropped/recreated only its nakama database under prior explicit authorization, retained PVC/PostgreSQL. New init containers applied Nakama and application migrations 1–5. DB version 5 clean, six races, zero characters.
+- Verified hexbane Synced/Healthy, operation Succeeded; new backend ready 1/1, zero restarts, digest 1304a6758e1b00c220a35ff9d38d46e4805bd9df5daf26fe3d08ae4a9b1ba7ce. Health HTTP/RPC 200, starter RPC returns six spells, duel_v2.4 and protocol 2.
+- Public blocker: hexbane.elanon.pl NXDOMAIN on Cloudflare; certificate expired 2026-09-07 and renewal pending. Asked for DNS management access/location; no DNS/TLS changes. Remaining: restore API/console DNS, renew certificate, verify public HTTPS and actual gameplay. No client changes or gameplay/account smoke test.
+- Notes: docs/infra/infra-and-deploy.md, _state.md, _index.md, dziennik.md.
+
+## 2026-09-09 — Codex — migracja do Godot 4.7 .NET
+
+- Updated `hexbane.csproj`, `Tests/Auth/Auth.csproj` to Godot.NET.Sdk/4.7.0; retained .NET9. Updated project engine feature and audio-bus path, deployment script defaults, AGENTS/CLAUDE version references.
+- Installed official Android/iOS/Windows4.7 templates; regenerated Android build (compile/target36, build-tools36.1), restored `.gdignore`/gradlew executable permission; configured4.7 editor Java path. Removed generated import sidecars and stale extension-list entries caused by initial missing ignore marker.
+- Android presets exclude Rider; Play versionCode5. Signed release `../export/android/hexbane-godot47-api36-v5.aab` validated with bundletool (compile36,target36,version5) and jarsigner; no target36/default35 warning.
+- Rebuilt/cached4.7 ARM64 simulator engine, updated deploy-ios-simulator.sh and successfully built/installed/launched on iPhone17Pro iOS26.5; auth UI visible.
+- Validation: main/test C# zero errors,17 Auth checks passed, shell syntax/diff checks passed, independent migration review no findings. Opened Godot_mono47 editor; closed4.5.2.
+- Backups: `~/Library/Caches/hexbane/godot-4.7-upgrade/before/` and `android-build-4.5.2/` there. Preserved unrelated dirty working tree.
+- Vault: client-architecture, deploy-android, deploy-ios, migration plan/index, state/log. Remaining: full device gameplay/auth-network checks and user Play upload; known C# warnings and headless shutdown diagnostics remain.
+
+### 2026-09-09 — DNS records for public deployment
+
+- Reverified ingress IP 195.42.99.130 and both pending HTTP-01 challenges. Provided Cloudflare A-record instructions for hexbane and hexbane-console, DNS-only, TTL Auto. Checked official Cloudflare and cert-manager docs. No DNS mutation; waiting for records, then TLS/public API verification.
+
+### 2026-09-09 — Public DNS and TLS deployment completed
+
+- User added Cloudflare A records for API/console. Public DNS resolves 195.42.99.130; cluster DNS retained NXDOMAIN. Verified both HTTP-01 responses, temporarily used public resolver for cert-manager HTTP-01 self-checks, then restored original controller arguments and verified rollout/Argo Synced Healthy.
+- Old 32-day ACME authorizations expired. Removed failed CertificateRequest hexbane-tls-3 and used official cmctl manual renewal. Certificate revision 4 Ready, expires 2026-12-08T12:58:39Z, renewal 2026-11-08. Temporary DNS diagnostic pod removed; no permanent cluster-wide config edits.
+- Public API /healthcheck and healthcheck/get_entry_spells RPCs return HTTPS 200 with normal hostname resolution and TLS validation; six starters, protocol 2, duel_v2.4. Console HTTPS 200 with valid TLS via curl --resolve; local macOS negative DNS cache persisted for console, while authoritative/public DNS already resolves it. No TLS bypass.
+- Updated infra-and-deploy, _index, _state and journal. Server/Argo code unchanged in this follow-up. Remaining: optional actual login/WebSocket/gameplay checks, allow client negative DNS caches to expire.
+
+### 2026-09-09 — Seed public-cluster test accounts
+
+- User requested test accounts on the deployed server. Read seed script/database/character-creation contract; confirmed zero @test.pl accounts and no deployment/startup seed hook.
+- Ran existing scripts/seed_dev_accounts.sh against https://hexbane.elanon.pl. Created six race accounts and characters. SQL verified six level-1 characters and 19 starter ownership rows (Human four, others three). Repeated seed to verify authentication, existing-character detection and idempotency.
+- Updated database and infra-and-deploy notes plus journal. No code/Helm changes. Seeding remains manual after a full DB reset; normal rollouts retain the accounts. No WebSocket/gameplay smoke test in this step.
+
+### 2026-09-09 — Preserve test logins, remove seeded characters
+
+- User requested accounts only. Stopped Hexbane backend to clear in-memory matches, transactionally deleted characters only for the six named test emails and reset tutorial state for that scope (zero tutorial rows existed), then restored replica count to one.
+- SQL verified exactly six deleted characters and all six accounts retained with zero characters. Related character spell/loadout rows cascade by schema. Account passwords unchanged. No other user scope targeted.
+- Updated database, infra-and-deploy and journal. Do not rerun seed unless characters are wanted again.
+
+### 2026-09-09 — Diagnose production login interruption
+
+- Initial public HTTPS /healthcheck returned 503 `no available server` at 14:08:58 UTC. Kubernetes events showed deployment scaled from one to zero and back during the separately recorded test-character cleanup; replacement pod became Ready with zero restarts. No deployment mutation in this diagnostic session.
+- Rechecked public healthcheck: HTTPS 200 with normal DNS/TLS. Authenticated all six existing test accounts using email auth with create=false; each returned HTTP 200 and a session token. Tokens were not printed or persisted.
+- Temporary backend downtime explains observed initial 503. No client/server code changes required. Actual client login/WebSocket/gameplay remains unverified; asked user for exact error and login method if symptoms persist. Note touched: dziennik.md only.
+
+### 2026-09-09 — Investigate auth-screen creation button report
+
+- Read auth and character-creation contracts and traced LoginPanel/RegisterPanel/AuthScreen, SceneManager/tutorial routing and final creator submit. Current login link is labelled Create account; Create Character only appears at the final wizard step. Asked which button and observed result.
+- Temporary headless Godot4.7 input check at1360x612: expanding email pushes registration link below the clipped scroll viewport; direct off-viewport click does not activate it. Focusing it scrolls it into view and a mouse click successfully opens RegisterPanel. This does not establish that clipping is the reported issue. Harness/logs in /tmp/hexbane-auth-navigation-*. No project edits or production account mutations.
+- Remaining: obtain exact button/screenshot and reproduce user symptoms before choosing a fix.
+
+### 2026-09-09 — Fix production game-server connection after email login
+
+- User runtime logs showed certificate rejection inside SetupSocket, surfaced as Could not connect to the game server. Public healthcheck/email auth succeeded. Reproduced with NakamaClient3.16 legacy factory; explicit WebSocketStdlibAdapter succeeded using same existing production account/session with normal TLS verification.
+- Changed only socket adapter construction/comment in Application/Nakama/NakamaClientManager.cs; preserved pre-existing changes. No server mutation or account creation. Official SDK v3.16.0 Socket.cs confirms legacy factory behavior.
+- Validation: main/Auth build zero errors, 11 existing warnings; 17 auth checks pass. Temporary isolated Godot4.7 harness exercised real LoginPanel/LoginService/NakamaClientManager with production: socket connected, Success=True. Logs under /tmp/hexbane-prod-*. No full gameplay/device verification or new mobile export.
+- Notes: social-sign-in.md, _state.md, dziennik.md. Existing mobile builds require re-export/reinstallation; editor uses rebuilt DLL after restarting game.
+
+### 2026-09-09 — Fix Google return intent for Play internal testing
+
+- Confirmed AuthConfig.AndroidPackage hardcoded pl.elanon.hexbane while Android Play exports com.dev.hexbane. Existing manifest filter supports shared hexbane scheme; both return URLs contained wrong package.
+- Changed AuthConfig to read AndroidRuntime/application-context package; return URL construction now inside sign-in try/finally so unavailable runtime reports failure and closes listener. Added four package/link regression assertions with mock AndroidRuntime to Tests/Auth/AuthVerification.cs. Two Play assertions failed before fix; all21 auth assertions pass afterward. Main/Auth build zero errors,11 existing warnings.
+- Code: AuthConfig.cs, GoogleOAuthSignIn.cs, Tests/Auth/AuthVerification.cs. Notes: social-sign-in.md, _state.md, dziennik.md. No export/upload performed; no Android device attached, full browser OAuth return remains to verify in new build.
+
+### 2026-09-09 — Generate mobile application icon
+
+- Created Resources/Images/AppIcon/hexbane-icon-v1.png using built-in imagegen with existing logo_fire.png and ui_background.png as visual references. Fiery serif X, molten bronze/orange, dark stone and subdued arcane circle. Inspected generated square image.
+- Delivered new asset; current project/export icon configuration unchanged. Platform-specific sizing/adaptive layers and installation preview remain for integration. No code changes.

@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-08
-verified: 2026-09-08
+updated: 2026-09-09
+verified: 2026-09-09
 tags: [hexbane, client, ui, design-system, themes]
 sources: ["client:docs/DESIGN_SYSTEM.md"]
 ---
@@ -107,3 +107,9 @@ Verification: `Dev/ScrollbarVerification.tscn` checks visibility, 48-unit target
 - `client:Game/ScenesV3/_Common/ResponsiveLayout.cs`, `UiKit.cs`, `ArcaneScrollGlow.cs` — compact layout, shared builders and animated native scrollbar skin
 - `client:Game/ScenesV3/GameOver/GameOverScreen.cs` — Cinzel Bold/Black display fonts
 - `client:Resources/Fonts/*/static/` — the shipped static faces
+
+## Combat desktop/mobile profiles (2026-09-09)
+
+See [[combat-ui-profiles]] for the shared profile mechanism, configurable keyboard actions, preview scenes and validation. Desktop uses the bottom action bar and visible keycaps; mobile keeps touch rails. The tutorial follows the chosen profile and respects configured keys and target gates.
+
+Pre-match arrangement now shares `ReferenceSpellSlot` and `CombatSlotGeometry` with combat. It uses the existing screen background and a scrollable spell detail card, without character HUD. See [[combat-ui-profiles#Pre-match spell arrangement (2026-09-09)]].

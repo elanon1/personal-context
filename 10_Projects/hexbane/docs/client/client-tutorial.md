@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-08
-verified: 2026-09-08
+updated: 2026-09-09
+verified: 2026-09-09
 tags: [hexbane, client, tutorial, onboarding]
 sources: ["client:docs/superpowers/specs/2026-09-06-tutorial-design.md", "client:docs/superpowers/plans/2026-09-06-local-tutorial.md", "client:docs/client/tutorial-verification.md"]
 ---
@@ -81,3 +81,7 @@ Cleanse now uses the shared `cast_2h` preset gesture: 24 pre-release frames for 
 Verification: `Tests/Tutorial` additionally checks the canonical event contract, stable action identities, reflected impact and status refresh; `VerifyCleanse.tscn` checks motion, recovery and field expiry on all six races. `TUTORIAL_VFX_ONLY=1` makes `TutorialVerification.tscn` stop at Summary, before account completion/character creation tests; it exercises real controls and asserts shared Arrow/Firebolt release/impact, visible Poison/Cleanse and the unobscured feedback interval. Finale verification uses Firebolt, since the current one-damage Magic Arrow cannot remove 24 HP with the initial 100 mana alone. Evidence: `verification/tutorial-vfx/`.
 
 Validation 2026-09-08: build 0 errors / 9 existing warnings; Core tutorial tests PASS; Cleanse GPU-independent motion/lifecycle verifier 18/18; real tutorial GPU/touch acceptance at 1360×612 PASS through Summary using local Nakama authentication/catalog. Shared VFX assertions included. Physical Android untested.
+
+## Combat desktop/mobile profiles (2026-09-09)
+
+See [[combat-ui-profiles]] for the shared profile mechanism, configurable keyboard actions, preview scenes and validation. Desktop uses the bottom action bar and visible keycaps; mobile keeps touch rails. The tutorial follows the chosen profile and respects configured keys and target gates.

@@ -4,7 +4,7 @@ project: Hexbane
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-08
+updated: 2026-09-09
 tags: [hexbane, docs, index, moc]
 aliases: [hexbane-docs, hexbane-index]
 ---
@@ -80,19 +80,24 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 - [[spell-vfx-configuration]] — które z 14 id mają VFX/SFX/ikony, presety `SpellVisuals`, jak dodać
 - [[vfx-and-race-animation]] — sprite’y ras, `RaceSpriteAnimator`, gesty, cast-charge, okluzja,
   medytacja, bariera, areny; sceny dev i weryfikatory (`verification/` w repo)
+- [[combat-ui-profiles]] — PC/mobile combat layouts, configurable physical keys, offline previews and verification workflow
 - [[design-system]] — tokeny UI, fonty, motywy (`ui-designer` jest do niego przywiązany)
 - [[social-sign-in]] — Google sign-in na PC i Androidzie, konfiguracja, znane luki
 - [[client-tutorial]] — lokalny tutorial
+- [[deploy-ios]] — eksport iOS, nazwa pliku, wykluczenie Ridera i provisioning urządzenia
 - [[deploy-android]] — `deploy.sh`, ADB, LAN host, presety eksportu
+- [[google-play-first-release]] — od zera: Play Console, klucz upload, AAB, podpis Google, testy wewnętrzne i konfiguracja PGS.
 - [[legacy-and-tooling]] — martwe trasy/kod, `.env`, stary pipeline n8n, archiwa sztuki, addony
 
 ## Infra i assety (`docs/infra/`)
 
-- [[infra-and-deploy]] — lokalny stack, obraz, CI, Helm/Argo (nieużywane), polityka „tylko lokal”
+- [[infra-and-deploy]] — lokalny stack, obraz, CI, Helm/Argo; wdrożono 2026-09-09, publiczne HTTPS zweryfikowane
 - [[assets-pipeline]] — jak powstaje sztuka (rasy Tripo→Mixamo→Blender→sheety, areny, ikony)
 - [[repos-and-branches]] — snapshot repo 2026-09-07
 
 ## Plany (`docs/plans/`)
+
+- [[2026-09-09-godot-47-upgrade]] — migracja SDK i szablonów do Godot 4.7 oraz API 36.
 
 - [[2026-09-08-remaining-spell-vfx]] — komplet animacji zaklęć, różnorodne formy i wspólne odtwarzanie.
 
@@ -131,3 +136,5 @@ Raporty weryfikacji docs vs kod z 2026-09-07 — sekcje „code smells” i „o
 - `~/hexbane-archive/Races-2026-08-31/` — wycofany roster 35 ras
 
 - [[docs/plans/2026-09-08-redesign-implementation|Wykonanie przebudowy ras, primary i progresji]] — zakres, walidacja, migracja i ograniczenia.
+
+- [[2026-09-09-desktop-combat-controls]] — PC/mobile HUD profiles, configurable keyboard bindings and verification.
