@@ -17,6 +17,14 @@ co zrobione — notatki/pliki — co zostało**. Decyzje z uzasadnieniem idą do
 [[10_Projects/hexbane/_state|_state]] → *Decisions log*. Historia sprzed dziennika (2025-06 →
 2026-09-06): [[server-devlog-summary]] i decisions log w `_state`.
 
+## 2026-09-10 — Codex — HEX-9, HEX-10, HEX-11, HEX-15
+
+- Przebudowano Primary: przełącznik Magic Arrow/Mirror Reflection, kompaktowe kolumny ikon od lewej do prawej, opisy po kliknięciu i zachowanie edycji ścieżki.
+- Sloty draftu w lobby pokazują nazwy obu stron i otwierają wspólny opis czaru po kliknięciu.
+- Dashboard pulsuje delikatnie dla dostępnych stat points, magic points i oczekujących tierów Primary. MenuPlayer generuje krótki klik PCM i podpina go do przycisków, także dynamicznych kontrolek +/−.
+- Pliki: `Game/ScenesV3/CharacterDetail/CharacterDetailScreen.Primary.cs`, `Game/ScenesV3/Lobby/LobbyScreen.cs`, `Game/ScenesV3/Dashboard/DashboardScreen.cs`, `Game/Autoloads/MenuPlayer.cs`; notatki `docs/client/design-system.md`, `docs/client/duel-v2-client.md`, `_state.md`.
+- Walidacja: `dotnet build hexbane.csproj --nologo` — 0 błędów, 11 istniejących ostrzeżeń. Pozostało: ręczne sprawdzenie wizualne w Godot i test audio na urządzeniu.
+
 ## 2026-09-08 — Codex — czyszczenie helperów i naprawa progresji
 
 **Zrobione** — zgodnie z decyzją użytkownika usunięto niepodłączone helpery/walidatory i funkcje debugowe, sześć helperów powiadomień z martwymi DTO oraz stary bufor `CastInterruptions`. `MatchLog` zachowany. `get_progression` korzysta ze wspólnych funkcji XP/slotów, test regresji sprawdzono przed i po naprawie. Testy paraliżu sprawdzają obecne zdarzenia lifecycle, brak zwrotu many i wpisy MatchLog. Zachowano kod/testy odporności, regeneracji i skilli do przywrócenia. Usunięto 33 deklaracje funkcji/metod (w tym zastąpione `pow`). Końcowe `go test ./...`, `go vet ./...` i `git diff --check`: PASS; testy race match/spell_system/symulator: PASS po zmianie bufora.

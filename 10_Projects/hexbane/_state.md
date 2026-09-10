@@ -58,6 +58,10 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+### 2026-09-10 — Compact progression, draft inspection and universal menu click
+
+Use an explicit Primary path switch with icon columns, reuse the lobby's existing spell detail panel for filled slots on both sides, pulse only dashboard cards that have spendable points, and synthesize one short click in the global MenuPlayer. **Why:** the requested affordances fit the existing one-screen layouts and cover dynamically generated controls without protocol changes or another shipped audio asset. The primary graph remains server-authoritative; the lobby presents data already received in the draft payload.
+
 ### 2026-09-10 — Compact Summary columns and direct spell navigation (HEX-8)
 
 Use a naturally sized stats card with Attributes/Modifiers below it, Skills above all learned spells on the right, and direct learned-row navigation to Spellbook details. **Why:** the prior stretched left card wasted vertical space, while the five-row preview added an unnecessary intermediate button. Preserve native touch scrolling, keep the existing spell-selection flow, and scroll desktop Summary when the full list exceeds the viewport. See [[design-system]].

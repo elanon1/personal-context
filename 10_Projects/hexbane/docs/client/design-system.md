@@ -140,3 +140,11 @@ Pre-match arrangement now shares `ReferenceSpellSlot` and `CombatSlotGeometry` w
 ## Illustrated duel loading (2026-09-10)
 
 See [[duel-loading-screen]] for the persistent blue/emerald loading illustration, threaded resource progress, one stable random tip, responsive mobile layout and retry/cancellation verification. This user-requested background is a deliberate exception to shared menu artwork. It replaces only the arrangement-to-arena black transition.
+
+## Primary, lobby feedback and menu affordances (HEX-9, HEX-10, HEX-11, HEX-15, 2026-09-10)
+
+The Primary tab presents one path at a time through an explicit Magic Arrow / Mirror Reflection switch. Each progression tier is a compact left-to-right column of icon buttons; the icon tooltip and inline selection line expose the node title and effect, while selecting a reachable icon still updates the pending path.
+
+Lobby draft slots retain selected spell data for both players. Filled slots show the spell name as a tooltip and are clickable; selecting either your own or the opponent's spell opens the same icon, metadata and description panel used by the spell library. Dashboard stat points, magic points and pending Primary tiers use a slow amber pulse on their existing cards while work is available. MenuPlayer generates a short PCM click at runtime and binds it to every `BaseButton` in the current scene, including dynamic plus/minus controls.
+
+Sources: `client:Game/ScenesV3/CharacterDetail/CharacterDetailScreen.Primary.cs`, `client:Game/ScenesV3/Lobby/LobbyScreen.cs`, `client:Game/ScenesV3/Dashboard/DashboardScreen.cs`, `client:Game/Autoloads/MenuPlayer.cs`.

@@ -134,3 +134,7 @@ Rollout: server readiness barrier deployed on 2026-09-10 as `sha-b8773ad` (see [
 ## Illustrated duel loading (2026-09-10)
 
 See [[duel-loading-screen]] for the persistent blue/emerald loading illustration, threaded resource progress, one stable random tip, responsive mobile layout and retry/cancellation verification. This user-requested background is a deliberate exception to shared menu artwork. It replaces only the arrangement-to-arena black transition.
+
+## Draft and progression affordances (2026-09-10)
+
+The lobby uses one shared spell detail presenter for library cards and both filled draft rows. Opponent picks carry their server-provided name, icon and description into clickable slots. The Primary character tab uses a compact icon tree with a path switch; dashboard cards pulse while stat, magic or Primary points are available. Menu buttons receive a generated short click through the global `MenuPlayer` binder.
