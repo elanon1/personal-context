@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-08
-verified: 2026-09-08
+updated: 2026-09-10
+verified: 2026-09-10
 tags: [hexbane, protocol, character-details, menu]
 sources: ["server:docs/API-REFERENCE-v2.md", "server:docs/progression/client/menu-rpc-requirements.md", "client:docs/Server/rpc_get_character_details.md", "client:docs/Server/progression/menu-rpc-requirements.md"]
 ---
@@ -106,6 +106,10 @@ The separate `get_primary_progression` response supplies both versioned graphs, 
 ## Mobile presentation (2026-09-08)
 
 The four tabs are Summary, Stats, Spellbook and Primary. All compact views can scroll vertically; long labels wrap. The tab strip moves below the header below 1700 logical units. Summary sections/primary cards stack at that width; Stats and Spellbook use one column below 1250 and the summary below 900 or whenever the measured columns exceed the available width. Reflow is reevaluated on resize. Card/tab selection preserves mobile padding. See [[design-system]] and [[2026-09-08-mobile-layout-review]]. No RPC or gameplay changes in this revision.
+
+## Summary presentation (HEX-8, 2026-09-10)
+
+The compact character/stat card, Attributes and Modifiers form the left column; Skills and all learned spells form the right. Summary has a page scroll at every size. The five-spell cap and View all spells button are removed; tapping a learned spell opens Spellbook with that spell selected and its name/description revealed. This consumes the existing `spellbook.spells[].is_learned`/`standard` fields without changing the RPC. See [[design-system#Summary organization and spell shortcuts (HEX-8, 2026-09-10)]].
 
 ## Source of truth in code
 - `server:modules/character/details.go` — request/response structs, all field derivations.

@@ -58,6 +58,10 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+### 2026-09-10 — Compact Summary columns and direct spell navigation (HEX-8)
+
+Use a naturally sized stats card with Attributes/Modifiers below it, Skills above all learned spells on the right, and direct learned-row navigation to Spellbook details. **Why:** the prior stretched left card wasted vertical space, while the five-row preview added an unnecessary intermediate button. Preserve native touch scrolling, keep the existing spell-selection flow, and scroll desktop Summary when the full list exceeds the viewport. See [[design-system]].
+
 ### 2026-09-10 — Native whole-content touch scrolling in Summary (HEX-7)
 
 Let Summary controls pass pointer events to the existing ScrollContainer, and reapply after layout/data refresh. **Why:** Stop-filter portraits/icons blocked finger drags; native scrolling already supplies inertia and cancels button activation during drag, so a separate gesture recognizer would duplicate working engine behavior. Keep header navigation fixed and preserve button taps and desktop wheel. See [[design-system]].
