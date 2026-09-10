@@ -13,7 +13,7 @@ sources: ["server:docs/match/GUIDE-v2.md", "server:docs/match/README.md", "serve
 
 # Server architecture: Nakama plugin and match engine
 
-Hexbane's backend is one Go plugin (`backend.so`) loaded by **Nakama 3.27.0**. It registers RPCs, auth hooks and two real-time match handlers. Combat runs ruleset `duel_v2`, catalog `duel_v2.3`, protocol 2, at **100 ms per tick** (`server:modules/spell_system/version.go:3-8`). Payload shapes for opcodes are in [[combat-v2]] and [[opcodes]]; RPCs in [[rpcs]]. Build and run workflow: [[dev-setup]].
+Hexbane's backend is one Go plugin (`backend.so`) loaded by **Nakama 3.27.0**. It registers RPCs, auth hooks and two real-time match handlers. Combat runs ruleset `duel_v2`, catalog `duel_v2.4`, protocol 2, at **100 ms per tick** (`server:modules/spell_system/version.go:3-8`). Payload shapes for opcodes are in [[combat-v2]] and [[opcodes]]; RPCs in [[rpcs]]. Build and run workflow: [[dev-setup]].
 
 ## Plugin entry and module map
 
@@ -163,6 +163,10 @@ Nakama runs all handlers of one match (`MatchLoop`, `MatchJoin`, `MatchLeave`, `
 - Per human player: `character.FindByUserId` → XP via `progression.CalculateMatchXP` (win 100 + 50 first win of the day; loss/draw 30; +50 for the first match of the day, `progression/constants.go:8-11`, `xp.go:92-110`) → `char.AddExp` handles level-ups (5 stat points per level, magic points by level band, spell-slot ladder) → wins/losses, `LastMatchDate`, `LastFirstWinDate` → `char.UpdateMatchResult` (`character/db.go:334`).
 - Skill gains would be applied here but `SkillGains` is always nil in duel_v2, so the `skill_gains` block in opcode 50 reports zero change.
 - Result payload (`PlayerMatchResult` `:23-87`) is sent only to players who still have a presence (`:335-350`); a disconnected player gets no opcode 50.
+
+## Snapshot allocation (2026-09-10)
+
+`phase/game/snapshot.go` serializes typed envelopes/player/action payloads. Wire semantics and recipient privacy are unchanged; tick/snapshot cadence stays 100/200 ms. [[2026-09-10-performance]] records before/after benchmarks and 100–10,000 resident-duel working sets, with explicit transport/DB/scheduling exclusions.
 
 ## Source of truth in code
 

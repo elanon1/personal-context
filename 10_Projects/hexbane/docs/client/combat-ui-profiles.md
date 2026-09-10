@@ -4,8 +4,8 @@ project: Hexbane
 area: client
 status: active
 created: 2026-09-09
-updated: 2026-09-09
-verified: 2026-09-09
+updated: 2026-09-10
+verified: 2026-09-10
 tags: [hexbane, ui, desktop, mobile, keyboard]
 sources: ["client:Game/ScenesV3/ReferenceDuel/ReferenceHud.Layout.cs", "client:Game/ScenesV3/Settings/CombatControls.cs"]
 ---
@@ -84,6 +84,10 @@ HEXBANE_IGNORE_ENV_FILE=1 ARRANGE_CAPTURE="$PWD/verification/spell-arrangement" 
 ```
 
 Offline acceptance uses real synthetic mouse/native-touch events, validates swaps, inspection, canceled/outside/fixed-primary drops, actual HUD order handoff and Ready lock. It renders both profiles at 1920×1080, 1360×612 and 960×432, asserting no clipped/overlapping slot/detail rectangles and readable description height. It also enters the view via actual LobbyScreen selection events, checks saved order, updates the countdown and invokes the existing Ready handler. Screenshots/logs: `verification/spell-arrangement/`. Physical-device ergonomics and a full online draft→duel remain manual validation.
+
+## Drawing invalidation
+
+Spell slots redraw on changes to availability, cast progress, queue and tutorial emphasis. Unchanged idle states no longer force slot/progress drawing every frame; running cast progress and tutorial pulses still animate. See [[2026-09-10-performance]].
 
 ## Source of truth in code
 - client:Game/ScenesV3/Lobby/SpellArrangementView.cs

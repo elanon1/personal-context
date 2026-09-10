@@ -111,6 +111,12 @@ At the user's explicit request, deployed server commit `b8773ad78ccbbee921153476
 
 None of these have been rotated; see [[repos-and-branches]] and the vault-state audit.
 
+## Performance rollout (2026-09-10)
+
+Server commit `f64b8fe8306bb60539a5cf974214f8f3b83a8ca5` replaces transient snapshot maps with typed payloads and adds wire/allocation/active/resident benchmarks; see [[2026-09-10-performance]]. CI run `34447986929` passed tests and image publication. GitOps commit `2741f6f` pins `sha-f64b8fe`; the application was applied and explicitly synced as in the preceding rollout.
+
+Verified deployment: pod `hexbane-77c95859cd-zm4hs`, ready, zero restarts; image digest `sha256:0469004f71c2d9147b9ff1a6b84815aabbd51e34705a9ac775ba1c17f4c76677`. Argo reports Synced / Healthy / Succeeded, rollout completed, public `/healthcheck` and RPCs `healthcheck` / `get_entry_spells` returned HTTP 200 and valid JSON. Startup completed with spell registry loaded. No infrastructure sizing or database reset was part of this change. This verifies deployment health, not production concurrent-match capacity.
+
 ## Source of truth in code
 - `server:Makefile` — build/dev/migrate/db-* targets, pluginbuilder version, `DB_URL` composition
 - `server:docker-compose.yml`, `server:docker-compose.debug.yml`, `server:docker-compose.prod.yml` — local stacks, ports, mounts, entrypoint order

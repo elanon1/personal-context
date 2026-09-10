@@ -453,3 +453,8 @@ Prepared four PNG variants in client `Resources/Images/AppIcon/`: `main_192x192.
 - Walidacja: build 0 błędów/11 istniejących ostrzeżeń; test regresyjny przejścia FAIL przed zmianą, PASS po; renderowane 6 viewportów (w tym 844×390 i 390×844), retry po naprawieniu pliku, anulowanie i ponowne ładowanie PASS. Przegląd wykrył retencję tokenów threaded loadera; naprawione i przetestowane. Podglądy `verification/loading-screen/`.
 - Dokumentacja: nowa `docs/client/duel-loading-screen.md` z pełnym promptem, design-system, duel-v2-client, client-architecture, `_index`, `_state` i dziennik w vaultcie.
 - Pozostało: build/instalacja klienta mobilnego i sprawdzenie fizycznego safe area/touch. Backend bez zmian, kolejny deploy niepotrzebny.
+
+
+## 2026-09-10 — Optymalizacja klienta i serwera, Cleanse
+
+Zbadano zgłoszenie nieregularnych przycięć na OnePlus 13. Poprawiono nieprzenośne obliczenia shadera Cleanse/shared fields, alokacje StringName/tymczasowych tablic VFX, zbędną okluzję bezczynnych postaci i odrysowania slotów. Dodano verifier CPU/GPU oraz testy odrysowania. Backend: typed snapshots i benchmarki aktywnych/równoległych meczów oraz 100/1000/10000 rezydujących stanów. Test pól: 146/146; Go test/race/vet zaliczone. Dokumentacja: [[2026-09-10-performance]], vfx-and-race-animation, combat-ui-profiles, server-architecture, _index i _state. Zakończono: gesty 8899/8899, okluzja HD/SD 12398/12398, HUD (30 kombinacji), regresja wyłączenia tutorial pulse oraz APK debug (~840 MiB, podpis i poprawiony shader zweryfikowane). Backend commit f64b8fe, CI 34447986929, GitOps 2741f6f i wdrożenie sha-f64b8fe: Healthy/Synced, 0 restartów, healthcheck + RPC 200. Pozostaje fizyczny Android oraz pomiar wydajności całej Nakamy z DB/siecią.

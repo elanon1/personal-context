@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-08
-verified: 2026-09-08
+updated: 2026-09-10
+verified: 2026-09-10
 tags: [hexbane, client, races, animation, vfx, arena]
 sources: ["client:Resources/Races/_tools/blender/README.md", "client:docs/client/arena-maps/README.md", "client:docs/client/cast-charge/README.md", "client:docs/client/gesture-occlusion/README.md", "client:docs/client/gesture-vfx/README.md", "client:docs/client/meditation/README.md", "client:docs/client/mirror-reflection/README.md", "client:docs/client/reference-duel/README.md", "client:Resources/SpellVisuals/README.md", "client:CLAUDE.md"]
 ---
@@ -86,6 +86,10 @@ Verifier scenes write evidence into the repo (all under `.gdignore` except `refe
 | `ArenaMaps/VerifyRaceGrounding`, `VerifyReflectionPreset`, `VerifySpellVisualKeys`, `VerifySpellVisualPresets` | console only | — |
 
 Last recorded results (README claims, Godot 4.5.2 Compatibility on macOS, not re-run 2026-09-07): reference-duel 88/88, arena maps 44/44, gesture VFX 8898/0 failures, occlusion 12398/0, mirror ward 57/0, meditation 12/12 combos. None measured Android hardware performance or a live Nakama match. Headless runs also log the pre-existing missing `signal_lens` autoload and an unresolved theme UID. The generated PNG/GIF/JSON (≈ 800 MB across the seven folders) are evidence, not documentation.
+
+## Performance (2026-09-10)
+
+Visible VFX retain per-frame pose/depth updates; interned uniform/animation names and reusable trail buffers reduce allocation, while idle occlusion and hidden charge/trails skip updates. The shared field shader now uses defined even-power and smoothstep arithmetic, including Cleanse. See [[2026-09-10-performance]] for measured costs, GPU checks and Android verification limits.
 
 ## Source of truth in code
 - `client:Resources/Races/_tools/build_races.sh`, `build_frames_from_renders.py`, `pack_meditation.py`, `export_hand_tracks.py`, `blender/*.py` — asset pipeline

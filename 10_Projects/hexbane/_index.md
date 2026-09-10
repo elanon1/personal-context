@@ -119,6 +119,8 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 
 ## Audyty (`docs/audits/`)
 
+- [[2026-09-10-performance]] — mobile VFX allocations, Cleanse shader portability and server snapshot/resident-duel benchmarks.
+
 - [[2026-09-08-mobile-layout-review]] — mobile reflow, stabilny wybór ras, czytelność szczegółów postaci i weryfikacja widoków.
 
 - [[2026-09-08-balance-review]] — rewizja ras, statcapów, skilli i integracji czarów; 10 860 symulowanych walk, problemy i propozycje korekt.

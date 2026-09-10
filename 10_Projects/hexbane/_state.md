@@ -6,8 +6,8 @@ status: active
 state: active
 repo: https://github.com/elanon1/hexbane
 created: 2026-08-31
-updated: 2026-09-09
-verified: 2026-09-09
+updated: 2026-09-10
+verified: 2026-09-10
 tags: [hexbane, gamedev, godot, csharp, nakama, go, kubernetes, ai-art]
 aliases: [hexbane, hexbane-server]
 ---
@@ -57,6 +57,10 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 **Content:** 13 zachowanych ikon pokrywa 14 obecnych zaklęć; VFX obejmuje wszystkie 14 zaklęć: Mirror Reflection z przywróconymi dźwiękami, Magic Arrow i Firebolt/Fireball ze wspólnym cyklem życia pocisku oraz 11 różnorodnych efektów na postaci z warstwami przed/za sylwetką. Nowe animacje castingu i presety zachowane. Stare VFX/SFX i assety generatora usunięte 2026-09-08. → [[spell-vfx-configuration]]
 
 ## Decisions log
+
+### 2026-09-10 — Optimize measured allocations without weakening combat presentation
+
+Use cached native names/scratch buffers and change-driven slot drawing; make Cleanse field arithmetic portable. Server snapshots use typed JSON payloads with unchanged cadence/privacy. **Why:** measured allocation/CPU savings address GC pressure and concurrent match cost without altering combat rules or reducing visual quality. Synthetic resident-set benchmarks are not a production capacity guarantee; physical Android and end-to-end staging profiling remain necessary. See [[2026-09-10-performance]].
 
 ### 2026-09-10 — Illustrated persistent loading handoff
 - **Decision:** blue/emerald crystal sanctuary per user preference, one stable random tip, native progress fed by threaded resource loading. CanvasLayer belongs to SceneManager and survives the scene swap.
