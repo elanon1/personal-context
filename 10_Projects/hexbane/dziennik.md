@@ -12,6 +12,14 @@ aliases: [hexbane-dziennik, hexbane-worklog]
 
 # Hexbane — dziennik pracy
 
+## 2026-09-10 — Codex — poprawka HEX-15 i HEX-12/13/14
+
+- Klik menu: zastąpiono czysty ton krótkim, filtrowanym stuknięciem z ziarnistym szelestem.
+- Aktywny Player pokazuje nazwę czaru przy nowym action ID; tylko jeden napis na postać, złoto/bursztyn, kontur i ruch w górę. Manager usuwa wygasłe referencje.
+- ReferenceHud: duże animowane odliczanie, animacja brzegów według stanów lokalnego gracza oraz zielony pulsujący pasek HP przy zatruciu.
+- Pliki: MenuPlayer, Player, UiMessageManager, FloatingText, ReferenceHud.Feedback, StateVeil/BarFill shadery, CombatFeedbackVerification. Notatki: combat-ui-profiles, design-system, _state.
+- Build: 0 błędów / 11 wcześniejszych ostrzeżeń. Renderowany test Godot: 9 kontroli PASS; obejrzano /tmp/hexbane-combat-feedback.png. Bez testu fizycznego telefonu i meczu live.
+
 Najnowsze wpisy na górze. Każda sesja (człowiek, Claude Code, Codex) dopisuje wpis: **data — agent —
 co zrobione — notatki/pliki — co zostało**. Decyzje z uzasadnieniem idą dodatkowo do
 [[10_Projects/hexbane/_state|_state]] → *Decisions log*. Historia sprzed dziennika (2025-06 →

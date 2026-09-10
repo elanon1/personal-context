@@ -87,6 +87,16 @@ Offline acceptance uses real synthetic mouse/native-touch events, validates swap
 
 ## Drawing invalidation
 
+## Combat feedback (HEX-12/13/14, 2026-09-10)
+
+The active snapshot-driven Player presenter shows a gold/amber spell-name incantation at the actor's cast anchor for each new action ID. UiMessageManager replaces the preceding caption for that actor immediately, retains independent captions for the opponent and discards expired references. Outlined Cinzel text rises vertically, stays legible during casting and fades over the final 0.2 seconds. Cast completion/interruption shortens the matching caption without affecting a newer cast.
+
+Countdown uses a 128-unit amber Cinzel numeral with dark outline and a short scale settle on each received count. The existing server countdown remains authoritative; zero, finish or a combat snapshot clears it.
+
+ReferenceHud.Feedback adds a mouse-transparent animated veil at the actual viewport edges: poison green, paralysis violet, meditation blue, other active effects amber. Concurrent conditions contribute to different edge regions. The center stays transparent. Only the local player's state drives it; normal/dead/ended state clears it. Poison also changes the existing HP fill to green with a traveling pulse, restoring red on removal. No combat values or protocol change.
+
+Verification: CombatFeedbackVerification.tscn exercises countdown animation/clearing, poison HP restoration, concurrent states, expired captions, replacement per actor and stale completion. Rendered desktop run: 9 checks pass; screenshot /tmp/hexbane-combat-feedback.png. Build: 0 errors / 11 existing warnings. Physical mobile and live server duel were not exercised in this session.
+
 Spell slots redraw on changes to availability, cast progress, queue and tutorial emphasis. Unchanged idle states no longer force slot/progress drawing every frame; running cast progress and tutorial pulses still animate. See [[2026-09-10-performance]].
 
 ## Source of truth in code

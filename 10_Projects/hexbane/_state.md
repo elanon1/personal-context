@@ -58,6 +58,10 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+### 2026-09-10 — Legible combat feedback and tactile menu sound
+
+Drive incantations from authoritative action IDs and window-edge feedback from local player snapshots; reuse resource fills for the poison pulse. **Why:** presentation must clear with actual state and avoid duplicate captions, while edge-only color preserves arena visibility. Replace the menu sine beep with a filtered grain/wood transient to suit the dark fantasy mood.
+
 ### 2026-09-10 — Compact progression, draft inspection and universal menu click
 
 Use an explicit Primary path switch with icon columns, reuse the lobby's existing spell detail panel for filled slots on both sides, pulse only dashboard cards that have spendable points, and synthesize one short click in the global MenuPlayer. **Why:** the requested affordances fit the existing one-screen layouts and cover dynamically generated controls without protocol changes or another shipped audio asset. The primary graph remains server-authoritative; the lobby presents data already received in the draft payload.

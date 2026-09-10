@@ -76,6 +76,8 @@ Auth card specifics: inputs 78 px tall, radius 12, border `(1,1,1,0.11)`, left m
 
 ## Patterns
 
+Menu click revision (HEX-15, 2026-09-10): MenuPlayer now synthesizes a 110 ms filtered noise/wood transient with a subdued low body and soft attack/tail, replacing the 1250 Hz sine beep. The shared button wiring remains; master volume applies.
+
 - Card states: default no border; selected/focused accent 3 px; chosen (spell browse) green 2 px; same background.
 - Validation: error labels hidden by default, red, centered; points/count labels yellow while incomplete, green when satisfied; sliders clamp instead of erroring.
 - Screen skeleton: `Control` → `BgTexture` (cover) → `BgOverlay` → `Main` `MarginContainer(60/30/60/20)` → `Layout` `VBoxContainer(16)` → header/step bar + `Content` panel → step panels toggled by visibility.
