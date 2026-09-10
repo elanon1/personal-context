@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-10
+verified: 2026-09-10
 tags: [hexbane, protocol, opcode, game-countdown]
 sources: ["client:docs/opcodes/op_09_game_countdown.md", "server:docs/opcodes/op_09_game_countdown.md"]
 ---
@@ -25,7 +25,7 @@ Value is **16** (`server:modules/match/engine/match_types/op_codes.go:24`, `clie
 
 ## When
 
-Once per second while `TicksLeft >= 0`. `GameCountdownDurationTicks = 2`, so three messages go out (`2`, `1`, `0`); on the second after `0` the phase transitions to `combat` (`phase.go:71-74`). During this phase the server also answers [[op_02_client_ready]] with [[op_10_game_data]].
+Once per second while `TicksLeft >= 0`. `GameCountdownDurationTicks = 2`, so three messages go out (`2`, `1`, `0`); on the same tick as `0` the phase transitions to `combat` (`phase.go:71-74`). During this phase the server also answers [[op_02_client_ready]] with [[op_10_game_data]].
 
 ## Payload
 
@@ -39,7 +39,7 @@ Once per second while `TicksLeft >= 0`. `GameCountdownDurationTicks = 2`, so thr
 
 ## Client behaviour
 
-Raises `GameEvents.OnGameCountdownChange(string)`; the HUD shows the countdown and unlocks input when it finishes.
+Buffers the latest value in `MatchContext.PendingGameCountdown` before raising `GameEvents.OnGameCountdownChange(string)`. A newly created active HUD replays the buffered value; zero clears the message. A combat snapshot clears it too, preventing a stale number if zero was lost. Input remains gated by authoritative combat state, not the label. Countdown starts only after all human arenas acknowledge readiness (see [[op_07_game_ready]]).
 
 ## Source of truth in code
 - `server:modules/match/engine/phase/game_countdown/phase.go` — cadence and payload

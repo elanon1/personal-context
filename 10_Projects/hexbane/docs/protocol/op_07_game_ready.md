@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-10
+verified: 2026-09-10
 tags: [hexbane, protocol, opcode, game-ready]
 sources: ["client:docs/opcodes/op_07_game_ready.md", "server:docs/opcodes/op_07_game_ready.md"]
 ---
@@ -23,7 +23,7 @@ sources: ["client:docs/opcodes/op_07_game_ready.md", "server:docs/opcodes/op_07_
 
 ## When
 
-On the very first tick of `loading` (the phase lasts one tick and waits for nothing). Immediately followed by the transition to `game_countdown`.
+After every non-bot participant sends protocol-2 `game_hud_ready`. The server broadcasts opcode 7 reliably and enters `game_countdown`. Loading times out after 30 seconds with opcode 9 `loading_timeout`; it never starts combat for an unready player.
 
 ## Payload
 
@@ -31,8 +31,8 @@ Empty.
 
 ## Client behaviour
 
-Dispatches `ClientReadyCommand(userId, "game_countdown_ready", matchId)` → [[op_02_client_ready]], which the `game_countdown` phase answers with [[op_10_game_data]]. The HUD's own `game_hud_ready` readiness typically fires while the server is still in `loading` and is ignored there, which is why this handler exists (comment in `GameReadyHandler.cs:10-18`).
+Dispatches `ClientReadyCommand(userId, "game_countdown_ready", matchId)` → [[op_02_client_ready]], which the `game_countdown` phase answers with [[op_10_game_data]]. The HUD sends `game_hud_ready` after the arena's first rendered frame and completed scene transition; loading uses it to gate the countdown. The second acknowledgement here requests the loadout in `game_countdown`.
 
 ## Source of truth in code
-- `server:modules/match/engine/phase/loading/phase.go` — one-tick phase
+- `server:modules/match/engine/phase/loading/phase.go` — readiness barrier and 30-second timeout
 - `client:Application/Match/Incoming/GameReady/GameReadyHandler.cs` — re-request of game data

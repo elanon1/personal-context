@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-08
-verified: 2026-09-08
+updated: 2026-09-10
+verified: 2026-09-10
 tags: [hexbane, server, match-engine, architecture]
 sources: ["server:docs/match/GUIDE-v2.md", "server:docs/match/README.md", "server:docs/match/architecture.md", "server:docs/match/phases.md", "server:docs/match/state-management.md", "server:docs/match/communication.md", "server:docs/match/matchmaking.md", "server:docs/QUICKSTART-v2.md", "server:docs/DOCUMENTATION-INDEX.md", "server:CLAUDE.md", "server:AGENTS.md"]
 ---
@@ -98,7 +98,7 @@ Opcodes are given by number only; payloads are in [[opcodes]] and [[combat-v2]].
 | 1 | `connecting` (`phase/connecting/phase.go`) | **none**: waits for readiness; only the empty-match reclaim or a leave can end it | all players present | every 1 s each human gets opcode 0 (`me` private view, `enemy` public view, `combat_protocol`, `ruleset_id`, `catalog_version`, `tick_ms`) (`:76-106`). Opcode 2 must carry `combat_protocol: 2`, otherwise opcode 30 `protocol_rejected` (`:119-125`, `:135-146`). Bots are ready from the start (`:58-60`). | all ready → broadcast opcode 1, random first drafter → `lobby_picking` (`:107-113`) | 0, 2 in, 1, 30 |
 | 2 | `lobby_picking` (`phase/lobby/phase.go`) | per-player turn clock `LobbyPickingDurationTicks = 35` **seconds** (`:21`; decremented once per second for the drafting player only, `:190-195`) | | turn-based draft: opcode 4 accepted only from the drafter, rejects duplicates, standard spells, full slots (`SelectSpell` `:121-157`); next drafter by `determineNextTurn` (`lobby/utils.go:34-65`: alternate while both have room, else whoever still has room). Opcode 2 with `event_name: lobby_ready` returns the draftable spellbook (opcode 70) plus current state (`:312-331`). Bot picks a random draftable spell on its turn (`:223-251`). Clock expiry auto-fills that player, hands the turn over or auto-fills the opponent too (`:197-221`). Opcode 3 every 1 s. | all slots full → `lobby_countdown` (`:242-246`, `:298-302`) | 3, 4 in, 5, 70, 2 in |
 | 3 | `lobby_countdown` (`phase/lobby_countdown/phase.go`) | `LobbyCountdownDurationTicks = 15` seconds (`:16`) | | opcode 3 `{time_remaining}` every 1 s (`:42-48`) | 0 → broadcast opcode 6 → `loading` (`:50-55`) | 3, 6 |
-| 4 | `loading` (`phase/loading/phase.go`) | 1 tick | | broadcasts opcode 7 and transitions immediately (`:23-32`) | → `game_countdown` | 7 |
+| 4 | `loading` (`phase/loading/phase.go`) | up to 30 s | | waits for protocol-2 `game_hud_ready` from every non-bot sender; broadcasts reliable opcode 7 when ready, otherwise opcode 9 `loading_timeout` and terminates | → `game_countdown` | 7 |
 | 5 | `game_countdown` (`phase/game_countdown/phase.go`) | `GameCountdownDurationTicks = 2` (`:19`): opcode 16 sent at 2, 1, 0 once per second, transition on the third second boundary (about 3 s, `:62-78`) | | opcode 2 from a player answers with opcode 10 (`me` + `enemy`, both as **private** views, `:44-60`, `:88-105`) | `TicksLeft == -1` → `combat` | 16, 2 in, 10 |
 | 6 | `combat` (`phase/game/phase.go`) | `GameTime = 180` seconds (`:27`); `time_remaining = 180 − Elapsed/10` (`:205`) | `NewGamePhaseState` (`:81-83`) | see below | any player dead or time ≤ 0 (`state/state.go:146-158`) → `combat_end` with reason `defeated` / `timeout` / `draw` (`:206-243`, `:332`) | 29 in, 30, 31, 32 |
 | 7 | `combat_end` = game over (`phase/gameover/phase.go`) | 1 tick | | outcome, XP, record, skill gains, SQL update, opcode 50 per presence, then `TerminateMatch` (`:133-179`) | match ends | 50, 199 in |

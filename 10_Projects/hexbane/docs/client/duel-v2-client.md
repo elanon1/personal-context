@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-09
-verified: 2026-09-09
+updated: 2026-09-10
+verified: 2026-09-10
 tags: [hexbane, client, duel-v2, combat, hud]
 sources: ["client:docs/opcodes/duel-v2.md", "client:docs/opcodes/duel-v2-verification.md", "client:docs/client/reference-duel/README.md"]
 ---
@@ -117,3 +117,15 @@ Historical results (2026-09-06, from `docs/opcodes/duel-v2-verification.md`, log
 ## Combat desktop/mobile profiles (2026-09-09)
 
 See [[combat-ui-profiles]] for the shared profile mechanism, configurable keyboard actions, preview scenes and validation. Desktop uses the bottom action bar and visible keycaps; mobile keeps touch rails. The tutorial follows the chosen profile and respects configured keys and target gates.
+
+## Arena launch/countdown repair (2026-09-10)
+
+`MainReference.tscn` was present. The missing countdown came from server `loading` immediately entering `game_countdown` while the client faded out the lobby and synchronously initialized arena assets. Opcode 16 only raised an event, so values received before HUD subscription were lost.
+
+The active HUD now sends `game_hud_ready` after its first rendered frame and after SceneManager completes the transition. Server loading waits for all human players (bots automatically qualify), then sends opcode 7 and begins the unchanged 2, 1, 0 countdown. Until then the arena shows “Waiting for opponent…”, and combat actions stay gated by the absence of a combat snapshot. Loadout still arrives through opcode 7 → `game_countdown_ready` → opcode 10. No synthetic client-only countdown delays an already running fight.
+
+`MatchContext.PendingGameCountdown` preserves opcode 16 across scene creation; HUD initialization replays it. Zero clears the label; a combat snapshot clears pending countdown and the waiting label even if zero was lost. Reset or a changed match id clears the buffer. Local training is exempt from the waiting message.
+
+Verification: `Dev/DuelLaunchVerification.tscn` replaces the actual lobby through `LobbyStartGameHandler`, injects countdown before HUD creation, checks completed transition/visible countdown/zero clearing, and can capture `/tmp/hexbane-duel-launch.png` with a rendering backend. The regression failed before buffering and passes afterward. Server `phase/loading/phase_test.go` covers slow loading, PvP/AI readiness, irrelevant/invalid/spoofed readiness, full 2/1/0 sequence, and timeout cancellation. `Tests/DuelV2/Live.cs` acknowledges opcode 6 before awaiting opcode 7.
+
+Rollout: server and client source changes are local. Deploy the server readiness barrier and rebuild clients; existing installed versions and a server running the old plugin are unchanged.

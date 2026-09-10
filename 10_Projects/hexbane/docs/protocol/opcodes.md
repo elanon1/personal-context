@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-08
-verified: 2026-09-08
+updated: 2026-09-10
+verified: 2026-09-10
 tags: [hexbane, protocol, opcodes, index]
 sources: ["client:docs/opcodes/README.md", "server:docs/opcodes/README.md", "server:docs/match/communication.md"]
 ---
@@ -42,7 +42,7 @@ Status `live` = sent or accepted by server code today. `retired` = tombstone: th
 |---|---|---|---|---|---|---|
 | 0 | `OpMatchEntryData` | `MATCH_ENTRY_DATA` | S→C unicast, 1/s | connecting | version handshake + `me`/`enemy` views → [[op_00_match_entry_data]] | live |
 | 1 | `OP_SERVER_READY` | `SERVER_READY` | S→C broadcast | connecting → lobby_picking | both players ready → [[op_01_server_ready]] | live |
-| 2 | `OP_CLIENT_READY` | `CLIENT_READY` | C→S | connecting, lobby_picking, game_countdown | versioned readiness / scene ready → [[op_02_client_ready]] | live |
+| 2 | `OP_CLIENT_READY` | `CLIENT_READY` | C→S | connecting, lobby_picking, loading, game_countdown | versioned readiness / scene ready → [[op_02_client_ready]] | live |
 | 3 | `OpLobbyUpdate` | `LOBBY_UPDATE` | S→C broadcast (+unicast on lobby_ready) | lobby_picking, lobby_countdown | draft state; countdown timer → [[op_03_lobby_update]] | live |
 | 4 | `OpLobbySpellSelected` | `LOBBY_SPELL_SELECTED` | C→S | lobby_picking | pick one spell → [[op_04_lobby_spell_selected]] | live |
 | 5 | `OpLobbySpellSelectedUpdate` | `LOBBY_SPELLS_SELECTED_UPDATE` | S→C broadcast | lobby_picking | picks with name/icon/description → [[op_05_lobby_spell_selected_update]] | live |

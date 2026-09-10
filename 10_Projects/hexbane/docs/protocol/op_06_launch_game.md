@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-10
+verified: 2026-09-10
 tags: [hexbane, protocol, opcode, launch-game]
 sources: ["client:docs/opcodes/op_06_launch_game.md", "server:docs/opcodes/op_06_launch_game.md"]
 ---
@@ -23,7 +23,7 @@ sources: ["client:docs/opcodes/op_06_launch_game.md", "server:docs/opcodes/op_06
 
 ## When
 
-Once, on the tick where the 15 s lobby countdown reaches 0. The match then enters `loading`, whose first tick broadcasts [[op_07_game_ready]].
+Once, on the tick where the 15 s lobby countdown reaches 0. The match then enters `loading`, which waits for all human arenas to acknowledge `game_hud_ready` before broadcasting [[op_07_game_ready]].
 
 ## Payload
 

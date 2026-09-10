@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-10
+verified: 2026-09-10
 tags: [hexbane, protocol, opcode, client-ready]
 sources: ["client:docs/opcodes/op_02_client_ready.md", "server:docs/opcodes/op_02_client_ready.md", "server:docs/client/combat-v2.md", "client:docs/opcodes/duel-v2.md"]
 ---
@@ -17,7 +17,7 @@ sources: ["client:docs/opcodes/op_02_client_ready.md", "server:docs/opcodes/op_0
 |---|---|
 | Server const / client enum | `OP_CLIENT_READY` / `CLIENT_READY` |
 | Direction | Client → server |
-| Phases that act on it | `connecting`, `lobby_picking`, `game_countdown` (ignored in `lobby_countdown`, `loading`; rejected as "unsupported combat opcode" in `combat`; ignored in `combat_end`) |
+| Phases that act on it | `connecting`, `lobby_picking`, `loading`, `game_countdown` (ignored in `lobby_countdown`; rejected as "unsupported combat opcode" in `combat`; ignored in `combat_end`) |
 | Client sender | `client:Application/Match/Outgoing/ClientReady/ClientReadyHandler.cs` (payload built by `ClientReadyCommand.ToPayload()`) |
 
 ## Payload (client → server)
@@ -41,7 +41,7 @@ sources: ["client:docs/opcodes/op_02_client_ready.md", "server:docs/opcodes/op_0
 | `match_entry_data` | `client:Application/Match/Incoming/MatchEntryData/MatchEntryDataHandler.cs:42` after [[op_00_match_entry_data]] | connecting: marks sender ready |
 | `lobby_ready` | `client:Game/ScenesV3/Lobby/LobbyScreen.cs:169` | lobby_picking: unicasts [[op_70_lobby_spellbook_spells]], [[op_03_lobby_update]], [[op_05_lobby_spell_selected_update]]; marks lobby loaded |
 | `game_countdown_ready` | `client:Application/Match/Incoming/GameReady/GameReadyHandler.cs:33` on [[op_07_game_ready]] | game_countdown: unicasts [[op_10_game_data]] |
-| `game_hud_ready` | HUD `_Ready` (`client:Game/ScenesV3/ReferenceDuel/ReferenceHud.cs:197`, `GameHudScreen.cs:284`) | usually arrives in `loading` (ignored) or `game_countdown` (answers with opcode 10 again) |
+| `game_hud_ready` | active `ReferenceHud.SendReadyAfterPresentation` after first rendered frame and completed scene transition | loading: acknowledges the authenticated sender’s arena; all human acknowledgements start countdown. During game_countdown it answers with opcode 10 again |
 
 ## Per-phase server behaviour
 
@@ -57,3 +57,7 @@ sources: ["client:docs/opcodes/op_02_client_ready.md", "server:docs/opcodes/op_0
 - `server:modules/match/engine/match_types/client_ready.go` — struct
 - `server:modules/match/engine/phase/connecting/phase.go`, `phase/lobby/phase.go`, `phase/game_countdown/phase.go` — handling
 - `client:Application/Match/Outgoing/ClientReady/ClientReadyCommand.cs` — wire payload
+
+## Loading readiness (2026-09-10)
+
+Only `event_name=game_hud_ready` with `combat_protocol=2` is accepted. Acting player is `MatchData.GetUserId()`, never payload `user_id`. Bots do not wait. A 30-second timeout cancels via opcode 9; no forced start. No opcode numbers or payload fields changed. Server and client changes are prepared locally; rollout is required for the readiness barrier.

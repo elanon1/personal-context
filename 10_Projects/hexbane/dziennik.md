@@ -420,3 +420,13 @@ Notatki: duel-v2-client (sekcja „Catalog2.4 progression UI”), character-deta
 
 - Created Resources/Images/AppIcon/hexbane-icon-v1.png using built-in imagegen with existing logo_fire.png and ui_background.png as visual references. Fiery serif X, molten bronze/orange, dark stone and subdued arcane circle. Inspected generated square image.
 - Delivered new asset; current project/export icon configuration unchanged. Platform-specific sizing/adaptive layers and installation preview remain for integration. No code changes.
+
+
+## 2026-09-10 — Przywrócenie widocznego odliczania po aranżacji zaklęć (Codex)
+
+- **Przyczyna:** scena `MainReference.tscn` istnieje; jednotickowa faza serwera `loading` uruchamiała odliczanie podczas fade/ładowania areny. Klient gubił opcode 16 odebrany przed subskrypcją HUD-u. Użytkownik potwierdził na PC i telefonie: po czerni walka rusza od razu.
+- **Klient:** `MatchContext`, `GameCountdownHandler`, `ReferenceHud.cs`, `ReferenceHud.DuelV2.cs`, komentarz `GameReadyHandler`, `Tests/DuelV2/Live.cs`, nowa scena `Dev/DuelLaunchVerification.{cs,tscn}`. Gotowość po renderze i zakończeniu przejścia; bufor licznika, czyszczenie na 0/snapshot/reset, komunikat oczekiwania bez wpływu na tutorial.
+- **Serwer:** `modules/match/engine/phase/loading/{phase.go,phase_test.go}`. Oczekiwanie na wszystkich ludzi; bot bez potwierdzenia; identyfikacja nadawcy zamiast user_id payloadu; anulowanie po 30 s zamiast startu bez gotowości.
+- **Walidacja:** regresje klienta i serwera FAIL przed poprawką, PASS po niej; build klienta 0 błędów/11 wcześniejszych ostrzeżeń; testy modelu DuelV2 PASS; `go test ./...` PASS; renderowana scena pokazuje arenę, postacie i cyfrę 2 (zrzut `/tmp/hexbane-duel-launch.png`). Headless zgłasza też ostrzeżenia o zasobach przy zamknięciu; renderowany test kończy się bez tych błędów. Niezależny przegląd nie znalazł błędów blokujących.
+- **Notatki:** client/duel-v2-client, client/client-architecture, server/server-architecture, protocol/opcodes i op_02/06/07/09/16 oraz `_state.md` (uzasadnienie).
+- **Pozostało:** wdrożyć backend i zbudować/zainstalować klientów. Nie wykonano live testu przeciw zmienionemu Nakama ani na fizycznym telefonie: lokalny Docker nie działa, brak urządzenia ADB. Nie zmieniano działającego serwera ani zainstalowanych aplikacji.

@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-09
-verified: 2026-09-09
+updated: 2026-09-10
+verified: 2026-09-10
 tags: [hexbane, client, architecture, godot]
 sources: ["client:CLAUDE.md", "client:AGENTS.md", "client:project.godot", "client:Game/Autoloads/SceneManager.cs", "client:Game/DI/ServiceBootstrapper.cs"]
 ---
@@ -168,3 +168,7 @@ Client storytelling was removed: `Application/EndlessStory`, `Application/Module
 Retired combat handlers (11–15, 21–28) and unused DTOs were removed. Casting/accepted/failed DTOs remain because current development previews and HUD compatibility code still consume them; their old network handlers are gone. The dispatcher still drops the retired numeric ranges.
 
 Spell VFX consists of MirrorWard (formation/shatter audio restored at the user’s request) and procedural Magic Arrow / Firebolt projectile impacts with one shared lifecycle; new cast/gesture/meditation effects and current catalog icons remain. See [[spell-effect-system]].
+
+## Duel launch readiness (2026-09-10)
+
+See [[duel-v2-client#Arena launch/countdown repair (2026-09-10)]]. The active HUD acknowledges its first rendered frame and completed scene transition; the server waits for every human arena before counting down. MatchContext also buffers early opcode 16 values alongside game-load data.

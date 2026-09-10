@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-10
+verified: 2026-09-10
 tags: [hexbane, protocol, opcode, match-canceled]
 sources: ["client:docs/opcodes/op_09_match_canceled.md", "server:docs/opcodes/op_09_match_canceled.md", "client:docs/opcodes/op_09_game_countdown.md"]
 ---
@@ -27,6 +27,7 @@ Opcode 9 is **only** this message. The old "shared with GameCountdown" note is w
 
 | `reason` | Trigger | Recipients |
 |---|---|---|
+| `"loading_timeout"` | not all human arenas acknowledged `game_hud_ready` within 30 s | broadcast |
 | `"player_setup_failed"` | `BuildPlayerState` failed on join (no character, spellbook load error) in `normal` or `ai_duel` | broadcast |
 | `"opponent_left"` | a presence left a `normal` match during `connecting`, `lobby_picking`, `lobby_countdown`, `loading`, `game_countdown` (`leave.go:58-69`) | unicast to every remaining presence |
 
