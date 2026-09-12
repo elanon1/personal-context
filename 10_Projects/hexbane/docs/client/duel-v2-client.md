@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-10
-verified: 2026-09-10
+updated: 2026-09-12
+verified: 2026-09-12
 tags: [hexbane, client, duel-v2, combat, hud]
 sources: ["client:docs/opcodes/duel-v2.md", "client:docs/opcodes/duel-v2-verification.md", "client:docs/client/reference-duel/README.md"]
 ---
@@ -138,3 +138,7 @@ See [[duel-loading-screen]] for the persistent blue/emerald loading illustration
 ## Draft and progression affordances (2026-09-10)
 
 The lobby uses one shared spell detail presenter for library cards and both filled draft rows. Opponent picks carry their server-provided name, icon and description into clickable slots. The Primary character tab uses a compact icon tree with a path switch; dashboard cards pulse while stat, magic or Primary points are available. Menu buttons receive a generated short click through the global `MenuPlayer` binder.
+
+## Duel ending presentation (2026-09-12)
+
+The arena now remains visible after MatchEnded: dead actors fall and hold their final pose, a winner panel announces the result, and Continue opens the full results. Presentation does not delay authoritative state or rewards. See [[duel-ending]].

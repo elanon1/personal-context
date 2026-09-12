@@ -5,8 +5,8 @@ area: infra
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-10
-verified: 2026-09-10
+updated: 2026-09-12
+verified: 2026-09-12
 tags: [hexbane, infra, deploy, docker, helm, argocd, ci]
 sources: ["vault:10_Projects/hexbane/infra-i-deploy.md", "server:Makefile", "server:docker-compose.yml", "server:docker-compose.debug.yml", "server:docker-compose.prod.yml", "server:Dockerfile", "server:Dockerfile.debug", "server:local.yml", "server:.github/workflows/docker-publish.yml", "server:helm/hexbane/**", "server:deploy/argocd/*", "server:docs/spell_system/database-v2.md", "client:deploy.sh", "client:CLAUDE.md", "client:export_presets.cfg"]
 ---
@@ -116,6 +116,22 @@ None of these have been rotated; see [[repos-and-branches]] and the vault-state 
 Server commit `f64b8fe8306bb60539a5cf974214f8f3b83a8ca5` replaces transient snapshot maps with typed payloads and adds wire/allocation/active/resident benchmarks; see [[2026-09-10-performance]]. CI run `34447986929` passed tests and image publication. GitOps commit `2741f6f` pins `sha-f64b8fe`; the application was applied and explicitly synced as in the preceding rollout.
 
 Verified deployment: pod `hexbane-77c95859cd-zm4hs`, ready, zero restarts; image digest `sha256:0469004f71c2d9147b9ff1a6b84815aabbd51e34705a9ac775ba1c17f4c76677`. Argo reports Synced / Healthy / Succeeded, rollout completed, public `/healthcheck` and RPCs `healthcheck` / `get_entry_spells` returned HTTP 200 and valid JSON. Startup completed with spell registry loaded. No infrastructure sizing or database reset was part of this change. This verifies deployment health, not production concurrent-match capacity.
+
+## Natural fallback deployment (2026-09-12)
+
+User explicitly requested production deployment and confirmed that old clients need not remain supported: enable the15–30s fallback now. Published server commit `b2e7fe2862385d7bd5d756d73c2415804694c1ff` to main; GitHub Actions run `34699124648` passed Go tests/race/vet and image publication.
+
+GitOps commit `99aebe537a42b883c0e6dfcb6fb8d1494c98ec57` pins `image.tag=sha-b2e7fe2` and sets both `nakama.env.HEXBANE_ENABLE_CUSTOM_QUEUE` and `nakama.env.HEXBANE_ENABLE_FALLBACK` to string `true`. Applied the child Application and requested the usual explicit sync. No reset or unrelated infrastructure change.
+
+Preflight DB: migration5 clean,9users/1character,0active character match locks. A complete custom-format pg_dump was saved with mode600 under `/Users/elanon/.codex/backups/hexbane/2026-09-12-before-fallback.dump`:67021bytes, SHA256 `b0b30fb3406b99c0e5f08c0b16d4193689f1950ecf9487372f17b9aaa3f2bed1`; pg_restore list154lines validated archive structure (not a restore drill).
+
+Deployment `hexbane` rolled out successfully. Pod `hexbane-777d4d75b5-tzt8n` ready1/1,0restarts; digest `sha256:bcdda4ae4d1116abeb12ba097498f97b3faddff4b66e402bd8a1c344d90f8928`. Argo `Synced / Healthy / Succeeded`, server revision matches commit. Init logs applied migrations6/7/8; SQL `schema_migrations=(8,false)`. Startup done and public HTTPS healthcheck returned200. Both flags verified from actual Deployment env; authenticated public queue_config confirms enabled.
+
+Runtime verification in progress: dedicated temporary account/character created for one fallback smoke (no existing account modified), opponent assignment after27183ms. Final outcome and cleanup recorded below when complete.
+
+Rollback: set both flags false and repin `sha-f64b8fe` in GitOps, apply/sync after draining games. Migrations6–8 are additive; retain their tables during a runtime rollback. Do not restore backup or drop tables unless a separately diagnosed data failure requires it. Current new normal client can use built-in queue when queue_config returns false; truly old prequeue backend lacks that RPC, so prefer disabling flags on the new backend for a feature-only rollback.
+
+Client source was updated/build-checked locally in the earlier implementation; this deployment does not distribute a new installed client binary. Current backend rejects old built-in normal tickets while custom queue is enabled, as explicitly accepted by the user. Ranked remains built-in/level30.
 
 ## Source of truth in code
 - `server:Makefile` — build/dev/migrate/db-* targets, pluginbuilder version, `DB_URL` composition

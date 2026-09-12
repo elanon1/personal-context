@@ -75,6 +75,7 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 ## Klient (`docs/client/`)
 
 - [[client-architecture]] — warstwy, autoloady, DI, CQRS, przepływ wiadomości, trasy scen, testy
+- [[duel-ending]] — upadek postaci, zwycięzca i Continue na arenie, wyniki oraz muzyka ElevenLabs.
 - [[duel-v2-client]] — implementacja pojedynku (scena, HUD, klawisze, snapshoty, reconnect, weryfikacja)
 - [[cqrs]] — jak używać dispatchera / handlerów
 - [[spell-effect-system]] — architektura efektów zaklęć (interfejsy, rejestr, konfiguracje)
@@ -121,6 +122,9 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 - [[server-devlog-summary]] — oś czasu kamieni milowych serwera (z dawnego `devlog.md`)
 
 ## Audyty (`docs/audits/`)
+
+- [[2026-09-12-fallback-verification]] — testy SQL/race/build/live, odzyskiwanie wyniku i ograniczenia.
+- [[2026-09-12-fallback-ai-calibration.json]] —3000 walk,1000 seedów, metryki i bramki strojenia.
 
 - [[2026-09-10-performance]] — mobile VFX allocations, Cleanse shader portability and server snapshot/resident-duel benchmarks.
 

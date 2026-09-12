@@ -107,3 +107,7 @@ Visible VFX retain per-frame pose/depth updates; interned uniform/animation name
 All fourteen spells now have full shared playback and canonical casting presets. The eleven newly added fields are described in [[spell-vfx-configuration]] and [[spell-effect-system]]. Rear and front geometry render on opposite sides of the animated race sprite (z=0/1/2), so effects behind the character disappear under its current alpha silhouette while foreground sections remain visible. `VerifySpellFields.tscn` covers both ArenaMapsDev saved-spell buttons, VfxTest controls and GPU pixel occlusion for six races × both orientations. Evidence: `verification/spell-fields/`.
 
 Meditation audio (2026-09-12): `MeditationVfx` now owns a quiet ElevenLabs air/glass loop while absorption is active, with smooth entry and cancellation. All actor and preview paths share this lifecycle; see [[spell-audio]].
+
+## Duel ending presentation (2026-09-12)
+
+All six races now include a 25-frame non-looping skeletal `death` clip in HD and SD. HP-driven terminal presentation and the asset pipeline are documented in [[duel-ending]].

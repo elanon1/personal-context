@@ -55,3 +55,7 @@ Outcome rules (`determineOutcomes`, `:105-131`): exactly one player with HP > 0 
 ## Source of truth in code
 - `server:modules/match/engine/phase/gameover/phase.go` — structs, outcome logic, persistence
 - `client:Application/Match/Incoming/Gameover/GameoverMessage.cs` — DTO
+
+## Duel ending presentation (2026-09-12)
+
+Client presentation now retains the arena until Continue, when an active DuelConclusion exists. Character cache/result dispatch are still immediate and opcode 50 is unchanged. Terminal actor death follows HP or the explicit defeated outcome; timeout does not create a death. See [[duel-ending]].

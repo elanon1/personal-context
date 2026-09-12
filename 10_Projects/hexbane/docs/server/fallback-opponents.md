@@ -10,6 +10,9 @@ tags: [hexbane, matchmaking, fallback, ai]
 ---
 # Fallback opponents
 
+> Deployment update: user explicitly requested production deployment and activation on2026-09-12, confirming that old-client compatibility is not required. Server commit `b2e7fe2862385d7bd5d756d73c2415804694c1ff` pushed to main; CI publication/deployment in progress. Earlier local-only statements below are the pre-deployment verification record. Final deployment evidence belongs in [[infra-and-deploy]].
+
+
 Implemented on backend branch `feat/natural-fallback-player`, with coordinated changes in the local Godot client. Production has not been changed. Design: [[2026-09-08-fallback-player-design]]; implementation evidence and remaining gates: [[2026-09-12-fallback-implementation-progress]].
 
 ## Queue and admission
@@ -46,16 +49,16 @@ Reflection penalizes hostile packages except the cheap Magic Arrow; visible self
 
 Both kinds of normal match use the same manager, lobby, countdown, duel and result scene. `QueueClient` fences late join/poll/cancel/accept replies by epoch, updates assignment generations, and retries a join on a replaced socket with cleanup on the old transport. Accept failure restores retry controls. Explicit training remains visibly separate.
 
-Human rewards retain existing `character.SettleMatch` idempotency and current progression; there is no separate fallback reward formula. See [[op_50_game_over]] for result persistence/recovery and [[rpcs]] for post-match actions. Automated correctness cannot establish that players will never recognize an automated opponent; behavior calibration and human playtests remain release gates.
+Human rewards retain existing `character.SettleMatch` idempotency and current progression; there is no separate fallback reward formula. See [[op_50_game_over]] for result persistence/recovery and [[rpcs]] for post-match actions. Match actions are authorized by the completed receipt and use one response shape for both opponent types; pending persona requests are local records, not accepted friendships. The SDK friends list does not yet include those pending records. Automated correctness cannot establish that players will never recognize an automated opponent; behavior calibration and human playtests remain release gates.
 
 ## Local activation
 
-Apply application migrations after Nakama migrations and deploy matching server/client versions. Set `HEXBANE_ENABLE_CUSTOM_QUEUE=true`, `HEXBANE_ENABLE_FALLBACK=true`, optional `HEXBANE_QUEUE_REGION=global`. Both flags default false in `.env.dist`; new normal clients first query `queue_config` and use built-in matching when custom queue is disabled. Old clients do not understand the custom queue; coordinate rollout. Flags are read at startup. An internal atomic fallback switch exists, but no admin RPC exposes it.
+Apply application migrations through version8 after Nakama migrations and deploy matching server/client versions. Set `HEXBANE_ENABLE_CUSTOM_QUEUE=true`, `HEXBANE_ENABLE_FALLBACK=true`, optional `HEXBANE_QUEUE_REGION=global`. Both flags default false in `.env.dist`; new normal clients first query `queue_config` and use built-in matching when custom queue is disabled. Old clients do not understand the custom queue; coordinate rollout. Flags are read at startup. An internal atomic fallback switch exists, but no admin RPC exposes it.
 
 Turning fallback off keeps human custom matching available. Turning custom queue off returns new requests to built-in matching after server restart; drain active games before rollback. Do not roll back/drop migrations while matches or actions still reference them.
 
 ## Source of truth in code
 - server: `modules/matchmaking`, `modules/bot_persona`, `modules/match/normal_match`, `modules/match/engine/bot_ai`
 - server: `modules/match/engine/phase/{connecting,lobby,game,gameover}`, `modules/match/engine/core/bot_setup.go`
-- server: `db/migrations/000006*`, `000007*`, `.env.dist`, `cmd/duel-sim`, `scripts/test_combat_runtime.mjs`
+- server: `db/migrations/000006*`, `000007*`, `000008*`, `.env.dist`, `cmd/duel-sim`, `scripts/test_combat_runtime.mjs`
 - client: `Application/ArcaneDuel/Normal/{MatchManager,QueueClient}.cs`, `Core/Match/QueueAssignment.cs`, `Tests/Matchmaking`, `Game/ScenesV3/Dashboard/ModeOverlay.cs`

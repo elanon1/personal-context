@@ -4,13 +4,22 @@ project: Hexbane
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-08
-verified: 2026-09-08
+updated: 2026-09-12
+verified: 2026-09-12
 tags: [hexbane, log, worklog]
 aliases: [hexbane-dziennik, hexbane-worklog]
 ---
 
 # Hexbane — dziennik pracy
+
+## 2026-09-12 — Codex — implementacja fallback15–30s
+
+- Zaimplementowano queue/assignment/admission,180person, legalne buildy, zmienne nicki, opóźniony draft/ready oraz AI14zaklęć z profilami i błędami. Serwer branch `feat/natural-fallback-player`; istniejące zmiany klienta zachowane.
+- Klient: QueueClient/MatchManager, ModeOverlay requeue/retry, GameOver friend/report; wynik zapisany atomowo w istniejącym receipt i odzyskiwany po reconnect. Migracje6–8.
+- Testy: Go+vet+race/SQL, Linux build, klient0errors/9warnings. Pełny fallback25342ms, PvP, reconnect, utrata50, idempotentne akcje i odmowa obcemu PASS.3000walk +1000seedów w raporcie;45.6–51.2%timeoutów wymaga strojenia.
+- Notatki: fallback-opponents, matchmaking, rpcs, database, social, server/client-architecture, op04/op50, oba wcześniejsze plany, implementation-progress, verification/calibration audit, _index/_state.
+- Pozostało: playtesty/renderowany i fizyczny klient, kalibracja, distributed soak/p99, pending friends/profile policy, rollout. Produkcja bez zmian; flagi domyślnie wyłączone.
+
 
 ## 2026-09-10 — Codex — poprawka HEX-15 i HEX-12/13/14
 
@@ -537,3 +546,13 @@ Dodano Game/ScenesV3/Dev/GameplaySandbox.tscn/.cs: wszystkie 14 czarów z ikonam
 Walidacja: GameplaySandboxVerification.cs/.tscn początkowo FAIL przy braku sceny; końcowy przebieg GPU PASS: dopasowanie przycisków do viewportu, 14 ikon/rzutów, anulowanie po resecie, odbicie/unik z prawej strony, medytacja/audio/stop, poison utrzymany ponad normalny czas. Poprawiono wykryte na zrzucie ucięcie kontrolek przez odstępy motywu. Końcowy /tmp/hexbane-gameplay-sandbox.png obejrzany. Build: 0 błędów, 9 istniejących ostrzeżeń.
 
 Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _index.md, _state.md. Wcześniejsze i równoległe zmiany zachowane; chwilowy brak ResultEmblem z równoległej pracy ustąpił bez naszej ingerencji. Bez commitu/deployu. Pozostaje subiektywny odsłuch i fizyczne urządzenia; laboratorium nie weryfikuje reguł walki ani Nakamy.
+
+## 2026-09-12 — Upadek, zakończenie areny, nowe wyniki i muzyka ElevenLabs
+
+- Stworzono szkieletową animację śmierci dla wszystkich sześciu ras: 25 klatek / 20 fps, HD i SD, ostatnia poza zostaje na ziemi. Edytowalne źródła Blender w Resources/Races/3d/<race>/death; runtime korzysta z atlasów. Die jest terminalne do Load, przerywa cast/medytację/audio, ignoruje spóźnione sterowanie. Atlas zapisuje się atomowo; naprawiono importy, które obserwowały pliki podczas regeneracji.
+- Arena pozostaje po MatchEnded, pokazuje zwycięzcę i Continue odblokowane po 1,25 s. HP/stan/nagrody pozostają autorytatywne i natychmiastowe. Timeout nie zabija wizualnie; obsłużono remis i obie martwe postacie. Code review znalazł pułapkę otwartego okna sterowania — reprodukcja FAIL, dodano zamknięcie bez zapisania draftu i blokadę ponownego otwarcia; pointer regression PASS.
+- Przebudowano wspólny GameOverScreen: wynik, XP i awans dominują; zachowano skille, bilans, czas, przeciwnika, placeholder rankingu, bonusy i dotychczasowe akcje. Karty przewijane na małym ekranie, Continue poza scrollem, skalowanie desktopu. Zachowano wspólne tło i motyw. Report pozostaje wcześniejszym logging-only stubem.
+- ElevenLabs Music v1 wygenerował dwa instrumentalne motywy po 12 s: victory/defeat. Manifest zawiera prompty, model, identyfikatory i hashe, bez tokenu. Podłączono do MenuPlayer bez nakładania się muzyki walki/menu, respektowane wyciszenie, brak pętli i przywrócenie menu po wyjściu.
+- Walidacja: DeathVerification PASS (6 ras × 2 jakości × 2 kierunki, terminalna poza, stale events/reload); DuelEndingVerification PASS (realny handler i scena, aktualizacja HP, winner, kliknięcie Continue, modal, timeout/remisy, 1360×612/844×390/2400×1080); MeditationTest PASS 12 kombinacji i player-state; CombatControlsVerification PASS 30 wariantów plus capture/cancel/apply. ResultMusicVerification PASS; rzeczywisty miks CoreAudio nagrany 25,228 s, peak -13,48 dBFS, oba utwory niezerowe. Build 0 błędów / 9 wcześniejszych ostrzeżeń; istniejące ObjectDB/resource-at-exit komunikaty.
+- Dowody: verification/duel-ending/ — logi, screenshoty, GIF sześciu animacji i result-music-reel.wav. Główne pliki: RaceSpriteAnimator, Player, ArenaMatch/DuelConclusion, ReferenceHud.Layout, CombatControlsDialog, SceneManager, MenuPlayer, GameOverScreen/.Layout, skrypty generacji i nowe sceny Dev. Notatki: duel-ending (nowa), vfx-and-race-animation, design-system, duel-v2-client, op_50_game_over, _index, _state.
+- Pozostało: pełna walka z żywym Nakama i kontrola na fizycznym urządzeniu, subiektywny odsłuch muzyki. Bez commita/deployu; zachowano wcześniejsze zmiany w repo i vaulcie.

@@ -281,6 +281,14 @@ Slot limit comment says "up to 7" (`types.go:10`); validation is in `validate.go
 - `RegisterBefore/AfterAuthenticateEmail|Google|Apple|GameCenter` — logging only (`server:modules/auth/init.go:9-46`). See [[google-auth]].
 - `RegisterMatchmakerMatched`, `RegisterBeforeRt("MatchmakerAdd")` — see [[matchmaking]].
 
+## Post-match opponent actions
+
+Authenticated `match_opponent_action {match_id,action:"add_friend"|"report"}` resolves the opponent only from the caller’s immutable completed result receipt. It accepts no client-provided opponent identity. Success: `{success:true,data:{match_id,action,opponent_id,status}}`; add_friend has common `pending` status, report `reported`. No opponent kind or bot flag is serialized. Missing/foreign/historical receipt without the opponent payload → NotFound(5), malformed→3, unauthenticated→16, internal→13.
+
+Migration8 `match_opponent_actions` stores one action per `(match_id,actor_user_id,action)` with internal human/persona attribution. Real-account friend requests invoke Nakama FriendsAdd; persona requests remain locally pending and never fabricate acceptance or online activity. Reports for either type are recorded internally. There is no moderation dashboard/notification delivery for these report rows yet. Persona pending requests do not appear in the current SDK-backed Friends list; a unified list/profile surface remains a product follow-up, not proof of indistinguishability.
+
+Concurrent retries serialize under a transaction advisory lock. Once committed they return the saved response without repeating FriendsAdd. A DB commit failure after successful Nakama FriendsAdd can cause that idempotent operation to be invoked again; external delivery is not transactionally atomic with the action row. GameOver sends both actions through this RPC and shows Invite sent/Report sent. Current lobby/result UI has no opponent profile link; training still hides opponent actions.
+
 ## Source of truth in code
 - `server:modules/main.go` — module registration order (race before character).
 - `server:modules/*/init.go` — RPC ids; `server:modules/*/rpc.go`, `character/details.go`, `character/tutorial.go` — handlers.

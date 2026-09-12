@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-10
-verified: 2026-09-10
+updated: 2026-09-12
+verified: 2026-09-12
 tags: [hexbane, client, ui, design-system, themes]
 sources: ["client:docs/DESIGN_SYSTEM.md"]
 ---
@@ -150,3 +150,7 @@ The Primary tab presents one path at a time through an explicit Magic Arrow / Mi
 Lobby draft slots retain selected spell data for both players. Filled slots show the spell name as a tooltip and are clickable; selecting either your own or the opponent's spell opens the same icon, metadata and description panel used by the spell library. Dashboard stat points, magic points and pending Primary tiers use a slow amber pulse on their existing cards while work is available. MenuPlayer generates a short PCM click at runtime and binds it to every `BaseButton` in the current scene, including dynamic plus/minus controls.
 
 Sources: `client:Game/ScenesV3/CharacterDetail/CharacterDetailScreen.Primary.cs`, `client:Game/ScenesV3/Lobby/LobbyScreen.cs`, `client:Game/ScenesV3/Dashboard/DashboardScreen.cs`, `client:Game/Autoloads/MenuPlayer.cs`.
+
+## Duel ending presentation (2026-09-12)
+
+Results now use native warm-toned cards with outcome/XP/level-up as the primary hierarchy, smaller skill/match details and a persistent Continue button. The shared backdrop and theme remain. See [[duel-ending]] for layouts and music.

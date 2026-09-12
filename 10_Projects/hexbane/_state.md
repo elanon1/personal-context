@@ -6,8 +6,8 @@ status: active
 state: active
 repo: https://github.com/elanon1/hexbane
 created: 2026-08-31
-updated: 2026-09-10
-verified: 2026-09-10
+updated: 2026-09-12
+verified: 2026-09-12
 tags: [hexbane, gamedev, godot, csharp, nakama, go, kubernetes, ai-art]
 aliases: [hexbane, hexbane-server]
 ---
@@ -57,6 +57,16 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 **Content:** 13 zachowanych ikon pokrywa 14 obecnych zaklęć; VFX obejmuje wszystkie 14 zaklęć: Mirror Reflection z przywróconymi dźwiękami, Magic Arrow i Firebolt/Fireball ze wspólnym cyklem życia pocisku oraz 11 różnorodnych efektów na postaci z warstwami przed/za sylwetką. Nowe animacje castingu i presety zachowane. Stare VFX/SFX i assety generatora usunięte 2026-09-08. → [[spell-vfx-configuration]]
 
 ## Decisions log
+
+### 2026-09-12 — Fallback normal po15–30s, implementacja lokalna
+- **Decision:** custom queue/persistent personas/natural AI w zwykłym meczu; ranked nadal oddzielny. Flagi domyślnie false, bez wdrożenia produkcyjnego.
+- **Why:** użytkownik zatwierdził próg15–30s i implementację; priorytet człowieka i atomowa rezerwacja zapobiegają podwójnemu meczowi.
+- **Decision:** exact opcode50 w istniejącym receipt razem z nagrodą; wspólne match-authorized friend/report RPC, bez kont Nakama person i fikcyjnej akceptacji.
+- **Why:** wznowienia mają zwracać ten sam wynik bez drugiego XP; UI potrzebuje działających akcji dla obu typów przeciwnika.
+- **State:** lokalny fallback25342ms i PvP/reconnect/lost-result/action tests PASS; kalibracja, fizyczny klient i rollout otwarte. [[2026-09-12-fallback-verification]]; [[2026-09-12-fallback-implementation-progress]].
+
+
+- **2026-09-12 — Keep the resolved duel visible until Continue.** Authoritative HP/result data immediately ends combat and updates rewards; death animation and the winner panel are cosmetic, with a separate results screen. All six races share the same terminal animation lifecycle and results music uses the existing MenuPlayer. **Why:** the player should see the consequence of the final hit and choose when to inspect rewards, while preserving the server contract and existing settings. See [[duel-ending]].
 
 - **2026-09-12 — Dedicated offline presentation sandbox.** GameplaySandbox uses shared spell presentation and audio with manual lifecycle controls; it does not extend the tutorial into a duplicate combat engine. **Why:** the user explicitly selected presentation and manual scenarios; the tutorial only models a bounded lesson, whereas actual combat rules belong on the server. See [[gameplay-sandbox]].
 

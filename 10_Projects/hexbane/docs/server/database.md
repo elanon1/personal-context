@@ -75,6 +75,10 @@ Recorded verification (2026-09-06, from the previous database doc, not re-run on
 
 Versions 4/5 already contain the current progression redesign, `character_match_locks` and idempotent `character_match_rewards`; fallback does not replace them. Version6 adds `fallback_assignments`, `fallback_queue`, `fallback_queue_rate`, `fallback_queue_requests`, indexes and state/identity constraints. Version7 adds immutable `bot_personas`, unique active `bot_persona_leases` and `bot_persona_history`. Persona records reference races, not Nakama users; human IDs belong to queue participants. See [[fallback-opponents]]. The original versions1–3 table description above is historical and not a complete current schema inventory.
 
+## Match actions and result receipts (2026-09-12)
+
+Migration8 adds `match_opponent_actions` (actor FK to users, UUID target with internal kind, action/status CHECKs, match+actor+action PK). The existing `character_match_rewards.result` now optionally includes exact `match_result` opcode50 JSON, committed with the reward. No extra result ledger or reward migration. Historical receipts without that field cannot be recovered from current character state. See [[op_50_game_over]] and [[rpcs]].
+
 ## Source of truth in code
 
 - `server:db/migrations/000001_initial_schema.up.sql` — tables, constraints, trigger

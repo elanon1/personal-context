@@ -143,6 +143,10 @@ See [[social-sign-in#Runtime connection recovery (HEX-6, 2026-09-10)]] for seria
 
 `Application/ArcaneDuel/Normal/QueueClient.cs` is a transport-independent async queue state machine. `MatchManager` obtains queue configuration, polls assignments, fences stale responses and handles replaced sockets. Fallback uses the normal match context/scenes; explicit training retains `IsAiMatch`. ModeOverlay restores JOIN retry controls on accept failure. Standalone regression runner: `dotnet run --project Tests/Matchmaking/Matchmaking.csproj`. See [[fallback-opponents]].
 
+## Queue/result race handling (2026-09-12)
+
+Cancellation completion includes pending Join cleanup, and the manager serializes a fresh queue intent behind that cleanup. A new intent clears the old custom queue owner before built-in ranked matching. ModeOverlay handles Searching/Idle, stopping obsolete accept/join timers when a counterpart requeues or an offer expires. Temporary polling failures retry without abandoning the active search UI. Result recovery is fenced again after awaits; failed rejoin also enters bounded receipt retries. GameOver friend/report use `match_opponent_action`. These paths are compile/unit/protocol-tested; no rendered Godot/device test of all UI transitions was performed.
+
 ## Source of truth in code
 - `client:project.godot` — autoload order, `[hexbane]` settings, display/stretch, main scene
 - `client:Game/DI/ServiceBootstrapper.cs` — every DI registration, keyed match managers, social sign-in factory
