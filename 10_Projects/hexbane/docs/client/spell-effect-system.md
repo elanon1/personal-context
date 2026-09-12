@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-08
-verified: 2026-09-08
+updated: 2026-09-12
+verified: 2026-09-12
 tags: [hexbane, client, spells, vfx, architecture]
 sources: ["client:Application/ArcaneDuel/README.md"]
 ---
@@ -15,7 +15,7 @@ sources: ["client:Application/ArcaneDuel/README.md"]
 
 The client implements all fourteen catalog spells. **Mirror Reflection** (`Game/FX/MirrorWard.*`), **Magic Arrow** (`Game/FX/MagicArrow.*`) and **Firebolt** (`Game/FX/Firebolt.*`) retain their dedicated implementations; the other eleven use their own scenes and shared `SpellField` lifecycle with distinct shader geometry/material profiles. Other old projectile/static VFX and their assets were removed on 2026-09-08. Magic Arrow is a new procedural effect, not a restored legacy asset.
 
-Mirror Reflection audio was restored at the user’s request: `WardAudio` plays `formation.wav` at creation and `shatter.wav` on rupture. The formation fades on cancellation/impact; the scene-owned rupture tail survives the shell and frees itself when finished. The SpellFX bus is used with a Master fallback. `VerifyWardAudio.tscn` checks this lifecycle.
+All fourteen spells now use ElevenLabs audio through shared `SpellAudio` (26 recordings including nature casting textures). Mirror Reflection retains WardAudio compatibility and formation/rupture lifecycle with new default samples. Scene-owned tails survive short visuals; cancellation, dodge and removed statuses produce no false impacts. Shared reverb, high-frequency filtering and voice limits are documented in [[spell-audio]].
 
 Cast presentation is independent and preserved: `RaceSpriteAnimator`, `CastCharge`, `GestureVfx`, `PoseOcclusion`, hand/depth tracks and local `SpellVisualPreset` / `visual_key`. Meditation and arena atmosphere are also preserved.
 
@@ -56,7 +56,7 @@ ArenaMapsDev: **Cast gracza** and **Cast przeciwnika** both cast Magic Arrow, an
 ## Firebolt (Fireball alias)
 
 - Canonical gameplay id `firebolt`; `fireball` remains accepted as a presentation/preset alias. One preset, `Resources/SpellVisuals/firebolt.tres`, replaces the old alias file. ArenaMapsDev save/load normalizes the id before file access.
-- Nature Ember (`Tal Rath`), `#FF713D` / `#A52E25`: incandescent sphere, turbulent flame sheets and trailing embers, compact expanding flame impact. Premultiplied coverage masks the blue arena under dense flame while retaining emission in thin wisps. No new audio.
+- Nature Ember (`Tal Rath`), `#FF713D` / `#A52E25`: incandescent sphere, turbulent flame sheets and trailing embers, compact expanding flame impact. Premultiplied coverage masks the blue arena under dense flame while retaining emission in thin wisps. Release and impact now have dedicated ElevenLabs audio; see [[spell-audio]].
 - Server `data/spells/firebolt.yaml`: cast 1 s, recovery 0.4 s, travel 0, mana 9, direct base damage 16. Shared fallback metadata keeps offline preview timing faithful; live server metadata always wins. The 0.18-second cosmetic flight and 0.12-second reflected return do not delay combat. Impact tail is 0.62 s; dodge/cancellation produces no successful-hit burst.
 - Cast preset retains `attack_2h_02`, uses the Embers profile, the nature tint, intensity 1.05, scale 0.9, trails and no ground ring.
 - In `ArenaMapsDev.tscn`, enter `fireball` or `firebolt`, load the preset, and use **Rzuć zapisany czar** for either side. Ordinary Cast buttons remain Magic Arrow. VfxTest lists Firebolt and uses the same factory for playback, swapping and clearing.
@@ -65,7 +65,7 @@ ArenaMapsDev: **Cast gracza** and **Cast przeciwnika** both cast Magic Arrow, an
 
 ## Magic Arrow presentation
 
-- Nature `arcana`, incantation `Tal Ael`: blue `#64B5FF` and pearl `#EAF4FF`. A faceted lance with three flowing filaments and detached crystalline flecks, a palm-anchored release ring, and a compact broken ring/splinter impact. No fire/smoke layers or new audio.
+- Nature `arcana`, incantation `Tal Ael`: blue `#64B5FF` and pearl `#EAF4FF`. A faceted lance with three flowing filaments and detached crystalline flecks, a palm-anchored release ring, and a compact broken ring/splinter impact. No fire/smoke layers. Dedicated ElevenLabs release and impact audio: [[spell-audio]].
 - The local cast preset keeps `attack_1h_01`, selects Impulse, explicitly sets the Arcana tint, intensity 0.85, scale 0.8 and hides the ground ring. Existing `visual_key` overrides retain precedence.
 - Server `data/spells/magic_arrow.yaml` currently has **travel_time 0**. The 0.14-second lance traversal is cosmetic; events, HP, damage logs and combat deadlines are never delayed. A reflected lance returns in 0.10 seconds with a thin afterimage; it keeps Arcana colours. The mirror shatters on its existing authoritative event.
 - The manager tracks one arrow per action id. `cast_released` creates it, `spell_impact` resolves its visual ending, and `reason=dodged` fades it without a hit burst. Impact-only delivery can create the missing presentation. `spell_reflected` reuses the arrow with swapped endpoints.

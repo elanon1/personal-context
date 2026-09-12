@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-09
-verified: 2026-09-09
+updated: 2026-09-12
+verified: 2026-09-12
 tags: [hexbane, client, tutorial, onboarding]
 sources: ["client:docs/superpowers/specs/2026-09-06-tutorial-design.md", "client:docs/superpowers/plans/2026-09-06-local-tutorial.md", "client:docs/client/tutorial-verification.md"]
 ---
@@ -85,3 +85,11 @@ Validation 2026-09-08: build 0 errors / 9 existing warnings; Core tutorial tests
 ## Combat desktop/mobile profiles (2026-09-09)
 
 See [[combat-ui-profiles]] for the shared profile mechanism, configurable keyboard actions, preview scenes and validation. Desktop uses the bottom action bar and visible keycaps; mobile keeps touch rails. The tutorial follows the chosen profile and respects configured keys and target gates.
+
+## Post-match routing overlay fix (2026-09-12)
+
+Both result-screen exits call `SceneManager.GoToPostMatchMenu`, which opens `TutorialScreen` to refresh account tutorial state and character data before choosing the destination. This refresh remains necessary for progression onboarding. Previously `Load` unconditionally showed the basic-training overlay after the status response, even for completed accounts, and `Navigate` left it visible while waiting for the scene transition. This caused a brief guidance flash on every return.
+
+`Load` now keeps guidance hidden when routing completed accounts. `StartArena` shows it only after preparing the actual lesson. Status failures still show retry guidance; progression eligibility and explicit replay remain unchanged.
+
+Verification: `Game/ScenesV3/Dev/TutorialRoutingVerification.tscn` runs offline with a controlled status response and suspended navigation. The regression failed before the fix and passed afterward: pending status hidden, repeated completed-account responses hidden, error retry visible. Run with `HEXBANE_IGNORE_ENV_FILE=1 DEV_AUTO_LOGIN=false /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --scene res://Game/ScenesV3/Dev/TutorialRoutingVerification.tscn`. Core tutorial tests passed; build succeeded with 9 existing warnings and no errors. Shutdown reports ObjectDB/resource leaks, also present before the fix. Full live-match return and physical-device rendering were not tested.

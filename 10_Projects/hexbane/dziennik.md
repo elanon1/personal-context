@@ -500,3 +500,22 @@ Zbadano zgłoszenie nieregularnych przycięć na OnePlus 13. Poprawiono nieprzen
 - Pliki: CharacterDetailScreen.cs, .Responsive.cs, .tscn; nowa scena Dev/SummaryReorganizationVerification.cs/.tscn; dostosowany SummaryScrollVerification (wiersz zaklęcia zastępuje przycisk).
 - Walidacja: reprodukcja przed zmianą FAIL na limicie listy; dodatkowy test wykrył niewidoczny opis po nawigacji na małym ekranie — poprawione. 37 kontroli PASS na 1360×612 i 844×390; 40 na desktopie2400×1080 ze skrótami Dashboardu. Regresja gestów po12 PASS na dwóch rozmiarach. Build 0 błędów/11 istniejących ostrzeżeń, diff check poprawny. Przegląd wykrył pusty wrapper przy PendingTab na desktopie — naprawione i przetestowane; dodano widoczny focus. Renderowane podglądy PC/mobile sprawdzone, logi w verification/summary-reorganization/.
 - Notatki: client/design-system, protocol/character-details, _state, dziennik. Bez zmiany RPC/backendu i bez instalacji klienta. Pozostało fizyczne sprawdzenie Androida; następne zadanie HEX-9.
+
+
+## 2026-09-12 — ElevenLabs sound system for all spells
+
+Generated 26 ElevenLabs Sound Effects v2 WAV recordings (21 spell cues + five nature casting textures; ~37.24 s, 6.57 MB). Added shared SpellAudio with scene-owned tails, actor-owned casting, 16-voice/three-identical limits, subtle pitch variation, short damped reverb, low-pass and hard limiter. Integrated launch/hit, field application/pulses/detonation, mirror formation/rupture and cast cancellation into existing VFX paths. No protocol or gameplay changes.
+
+Files: Game/FX/SpellAudio.cs, SpellProjectile.cs, MagicArrow.cs, Firebolt.cs, SpellField.cs, MirrorWard.cs, WardAudio.cs; RaceSpriteAnimator.cs; default_bus_layout.tres; Scripts/Audio/generate_spell_audio.py; Resources/Audio/Spells WAVs + manifest; VerifySpellAudio and SpellAudioAudition scenes/scripts; updated VerifyWardAudio stream timing. Notes: spell-audio, spell-effect-system, spell-vfx-configuration, 2026-09-12-spell-audio plan, _index, _state. Extensive unrelated existing working-tree edits preserved; no commit/deploy.
+
+Validation: baseline audio verifier 31/35 failures before implementation, now 40/40 pass. Ward 10/10, fields 122/122 headless, Magic Arrow/Firebolt zero failures; final build 0 errors, 9 existing warnings. Read-only reviewer found no important bugs. Captured actual CoreAudio SpellFX bus into verification/spell-audio/spell-audio-reel.wav (57.48 s stereo, every spell non-silent, peak -10.81 dBFS), with timeline and logs. Existing ObjectDB/resource-at-exit warnings recur and were present in baseline.
+
+Remaining: subjective headphone/speaker listening, live Nakama mix and physical mobile playback not verified. Casting textures are ~2 s one-shots and may end before unusually long server-modified casts. Naturalness is an artistic acceptance question, not established by waveform metrics. API subscription read permission returned 401, but sound generation succeeded; token was never printed or stored in project assets.
+
+## 2026-09-12 — Mignięcie tutorialu po wynikach walki
+
+- Przyczyna: TutorialScreen.Load pokazywał nakładkę bezwarunkowo po statusie RPC, także dla ukończonego tutorialu; pozostawała widoczna podczas oczekiwania na przejście do menu.
+- Poprawka: pokazanie nakładki przeniesiono do StartArena, po przygotowaniu lekcji. Zachowano odświeżanie postaci po meczu, warunki tutorialu rozwoju i komunikat ponowienia przy błędzie.
+- Pliki: Game/ScenesV3/Tutorial/TutorialScreen.cs; nowe Dev/TutorialRoutingVerification.cs/.tscn. Notatka: docs/client/client-tutorial.md.
+- Walidacja: regresja Godot headless FAIL przed poprawką, PASS po; sprawdzono oczekiwanie na status, dwa kolejne powroty ukończonego konta i błąd statusu. Tests/Tutorial PASS, build 0 błędów/9 wcześniejszych ostrzeżeń. Przy zamknięciu istniejące komunikaty ObjectDB/resource leak.
+- Pozostało: pełny powrót z walki na żywym serwerze i kontrola wizualna na urządzeniu. Zachowano wcześniejsze zmiany w repo; bez commita i wdrożenia.

@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-08
-verified: 2026-09-08
+updated: 2026-09-12
+verified: 2026-09-12
 tags: [hexbane, client, spells, vfx, sfx, icons]
 sources: ["client:CLAUDE.md", "client:Resources/SpellVisuals/README.md", "client:docs/opcodes/spell-visual-key.md", "client:docs/opcodes/duel-v2-verification.md"]
 ---
@@ -17,20 +17,20 @@ Current catalog: `magic_arrow, mirror_reflection, firebolt, heavy_bolt, delayed_
 
 | Server id | Retained icon folder | Spell VFX | SFX |
 |---|---|---|---|
-| magic_arrow | magic_arrow | MagicArrow.tscn | none |
-| mirror_reflection | mirror_ward | MirrorWard.tscn | formation.wav, shatter.wav |
-| firebolt | fireball | Firebolt.tscn | none |
-| heavy_bolt | flamestrike | HeavyBolt.tscn | none |
-| delayed_hex | explosion | DelayedHex.tscn | none |
-| poison | poison_dart | Poison.tscn | none |
-| paralysis | paralyze | Paralysis.tscn | none |
-| cleanse | cure | Cleanse.tscn | none |
-| mend | heal | Mend.tscn | none |
-| greater_heal | great_heal | GreaterHeal.tscn | none |
-| regeneration | heal (shared) | Regeneration.tscn | none |
-| barrier | arcane_shield | Barrier.tscn | none |
-| dispel | gust | Dispel.tscn | none |
-| consume_venom | venom_shot | ConsumeVenom.tscn | none |
+| magic_arrow | magic_arrow | MagicArrow.tscn | ElevenLabs, see [[spell-audio]] |
+| mirror_reflection | mirror_ward | MirrorWard.tscn | ElevenLabs formation/rupture, see [[spell-audio]] |
+| firebolt | fireball | Firebolt.tscn | ElevenLabs, see [[spell-audio]] |
+| heavy_bolt | flamestrike | HeavyBolt.tscn | ElevenLabs, see [[spell-audio]] |
+| delayed_hex | explosion | DelayedHex.tscn | ElevenLabs, see [[spell-audio]] |
+| poison | poison_dart | Poison.tscn | ElevenLabs, see [[spell-audio]] |
+| paralysis | paralyze | Paralysis.tscn | ElevenLabs, see [[spell-audio]] |
+| cleanse | cure | Cleanse.tscn | ElevenLabs, see [[spell-audio]] |
+| mend | heal | Mend.tscn | ElevenLabs, see [[spell-audio]] |
+| greater_heal | great_heal | GreaterHeal.tscn | ElevenLabs, see [[spell-audio]] |
+| regeneration | heal (shared) | Regeneration.tscn | ElevenLabs, see [[spell-audio]] |
+| barrier | arcane_shield | Barrier.tscn | ElevenLabs, see [[spell-audio]] |
+| dispel | gust | Dispel.tscn | ElevenLabs, see [[spell-audio]] |
+| consume_venom | venom_shot | ConsumeVenom.tscn | ElevenLabs, see [[spell-audio]] |
 
 Each icon folder contains only `<folder>.png` and its Godot import metadata. Generator leftovers, other old icon folders and old spell sounds were removed; Mirror Reflection formation/shatter audio was subsequently restored. `Spell.GetIconPath` retains the aliases needed by current UI.
 

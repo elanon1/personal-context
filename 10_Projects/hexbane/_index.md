@@ -141,3 +141,6 @@ Raporty weryfikacji docs vs kod z 2026-09-07 — sekcje „code smells” i „o
 - [[docs/plans/2026-09-08-redesign-implementation|Wykonanie przebudowy ras, primary i progresji]] — zakres, walidacja, migracja i ograniczenia.
 
 - [[2026-09-09-desktop-combat-controls]] — PC/mobile HUD profiles, configurable keyboard bindings and verification.
+
+- [[spell-audio]] — ElevenLabs SFX wszystkich 14 czarów, miks, generowanie i odsłuch.
+- [[2026-09-12-spell-audio]] — plan i walidacja systemu dźwięków czarów.

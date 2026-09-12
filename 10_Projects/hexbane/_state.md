@@ -58,6 +58,10 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+### 2026-09-12 — Spell audio follows existing visual lifecycle
+
+Use 26 generated ElevenLabs material cues through one Game/FX sound helper and the existing actor/projectile/field/ward callbacks, with short shared reverb and scene-owned tails. **Why:** gameplay and snapshot deduplication already decide when effects happen; separate audio timers would create false hits, duplicated status pulses or cut-off decays. Keep nature casting textures quiet and avoid fabricated speech or a continuously noisy status bed.
+
 ### 2026-09-10 — Legible combat feedback and tactile menu sound
 
 Drive incantations from authoritative action IDs and window-edge feedback from local player snapshots; reuse resource fills for the poison pulse. **Why:** presentation must clear with actual state and avoid duplicate captions, while edge-only color preserves arena visibility. Replace the menu sine beep with a filtered grain/wood transient to suit the dark fantasy mood.

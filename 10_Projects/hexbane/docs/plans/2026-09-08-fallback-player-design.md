@@ -2,16 +2,16 @@
 type: project
 project: Hexbane
 area: plans
-status: proposed
+status: implementing
 created: 2026-09-08
-updated: 2026-09-08
+updated: 2026-09-12
 verified: 2026-09-08
 tags: [hexbane, matchmaking, ai, design]
 sources: ["server:modules/match", "server:data/spells", "client:Application/ArcaneDuel/Normal/MatchManager.cs"]
 ---
 # Natural fallback opponent — design
 
-> Proposal, not implemented or approved for deployment. `verified` means the baseline was inspected on this date, including uncommitted combat restoration changes. Timing, probabilities and budgets below are initial tuning hypotheses, not measured player behaviour. Implementation plan: [[2026-09-08-fallback-player-plan]].
+> Implementation authorized on 2026-09-12; rollout is not yet verified. `verified` means the baseline was inspected on this date, including uncommitted combat restoration changes. Timing, probabilities and budgets below are initial tuning hypotheses, not measured player behaviour. Implementation plan: [[2026-09-08-fallback-player-plan]].
 
 ## Outcome and scope
 
@@ -62,7 +62,7 @@ Poll every 1 s while searching/reserved/offered; serialize polls; discard respon
 
 ### Matching and timing
 
-1. `queue_join` derives an eligibility/build summary from the real character and stores a DB timestamp plus one sampled fallback deadline: triangular 35/45/55 s (min/mode/max). No exact recurring timeout, client clock or per-poll resampling.
+1. `queue_join` derives an eligibility/build summary from the real character and stores a DB timestamp plus one sampled fallback deadline: triangular 15/22.5/30 s (min/mode/max). No exact recurring timeout, client clock or per-poll resampling.
 2. Each live status/join request gives the coordinator an opportunity to assign the oldest compatible tickets. MVP compatibility: normal mode, protocol, server region and level distance ≤2, widening to ≤5 after 20 s; skills/build strength inform future calibration. No invented MMR exists today. Different races can legitimately have different slots.
 3. Under a transaction-scoped advisory lock per compatibility pool, select live searching tickets in oldest-first order. Always try human pairing first. If none is compatible and a ticket has passed its deadline, reserve it for fallback. A simultaneous human arrival after reservation does not replace an opponent already reserved.
 4. Transition the one or two rows to `reserved`, assign a shared assignment UUID and allocation generation, record a 10 s allocation lease; commit. One active row per user via a partial unique index. All cancellation/allocation state transitions use the same pool lock, consistent row order and compare-and-swap predicates.
@@ -163,9 +163,9 @@ Keep both recurrent habits and variation: a cautious persona regularly saves man
 
 ## 6. Operations, rewards and lifecycle
 
-Configuration is versioned and validated at startup: fallback enabled (default false), 35/45/55 s deadline, 10 s search/allocation leases, 20 s offer TTL, persona pool limit, concurrent bot cap, supported protocol, tier weights, delay/error distributions. Invalid config disables new fallback with a clear server diagnostic. Preserve human queueing. Existing matches retain their copied config and AI version when switches change.
+Configuration is versioned and validated at startup: fallback enabled (default false), 15/22.5/30 s deadline, 10 s search/allocation leases, 20 s offer TTL, persona pool limit, concurrent bot cap, supported protocol, tier weights, delay/error distributions. Invalid config disables new fallback with a clear server diagnostic. Preserve human queueing. Existing matches retain their copied config and AI version when switches change.
 
-When capacity/persona allocation fails, remain searching and retry with bounded 2–5 s backoff; never promise a match by 55 s under outage/capacity exhaustion. Expose ordinary retry/cancel UI. The cap counts reserved and live personas. No deployment in this task; local Docker only under the current infra policy.
+When capacity/persona allocation fails, remain searching and retry with bounded 2–5 s backoff; never promise a match by 30 s under outage/capacity exhaustion. Expose ordinary retry/cancel UI. The cap counts reserved and live personas. No deployment in this task; local Docker only under the current infra policy.
 
 Persist human rewards exactly once per `(match_id, user_id)` through a result ledger and a transaction with character update. Log opponent kind separately so PvP metrics are not polluted. Bots earn no XP, skills, wins or ranking entries. Repeated AI farming is measured before introducing a separate reward rule; ordinary AI skill gains obey normal caps. Disconnect during combat keeps current combat/rejoin behaviour. At game over store the result before delivery; a new result lookup for the participant can recover a lost opcode 50, rather than duplicate rewards.
 

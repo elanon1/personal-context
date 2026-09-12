@@ -2,9 +2,9 @@
 type: project
 project: Hexbane
 area: plans
-status: proposed
+status: implementing
 created: 2026-09-08
-updated: 2026-09-08
+updated: 2026-09-12
 verified: 2026-09-08
 tags: [hexbane, matchmaking, ai, implementation-plan]
 sources: ["server:modules/match", "server:data/spells", "client:Application/ArcaneDuel/Normal/MatchManager.cs"]
@@ -25,7 +25,7 @@ sources: ["server:modules/match", "server:data/spells", "client:Application/Arca
 
 - Scope: normal unranked queue; ranked fallback disabled; current human XP/daily/skill rules preserved.
 - Timing: 100 ms authoritative tick, 200 ms snapshots, 35 s aggregate draft timer per player, 180 s combat; no sleeps inside callbacks.
-- Fallback delay: triangular 35/45/55 s; searching/allocation lease 10 s; offer TTL 20 s; default feature flag false.
+- Fallback delay: triangular 15/22.5/30 s; searching/allocation lease 10 s; offer TTL 20 s; default feature flag false.
 - Go 1.24.3; format with gofmt; Linux pluginbuilder and Nakama versions stay aligned.
 - Do not overwrite existing uncommitted combat restoration or client VFX work. Record starting git status; make focused commits only for newly implemented changes.
 - Read/write docs only in the Hexbane vault. Update `updated`/`verified`, index and session journal with each implementation slice; describe proposed contracts as proposed until implemented.
@@ -58,7 +58,7 @@ Dependencies: 1 → 2 → 3; 4 → 5 → 6; 3 + 6 → 7 → 8. Each task ends wi
 
 **Interfaces:** `Service.Join(ctx, userID, sessionID, JoinRequest) (QueueView, error)`, `Status(ctx, userID, QueueRef) (QueueView, error)`, `Cancel(ctx, userID, QueueRef) (QueueView, error)`, `Accept(ctx, userID, assignmentID) (QueueView, error)`, `Decline(ctx, userID, assignmentID) (QueueView, error)`; all on `*Service`. Define `QueueRef{QueueID string; Generation int64}`, `JoinRequest{RequestID, Mode string; Protocol int}`, `QueueView{QueueID string; Generation int64; State string; AssignmentID, MatchID string; ExpiresAt time.Time; PollAfterMS int}` with spec JSON tags and omission of absent offer fields.
 
-- [ ] Write table-driven state tests before implementation. Cases: repeated join request returns same generation; second concurrent request does not open another active ticket; no fallback at 34.9 s; eligibility at its sampled deadline; expired heartbeat prevents matching; human pair wins before fallback reservation; canceled generation never publishes; stranger cannot read/accept/decline. Inject time and sampling.
+- [ ] Write table-driven state tests before implementation. Cases: repeated join request returns same generation; second concurrent request does not open another active ticket; no fallback at 14.9 s; eligibility at its sampled deadline; expired heartbeat prevents matching; human pair wins before fallback reservation; canceled generation never publishes; stranger cannot read/accept/decline. Inject time and sampling.
 - [ ] Run `go test ./modules/matchmaking -run 'TestQueue|TestAssignment'` and confirm missing behaviour fails.
 - [ ] Implement explicit transitions using pool-scoped transactional advisory locks and a partial unique active-user index. Use DB time, ordered row locks, named states, allocation generation and CAS publication. Pool is mode/protocol/region, not per-level, so widening does not cross locking domains.
 - [ ] Add real PostgreSQL interleaving tests, not mock-only transaction assertions: 100 contenders for one user, cancel while reserved, two simultaneous eligible tickets, late creator after allocation expiry, status after dropped response. Verify one valid assignment and no resurrected generations.
@@ -184,7 +184,7 @@ func TestDraftDelayExhaustedBudget(t *testing.T) {
 
 ## Review checklist and handoff
 
-- [ ] Product review of 35–55 s fallback, normal-only scope, human reward parity and profile/social policy.
+- [ ] Product review of 15–30 s fallback, normal-only scope, human reward parity and profile/social policy.
 - [ ] Queue concurrency/admission/result idempotency review.
 - [ ] Legal persona generation and public-observation boundary review.
 - [ ] Client presentation/reconnect and live spell scenario review.
