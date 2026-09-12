@@ -11,6 +11,9 @@ sources: ["server:modules/match", "server:data/spells", "client:Application/Arca
 ---
 # Natural fallback opponent — implementation plan
 
+> Implementation update 2026-09-12: core queue/persona/lobby/AI/client flow is implemented locally. User confirmed **15–30 s**. The checklist below is the original design/verification plan, not a claim every rollout gate passed. Current executable contract: [[fallback-opponents]]; actual evidence and deviations: [[2026-09-12-fallback-implementation-progress]]. Existing duel_v2.4 progression and `character_match_rewards` supersede the older baseline and proposed duplicate ledger.
+
+
 > **For agentic workers:** Use `superpowers:executing-plans` to implement task-by-task after design review. Checkboxes track execution; all are intentionally unchecked. This plan does not authorize deployment.
 
 **Goal:** Provide a natural, legally built fallback opponent after a server-measured wait in the normal queue.

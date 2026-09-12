@@ -5,15 +5,15 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-10
-verified: 2026-09-10
+updated: 2026-09-12
+verified: 2026-09-12
 tags: [hexbane, client, architecture, godot]
 sources: ["client:CLAUDE.md", "client:AGENTS.md", "client:project.godot", "client:Game/Autoloads/SceneManager.cs", "client:Game/DI/ServiceBootstrapper.cs"]
 ---
 
-# Client architecture (Godot 4.7 + C# .NET 9)
+# Client architecture (Godot + C# .NET 9)
 
-Repo: `/Users/elanon/RiderProjects/hexbane`. Godot.NET.Sdk **4.7.0** (`hexbane.csproj:1`), project features `4.7, C#, Mobile` (`project.godot:20`). Backend: Nakama via `NakamaClient 3.16.0`, DI via `Microsoft.Extensions.DependencyInjection 9.0.7`, `Newtonsoft.Json 13.0.3` (`hexbane.csproj:46-50`). The unused GTweens/Godot tween plugin and autoload were removed on 2026-09-08; animations use Godot Tween.
+Repo: `/Users/elanon/RiderProjects/hexbane`. Local checkout verified 2026-09-12: Godot.NET.Sdk **4.5.2** (`hexbane.csproj`). Earlier 4.7 upgrade notes describe a different snapshot; no SDK change was made during fallback implementation. Backend: Nakama via `NakamaClient 3.16.0`, DI via `Microsoft.Extensions.DependencyInjection 9.0.7`, `Newtonsoft.Json 13.0.3` (`hexbane.csproj:46-50`). The unused GTweens/Godot tween plugin and autoload were removed on 2026-09-08; animations use Godot Tween.
 
 ## Layers
 
@@ -138,6 +138,10 @@ Four-space indent, file-scoped namespaces, `_camelCase` private fields, PascalCa
 ## Runtime socket recovery (2026-09-10)
 
 See [[social-sign-in#Runtime connection recovery (HEX-6, 2026-09-10)]] for serialized token/socket recovery, background resume, health checks and matchmaking cancellation/logout guards. The live regression scene is `Dev/ConnectionRecoveryVerification.tscn`; both match managers verify connectivity before queue creation.
+
+## Normal queue integration (2026-09-12)
+
+`Application/ArcaneDuel/Normal/QueueClient.cs` is a transport-independent async queue state machine. `MatchManager` obtains queue configuration, polls assignments, fences stale responses and handles replaced sockets. Fallback uses the normal match context/scenes; explicit training retains `IsAiMatch`. ModeOverlay restores JOIN retry controls on accept failure. Standalone regression runner: `dotnet run --project Tests/Matchmaking/Matchmaking.csproj`. See [[fallback-opponents]].
 
 ## Source of truth in code
 - `client:project.godot` — autoload order, `[hexbane]` settings, display/stretch, main scene

@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-12
+verified: 2026-09-12
 tags: [hexbane, protocol, opcode, lobby-spell-selected]
 sources: ["client:docs/opcodes/op_04_lobby_spell_selected.md", "server:docs/opcodes/op_04_lobby_spell_selected.md"]
 ---
@@ -39,11 +39,12 @@ Acting user is the message sender (`SelectSpell(data.GetUserId(), …)`).
 1. it is the sender's turn (`DraftTurnUserId`);
 2. not already picked by this player;
 3. not a standard spell (`spell_system.Spells.IsStandard`) — `magic_arrow` / `mirror_reflection` are never draftable;
-4. player still has a free slot.
+4. player still has a free slot;
+5. spell belongs to the player’s owned draftable collection.
 
 On success the spell is appended to the player's `SelectedSpells`, the turn moves (`determineNextTurn`, `lobby/utils.go:34`: alternate while both have slots, otherwise whoever still has slots), and `SpellbookRefresh` is set so [[op_70_lobby_spellbook_spells]] is re-sent next tick. Success or failure, the server then broadcasts [[op_03_lobby_update]] and [[op_05_lobby_spell_selected_update]]; when all slots are full it transitions to `lobby_countdown`.
 
-Note the spell is **not** checked against the player's own spellbook here; `AddSpellToSpellbook` accepts any catalog id (`server:modules/match/engine/state/player_state.go:268`). See report.
+Human picks, bot picks and timeout auto-fill share `SelectSpell`; successful selection appends the actual owned spell to the combat loadout. Standard spells are already present and never drafted.
 
 ## Source of truth in code
 - `server:modules/match/engine/phase/lobby/types.go:3-6` — `SpellSelected` struct

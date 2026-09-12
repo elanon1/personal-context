@@ -11,6 +11,9 @@ sources: ["server:modules/match", "server:data/spells", "client:Application/Arca
 ---
 # Natural fallback opponent — design
 
+> Implementation update 2026-09-12: core queue/persona/lobby/AI/client flow is implemented locally. User confirmed **15–30 s**. The checklist below is the original design/verification plan, not a claim every rollout gate passed. Current executable contract: [[fallback-opponents]]; actual evidence and deviations: [[2026-09-12-fallback-implementation-progress]]. Existing duel_v2.4 progression and `character_match_rewards` supersede the older baseline and proposed duplicate ledger.
+
+
 > Implementation authorized on 2026-09-12; rollout is not yet verified. `verified` means the baseline was inspected on this date, including uncommitted combat restoration changes. Timing, probabilities and budgets below are initial tuning hypotheses, not measured player behaviour. Implementation plan: [[2026-09-08-fallback-player-plan]].
 
 ## Outcome and scope
@@ -198,4 +201,4 @@ Existing, inspected:
 - server: `vendor/github.com/heroiclabs/nakama-common/runtime/runtime.go`, `cmd/duel-sim`
 - client: `Application/ArcaneDuel/Normal/MatchManager.cs`, `Application/ArcaneDuel/Bot/BotMatchManager.cs`
 
-New components and contracts in this note are proposals. Related current contracts: [[matchmaking]], [[server-architecture]], [[combat-v2]], [[spell-system]], [[progression]], [[combat-stat-rules]], [[client-architecture]], [[rpcs]].
+This original design includes proposals beyond the current release; see the implementation ledger for exact completed scope. Related current contracts: [[matchmaking]], [[server-architecture]], [[combat-v2]], [[spell-system]], [[progression]], [[combat-stat-rules]], [[client-architecture]], [[rpcs]].

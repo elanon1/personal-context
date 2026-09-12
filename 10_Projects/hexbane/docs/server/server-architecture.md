@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-10
-verified: 2026-09-10
+updated: 2026-09-12
+verified: 2026-09-12
 tags: [hexbane, server, match-engine, architecture]
 sources: ["server:docs/match/GUIDE-v2.md", "server:docs/match/README.md", "server:docs/match/architecture.md", "server:docs/match/phases.md", "server:docs/match/state-management.md", "server:docs/match/communication.md", "server:docs/match/matchmaking.md", "server:docs/QUICKSTART-v2.md", "server:docs/DOCUMENTATION-INDEX.md", "server:CLAUDE.md", "server:AGENTS.md"]
 ---
@@ -167,6 +167,10 @@ Nakama runs all handlers of one match (`MatchLoop`, `MatchJoin`, `MatchLeave`, `
 ## Snapshot allocation (2026-09-10)
 
 `phase/game/snapshot.go` serializes typed envelopes/player/action payloads. Wire semantics and recipient privacy are unchanged; tick/snapshot cadence stays 100/200 ms. [[2026-09-10-performance]] records before/after benchmarks and 100–10,000 resident-duel working sets, with explicit transport/DB/scheduling exclusions.
+
+## Fallback integration (2026-09-12)
+
+Normal handler now owns a PostgreSQL assignment service and persistent persona acquisition. Pure `bot_ai` receives copied public observations through `game/bot_adapter.go`; its commands use the regular combat submission path. Lobby bot choices and connecting readiness are scheduled on match ticks. All queue/persona flags and seeds stay server-side. See [[fallback-opponents]].
 
 ## Source of truth in code
 

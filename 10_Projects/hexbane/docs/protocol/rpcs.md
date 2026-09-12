@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-08
-verified: 2026-09-08
+updated: 2026-09-12
+verified: 2026-09-12
 tags: [hexbane, protocol, rpc, nakama]
 sources: ["server:RPCs.md", "server:docs/API-REFERENCE-v2.md", "server:docs/match/api-reference.md", "server:docs/progression/client/menu-rpc-requirements.md", "client:docs/Server/progression/menu-rpc-requirements.md", "server:docs/client/client-implementation-prompt.md"]
 ---
@@ -20,7 +20,7 @@ registered from `server:modules/main.go` via each module's `InitModule`. Unless 
   handlers that do not touch the user id are `healthcheck`, `get_races`, `get_race`, `get_starter_spells`,
   `get_entry_spells`, `get_spell`, `get_spell_lore`, `get_spell_details_yaml`.
 - **Errors**: handlers return HTTP 200 with `{"success": false, "message": "..."}` (or `"error"` for
-  `learn_spell`). Only `tutorial` and the two match RPCs return real gRPC errors. The gRPC error-code
+  `learn_spell`). Matchmaking, match actions, result recovery and `tutorial` can return real gRPC errors. The gRPC error-code
   table in the old API-REFERENCE-v2 does not describe any other RPC.
 - **Version stamp**: spell RPCs and `get_character_details`/`tutorial` embed
   `{"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.4"}`
@@ -209,17 +209,36 @@ Use Nakama MatchmakerAdd string property `queue=normal|ranked`; omitted means no
 
 ## Match RPCs
 
+### Normal queue RPCs (2026-09-12)
+
+All require an authenticated Nakama user. Requests are strict JSON (unknown fields rejected); user/build/region/fallback status are not client input. Queue RPCs return real runtime errors for invalid request(3), denied admission(9), missing record(5), disabled queue(9), rate limit(8), unexpected server failure(13).
+
+| RPC | Request | Response `data` |
+|---|---|---|
+| `queue_config` | `{}` | `{enabled:bool,poll_after_ms:1000}` |
+| `queue_join` | `{request_id:UUID,mode:"normal",protocol:2}` | QueueView |
+| `queue_status`, `queue_cancel` | `{queue_id:UUID,generation:int64}` | QueueView |
+| `queue_accept`, `queue_decline` | `{assignment_id:UUID}` | QueueView |
+
+Envelope: `{success:true,data:...}`. QueueView: `{queue_id,generation,state,assignment_id?,match_id?,expires_at?,poll_after_ms}`; expiry is an RFC3339 timestamp. States: searching/reserved/offered/accepted/joined/completed/canceled/declined/expired. Client polls at ~1s; stale Status may return a newer generation, stale Cancel cannot cancel it. Accept is idempotent; only accepted assigned users can socket-join. No `is_bot`/persona seed/opponent kind is returned. See [[fallback-opponents]].
+
+
 ### `create_ai_arcane_duel`
 - `server:modules/match/ai_match/init.go:34`. Client: `client:Application/ArcaneDuel/Bot/BotMatchManager.cs:92` (socket RPC).
 - Creates an `ai_duel` match; response `{"success":true,"message":"Match created","data":{"match_id":"<id>.nakama1"}}`; failure is a gRPC error from `MatchCreate`. See [[matchmaking]].
 
 ### `decline_match`
 - `server:modules/match/normal_match/init.go:31-53`. Client: `client:Application/ArcaneDuel/Normal/MatchManager.cs:158-159`.
-- `{"match_id":"..."}` → signals the match with `"decline"`; response `{"success":true,"message":"Match declined","data":null}`. gRPC errors `match_id is required`, `failed to decline match`. See [[matchmaking]].
+- `{"match_id":"..."}` → sends an authenticated `{kind:"decline",user_id}` signal; only invited/current participants before combat may decline; response `{"success":true,"message":"Match declined","data":null}`. gRPC errors `match_id is required`, `failed to decline match`. See [[matchmaking]].
 
 ### `create_character_match_story` (server prototype; client removed 2026-09-08)
 - `server:modules/endless_story/create_character/init.go:30`. Client manager and keyed DI registration were removed on 2026-09-08.
 - Calls `nk.MatchCreate(ctx, "create_character", …)` but the match handler is registered as `"v2_create_character"` (`init.go:25`), so the call fails at runtime. Story RPCs `start_story`, `create_character_story`, `continue_character_story` are commented out (`server:modules/endless_story/init.go:13-23`).
+
+### `get_match_result`
+- Authenticated request `{match_id:string}`; strict JSON, ≤4096 bytes, match ID 1–256 chars.
+- `{success:true,data:<personalized opcode50>}` from the caller’s existing character receipt. No reward mutation on lookup. Missing, foreign or historical payload-less receipt → runtime NotFound(5); malformed→3, unauthenticated→16, internal→13.
+- See [[op_50_game_over]]; server `modules/character/match_result.go`.
 
 ## Social module (`server:modules/social/init.go`)
 

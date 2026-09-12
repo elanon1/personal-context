@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-12
+verified: 2026-09-12
 tags: [hexbane, protocol, opcode, game-over]
 sources: ["client:docs/opcodes/op_50_game_over.md", "server:docs/opcodes/op_50_game_over.md"]
 ---
@@ -23,7 +23,7 @@ sources: ["client:docs/opcodes/op_50_game_over.md", "server:docs/opcodes/op_50_g
 
 ## When
 
-On the first tick of `combat_end`, right after the final [[op_32_combat_snapshot]] (`over:true`) and the `match_ended` event. The server persists XP/skills/record first, sends one personalized message per player, then sets `TerminateMatch`, so the match ends on the following tick regardless of [[op_199_quit_game]]. If `determineOutcomes` finds fewer than two players the message is not sent at all (`:140-145`).
+After the final [[op_32_combat_snapshot]] (`over:true`) and `match_ended`, the server atomically stores XP/skills/record plus the personalized opcode50 payload in the existing `character_match_rewards.result` JSON. Transient persistence failure keeps settlement pending and retries; successful replay uses the frozen payload without recalculating or paying twice. Bots are skipped. Once personalized results are sent, the match terminates.
 
 ## Payload (`PlayerMatchResult`, `phase.go:23-87`)
 
@@ -34,20 +34,17 @@ On the first tick of `combat_end`, right after the final [[op_32_combat_snapshot
 | `opponent` | `{user_id, username}` | |
 | `xp` | `{gained, total_experience, experience_to_next, current_level, is_first_win_bonus}` | ints + bool |
 | `level_up` | `{previous_level, new_level, stat_points_gained, magic_points_gained, new_spell_slots}` | omitted when no level-up |
-| `skill_gains` | `{meditation, spell_resistance, magery}` each `{previous, current, gained}` (float64) | `gained` is 0 in duel_v2: no code path calls `TriggerMageryGain`/`TriggerSpellResistanceGain` (see report) |
+| `skill_gains` | `{meditation, spell_resistance, magery}` each `{previous, current, gained}` (float64) | frozen before/after skill values from settlement |
 | `stats` | `{level, strength, intelligence, dexterity, spell_slots, magic_points, unspent_stat_points}` | post-match character row |
 | `record` | `{wins, losses}` | |
 
-Bots (and any player whose character row cannot be loaded) get only `outcome`, `reason`, `opponent` with zero-valued structs (`:202-211`).
+Fallback opponents use their stable persona UUID/name in `opponent`; there is no wire `is_bot`. Explicit training retains its separate identity. Current XP is governed by [[progression]] (120 victory /70 defeat or draw, no first-win bonus); the previous 50XP sample was obsolete. Current skills are applied through settlement; the old statement that all skill gains remain zero is obsolete.
 
-```json
-{"outcome":"victory","reason":"defeated","opponent":{"user_id":"0000","username":"Bot"},
- "xp":{"gained":50,"total_experience":150,"experience_to_next":100,"current_level":2,"is_first_win_bonus":true},
- "level_up":{"previous_level":1,"new_level":2,"stat_points_gained":5,"magic_points_gained":2,"new_spell_slots":3},
- "skill_gains":{"meditation":{"previous":10,"current":10,"gained":0},"spell_resistance":{"previous":10,"current":10,"gained":0},"magery":{"previous":10,"current":10,"gained":0}},
- "stats":{"level":2,"strength":120,"intelligence":200,"dexterity":80,"spell_slots":3,"magic_points":7,"unspent_stat_points":5},
- "record":{"wins":1,"losses":0}}
-```
+### Recovery
+
+Authenticated `get_match_result {match_id}` returns `{success:true,data:<the personalized opcode50 object>}` only for the caller’s character receipt. Unknown match, another player’s match and historical receipts without a saved wire payload return NotFound. It does not infer an old outcome from current progression. New normal/ranked/training results store payloads without a new ledger/migration.
+
+Normal client de-duplicates live/recovered result delivery. On reconnect it checks the receipt before joining a possibly ended match; an `over:true` snapshot without opcode50 starts bounded retries (1s initially, then3s, 30 attempts), fenced by match/account. Failure surfaces a reconnect retry message. This recovers within the current running client; there is no persisted app-restart match history browser.
 
 Outcome rules (`determineOutcomes`, `:105-131`): exactly one player with HP > 0 → `defeated`; otherwise `timeout` if the combat phase ended by clock, else `draw` (both dead in the same impact batch, `DeferDeath`).
 

@@ -4,7 +4,7 @@ project: Hexbane
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-10
+updated: 2026-09-12
 tags: [hexbane, docs, index, moc]
 aliases: [hexbane-docs, hexbane-index]
 ---
@@ -61,12 +61,13 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 
 - [[server-architecture]] — moduły, silnik meczu, maszyna faz z czasami, stan, współbieżność, bot
 - [[dev-setup]] — make/docker compose, env, migracje, testy, symulator
+- [[fallback-opponents]] — zaimplementowany lokalnie fallback 15–30 s, persony, lobby i AI.
 - [[matchmaking]] — `normal` vs `ai_duel`, matchmaker, rejoin
 - [[spell-system]] — katalog 14 zaklęć, schema YAML, efekty, kolejka, jak dodać zaklęcie
 - [[spell-lore]] — natury i inkantacje, `get_spell_lore`
 - [[combat-stat-rules]] — aktywne statystyki, odporności, regeneracja, skille i bonusy ras w duel_v2.3
 - [[progression]] — 6 ras, staty, skille, XP/poziomy/MP, sloty, reguły walki duel_v2
-- [[database]] — schemat z migracji `000001..000003`, tabele Nakamy, reset
+- [[database]] — schemat i rozszerzenia fallbacku, tabele Nakamy, reset
 - [[social]] · [[notifications]] — moduły na wbudowanych API Nakamy
 - [[server-tutorial]] — RPC `tutorial` i flagi
 - [[google-auth]] — kontrakt logowania Google (wbudowane `AuthenticateGoogle`)
@@ -80,6 +81,7 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 - [[spell-vfx-configuration]] — które z 14 id mają VFX/SFX/ikony, presety `SpellVisuals`, jak dodać
 - [[vfx-and-race-animation]] — sprite’y ras, `RaceSpriteAnimator`, gesty, cast-charge, okluzja,
   medytacja, bariera, areny; sceny dev i weryfikatory (`verification/` w repo)
+- [[gameplay-sandbox]] — scena F6: wszystkie czary z ikonami, wspólne VFX/SFX, odbicie/unik, medytacja i ręczne statusy.
 - [[combat-ui-profiles]] — PC/mobile combat layouts, configurable physical keys, offline previews and verification workflow
 - [[duel-loading-screen]] — illustrated arena loading, real progress, random tip, responsive layout and verification
 - [[design-system]] — tokeny UI, fonty, motywy (`ui-designer` jest do niego przywiązany)
@@ -107,7 +109,8 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 - [[2026-09-08-race-primary-progression-redesign]] — propozycja redesignu ras, wspólnego budżetu statów i grafów rozwoju primary spelli (6 poziomów, checkpointy3/6).
 
 - [[2026-09-08-fallback-player-design]] — projekt naturalnego przeciwnika zastępczego: kolejka, persony, lobby i AI.
-- [[2026-09-08-fallback-player-plan]] — plan wdrożenia i weryfikacji fallbacku (propozycja, bez implementacji).
+- [[2026-09-08-fallback-player-plan]] — plan wdrożenia i weryfikacji fallbacku.
+- [[2026-09-12-fallback-implementation-progress]] — wykonanie, dowody testów i pozostałe bramki wydania.
 
 - [[2026-09-08-combat-restoration]] — przywrócenie mechanik walki po zatwierdzeniu użytkownika
 

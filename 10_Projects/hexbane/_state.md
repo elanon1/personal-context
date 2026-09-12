@@ -58,6 +58,8 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+- **2026-09-12 — Dedicated offline presentation sandbox.** GameplaySandbox uses shared spell presentation and audio with manual lifecycle controls; it does not extend the tutorial into a duplicate combat engine. **Why:** the user explicitly selected presentation and manual scenarios; the tutorial only models a bounded lesson, whereas actual combat rules belong on the server. See [[gameplay-sandbox]].
+
 ### 2026-09-12 — Meditation sound follows absorption visibility
 
 Own the sustained ElevenLabs loop on MeditationVfx and start it only when absorption becomes active. **Why:** casting, rest, state interruption and race reload already clear that effect, so sound follows the same state without duplicate snapshot-triggered voices or new gameplay timers. Crossfade the source loop; use runtime gain for entry/exit.

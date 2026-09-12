@@ -528,3 +528,12 @@ Dogenerowano ElevenLabs meditation/loop.wav (7.75 s), z płynnym łączeniem ko�
 Pliki: Scripts/Audio/generate_spell_audio.py; Resources/Audio/Spells/meditation/loop.wav + import i manifest; Game/FX/SpellAudio.cs; Game/ScenesV3/Components/MeditationVfx.cs; MeditationAudioTest.cs/.tscn. Notatki: spell-audio, vfx-and-race-animation, _state.
 
 Walidacja: test przed zmianą nie wykrywał głosu medytacji; po zmianie 8/8 CoreAudio, w tym >7.75 s odtwarzania, powtarzane snapshoty, cast, szybki restart i usunięcie aktora. Regresja dźwięków czarów 40/40; build 0 błędów / 9 istniejących ostrzeżeń. Nagranie z pogłosem: verification/spell-audio/meditation-demo.wav. Sygnał niesilentny, przejście pętli sprawdzone numerycznie. Do oceny pozostaje subiektywny odsłuch i fizyczne urządzenie mobilne. Bez commitu/deployu.
+
+
+## 2026-09-12 — Laboratorium prezentacji rozgrywki
+
+Dodano Game/ScenesV3/Dev/GameplaySandbox.tscn/.cs: wszystkie 14 czarów z ikonami ze wspólnego katalogu, VFX/SFX przez SpellPresentation, dwie strony, sześć ras, cztery mapy, pętla, trafienie/odbicie/unik pocisków, medytacja, przerwanie, utrzymywane statusy, impuls, detonacja hex, rozbicie luster i reset anulujący oczekujące rzucenia. Panel można schować; miks SFX wraca do poprzedniego po opuszczeniu sceny. Użytkownik wybrał prezentację i ręczne scenariusze, bez symulacji pełnej walki.
+
+Walidacja: GameplaySandboxVerification.cs/.tscn początkowo FAIL przy braku sceny; końcowy przebieg GPU PASS: dopasowanie przycisków do viewportu, 14 ikon/rzutów, anulowanie po resecie, odbicie/unik z prawej strony, medytacja/audio/stop, poison utrzymany ponad normalny czas. Poprawiono wykryte na zrzucie ucięcie kontrolek przez odstępy motywu. Końcowy /tmp/hexbane-gameplay-sandbox.png obejrzany. Build: 0 błędów, 9 istniejących ostrzeżeń.
+
+Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _index.md, _state.md. Wcześniejsze i równoległe zmiany zachowane; chwilowy brak ResultEmblem z równoległej pracy ustąpił bez naszej ingerencji. Bez commitu/deployu. Pozostaje subiektywny odsłuch i fizyczne urządzenia; laboratorium nie weryfikuje reguł walki ani Nakamy.

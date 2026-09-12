@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-09
-verified: 2026-09-09
+updated: 2026-09-12
+verified: 2026-09-12
 tags: [hexbane, server, database, migrations, postgres]
 sources: ["server:docs/spell_system/database-v2.md", "server:docs/progression/progression.md", "client:docs/Server/progression/races_seed.sql"]
 ---
@@ -70,6 +70,10 @@ Seeding is **manual**: no CI, Docker startup or Helm hook calls this script. Nor
 | `scripts/test_db_api.sh` | API smoke test; refuses to run unless `TEST_DB_CONTAINER=hexbane-schema-test`. |
 
 Recorded verification (2026-09-06, from the previous database doc, not re-run on 2026-09-07): fresh startup, idempotent up, full down/up preserving Nakama users, six races, FK and MP CHECK rejection, two reset runs, repeatable seed, MP purchase/duplicate/insufficient cases, seventh-slot entitlement and playstyle rollback on an injected constraint failure; integration tests run with `go test -mod=mod -tags=integration ./modules/playstyle`.
+
+## Fallback migrations (2026-09-12)
+
+Versions 4/5 already contain the current progression redesign, `character_match_locks` and idempotent `character_match_rewards`; fallback does not replace them. Version6 adds `fallback_assignments`, `fallback_queue`, `fallback_queue_rate`, `fallback_queue_requests`, indexes and state/identity constraints. Version7 adds immutable `bot_personas`, unique active `bot_persona_leases` and `bot_persona_history`. Persona records reference races, not Nakama users; human IDs belong to queue participants. See [[fallback-opponents]]. The original versions1–3 table description above is historical and not a complete current schema inventory.
 
 ## Source of truth in code
 
