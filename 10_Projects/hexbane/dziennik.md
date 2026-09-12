@@ -12,6 +12,13 @@ aliases: [hexbane-dziennik, hexbane-worklog]
 
 # Hexbane — dziennik pracy
 
+## 2026-09-12 — Codex — lokalny RPC function not found
+
+- Przyczyna: klient logował się do starego lokalnego kontenera (migracja5, brak queue_config), a wcześniejszy rollout dotyczył produkcji.
+- Poprawiono docker-compose env flags i make dev kopiujący migracje; lokalny gitignored .env włącza fallback. Backup, aktualizacja pluginu/migracji i restart bez resetu.
+- Weryfikacja: lokalne42konta/7postaci zachowane, migracja8clean, WebSocket queue_config enabled=true PASS; konto techniczne usunięte. Produkcja bez dalszych zmian. Notatka infra-and-deploy.
+
+
 ## 2026-09-12 — Codex — produkcyjne wdrożenie fallbacku
 
 - Na kolejne jawne polecenie: commit server`b2e7fe2` pushmain, CI34699124648PASS, GitOps`99aebe5` push/apply/sync; obie flagi włączone zgodnie z odpowiedzią użytkownika.

@@ -26,7 +26,7 @@ się wybór zaklęć, kolejkowanie akcji (cast time + recovery, brak cooldownów
 „duel_v2” (wrzesień 2026):
 
 - **Klient** — `~/RiderProjects/hexbane` (`elanon1/hexbane`, branch `feat/duel-v2-client` = `master`
-  + niezacommitowana praca): Godot 4.5.2 + C# .NET 9, Nakama SDK 3.16, warstwy
+  + niezacommitowana praca): Godot 4.7 + C# .NET 9, Nakama SDK 3.16, warstwy
   `Game → Application → Core`, DI + własny CQRS. → [[client-architecture]], [[duel-v2-client]]
 - **Serwer** — `~/GolandProjects/hexbane-server` (`elanon1/hexbane-server`, branch
   `feat/spell-system-redesign` = `main` + niezacommitowana praca): plugin Go do Nakama 3.27
@@ -57,6 +57,13 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 **Content:** 13 zachowanych ikon pokrywa 14 obecnych zaklęć; VFX obejmuje wszystkie 14 zaklęć: Mirror Reflection z przywróconymi dźwiękami, Magic Arrow i Firebolt/Fireball ze wspólnym cyklem życia pocisku oraz 11 różnorodnych efektów na postaci z warstwami przed/za sylwetką. Nowe animacje castingu i presety zachowane. Stare VFX/SFX i assety generatora usunięte 2026-09-08. → [[spell-vfx-configuration]]
 
 ## Decisions log
+
+### 2026-09-12 — aktualizacje lokalne obejmują migracje
+- **Decision:** make dev kopiuje migracje razem z pluginem, Compose przekazuje jawne flagi kolejki.
+- **Why:** sam rollout produkcyjny nie aktualizuje lokalnego endpointu klienta; stary kontener zwracał brak queue_config. Lokalny upgrade i test WebSocket potwierdziły naprawę.
+
+
+- **2026-09-12 — Align the client SDK with Godot 4.7.** `hexbane.csproj` now uses `Godot.NET.Sdk/4.7.0`. **Why:** physical OnePlus startup logs proved that SDK 4.5.2 bindings failed against the 4.7 native runtime (`Unmanaged callbacks size mismatch`). Missing scrcpy was repaired separately in the editor settings. See [[deploy-android]].
 
 ### 2026-09-12 — produkcyjne włączenie fallbacku
 - **Decision:** na jawne polecenie użytkownika wypchnięto i wdrożono server`b2e7fe2`, GitOps`99aebe5`; obie flagi true. Użytkownik potwierdził brak potrzeby wspierania starych klientów.

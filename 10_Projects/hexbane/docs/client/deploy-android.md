@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-09
-verified: 2026-09-09
+updated: 2026-09-12
+verified: 2026-09-12
 tags: [hexbane, client, android, deploy]
 sources: ["client:CLAUDE.md", "client:AGENTS.md", "client:deploy.sh", "client:export_presets.cfg"]
 ---
@@ -92,6 +92,34 @@ Google Play policy: https://support.google.com/googleplay/android-developer/answ
 - `display/window/per_pixel_transparency/enabled=false` (`project.godot:55`) and no `rendering/viewport/transparent_background`: a transparent window makes every scene change flash the task underneath on Android.
 - `application/config/quit_on_go_back=false` (`project.godot:19`) with `SceneManager._Notification` handling Back; otherwise Back kills the process.
 - Google client id/secret must be in `project.godot` `[hexbane] auth/*`, not only `.env`, or the APK shows the email form only.
+
+## Startup and USB debugging repair (2026-09-12)
+
+The OnePlus CPH2653 reproduced a startup failure in `com.dev.hexbane` version 10:
+`System.ArgumentException: Unmanaged callbacks size mismatch`, followed by
+`.NET: GodotPlugins initialization failed`. The native runtime was Godot 4.7 while
+`hexbane.csproj` still selected `Godot.NET.Sdk/4.5.2`. The main project now selects
+`Godot.NET.Sdk/4.7.0`, matching the installed editor/templates and the auth test project.
+Always check the actual csproj and device logs; the earlier migration note was not
+sufficient evidence of the current project setting.
+
+The separate editor error `Could not create child process: scrcpy` came from enabled
+Android mirroring with no scrcpy executable installed. On this Mac, scrcpy 4.1 was
+installed with Homebrew and the running editor's `export/android/scrcpy/path` was set
+to `/opt/homebrew/bin/scrcpy`. A child process launched by that editor connected to the
+OnePlus over USB and exited successfully. This is an editor setting, not an APK dependency.
+
+Validation: `dotnet build hexbane.csproj` completed with zero errors and 11 warnings;
+Android debug export and Android Play release AAB export completed with exit 0.
+The development APK was installed on the physical OnePlus and passed .NET, DI and
+SceneManager startup, remaining alive beyond the former failure point. The normal
+Android export still logs the missing optional `res://.env`; it did not cause this failure.
+The export also reports existing editor-shutdown warnings after producing the artifact.
+
+Release artifact: `../export/android/hexbane-v10-fixed.aab`. Version code remains 10;
+if 10 has already been uploaded to Google Play, increment the code and export again
+before uploading. A universal APK derived from this AAB is signed with the local debug
+key for device validation; it is not signed by Google Play. No Play upload is performed.
 
 ## Troubleshooting
 
