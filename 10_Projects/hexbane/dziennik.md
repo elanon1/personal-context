@@ -519,3 +519,12 @@ Remaining: subjective headphone/speaker listening, live Nakama mix and physical 
 - Pliki: Game/ScenesV3/Tutorial/TutorialScreen.cs; nowe Dev/TutorialRoutingVerification.cs/.tscn. Notatka: docs/client/client-tutorial.md.
 - Walidacja: regresja Godot headless FAIL przed poprawką, PASS po; sprawdzono oczekiwanie na status, dwa kolejne powroty ukończonego konta i błąd statusu. Tests/Tutorial PASS, build 0 błędów/9 wcześniejszych ostrzeżeń. Przy zamknięciu istniejące komunikaty ObjectDB/resource leak.
 - Pozostało: pełny powrót z walki na żywym serwerze i kontrola wizualna na urządzeniu. Zachowano wcześniejsze zmiany w repo; bez commita i wdrożenia.
+
+
+## 2026-09-12 — Dźwięk medytacji
+
+Dogenerowano ElevenLabs meditation/loop.wav (7.75 s), z płynnym łączeniem końców; spokojne powietrze, szkło i jedwab dopasowane do niebieskich smug absorpcji. MeditationVfx uruchamia jedną pętlę podczas aktywności, wejście 350 ms do -16 dB, przerwanie 180 ms; właścicielem jest efekt aktora. SpellAudio obsługuje zapętlone WAV i opcjonalny czas wyciszenia. Generator zachowuje prompt i parametry loop w manifest.json.
+
+Pliki: Scripts/Audio/generate_spell_audio.py; Resources/Audio/Spells/meditation/loop.wav + import i manifest; Game/FX/SpellAudio.cs; Game/ScenesV3/Components/MeditationVfx.cs; MeditationAudioTest.cs/.tscn. Notatki: spell-audio, vfx-and-race-animation, _state.
+
+Walidacja: test przed zmianą nie wykrywał głosu medytacji; po zmianie 8/8 CoreAudio, w tym >7.75 s odtwarzania, powtarzane snapshoty, cast, szybki restart i usunięcie aktora. Regresja dźwięków czarów 40/40; build 0 błędów / 9 istniejących ostrzeżeń. Nagranie z pogłosem: verification/spell-audio/meditation-demo.wav. Sygnał niesilentny, przejście pętli sprawdzone numerycznie. Do oceny pozostaje subiektywny odsłuch i fizyczne urządzenie mobilne. Bez commitu/deployu.

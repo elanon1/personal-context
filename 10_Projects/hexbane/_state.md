@@ -58,6 +58,10 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+### 2026-09-12 — Meditation sound follows absorption visibility
+
+Own the sustained ElevenLabs loop on MeditationVfx and start it only when absorption becomes active. **Why:** casting, rest, state interruption and race reload already clear that effect, so sound follows the same state without duplicate snapshot-triggered voices or new gameplay timers. Crossfade the source loop; use runtime gain for entry/exit.
+
 ### 2026-09-12 — Spell audio follows existing visual lifecycle
 
 Use 26 generated ElevenLabs material cues through one Game/FX sound helper and the existing actor/projectile/field/ward callbacks, with short shared reverb and scene-owned tails. **Why:** gameplay and snapshot deduplication already decide when effects happen; separate audio timers would create false hits, duplicated status pulses or cut-off decays. Keep nature casting textures quiet and avoid fabricated speech or a continuously noisy status bed.

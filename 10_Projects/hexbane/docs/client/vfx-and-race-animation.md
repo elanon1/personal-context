@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-10
-verified: 2026-09-10
+updated: 2026-09-12
+verified: 2026-09-12
 tags: [hexbane, client, races, animation, vfx, arena]
 sources: ["client:Resources/Races/_tools/blender/README.md", "client:docs/client/arena-maps/README.md", "client:docs/client/cast-charge/README.md", "client:docs/client/gesture-occlusion/README.md", "client:docs/client/gesture-vfx/README.md", "client:docs/client/meditation/README.md", "client:docs/client/mirror-reflection/README.md", "client:docs/client/reference-duel/README.md", "client:Resources/SpellVisuals/README.md", "client:CLAUDE.md"]
 ---
@@ -104,3 +104,5 @@ Visible VFX retain per-frame pose/depth updates; interned uniform/animation name
 ## Remaining spell fields and body occlusion (2026-09-08)
 
 All fourteen spells now have full shared playback and canonical casting presets. The eleven newly added fields are described in [[spell-vfx-configuration]] and [[spell-effect-system]]. Rear and front geometry render on opposite sides of the animated race sprite (z=0/1/2), so effects behind the character disappear under its current alpha silhouette while foreground sections remain visible. `VerifySpellFields.tscn` covers both ArenaMapsDev saved-spell buttons, VfxTest controls and GPU pixel occlusion for six races × both orientations. Evidence: `verification/spell-fields/`.
+
+Meditation audio (2026-09-12): `MeditationVfx` now owns a quiet ElevenLabs air/glass loop while absorption is active, with smooth entry and cancellation. All actor and preview paths share this lifecycle; see [[spell-audio]].

@@ -40,3 +40,14 @@ Verification: `VerifySpellAudio.tscn` checks factory playback for all 14 spells,
 These checks establish playback and signal properties, not subjective naturalness. Human headphone/speaker listening, live Nakama mix and physical mobile playback remain unverified.
 
 Source: https://elevenlabs.io/docs/api-reference/text-to-sound-effects/convert
+
+
+## Meditation audio — 2026-09-12
+
+Additional ElevenLabs `meditation/loop.wav` (7.75 seconds after 250 ms overlap preparation; manifest includes `loop: true`) brings the library to 27 recordings. Natural flowing air, rubbed glass and silk express the blue inward absorption trails without a melody or pulse announcing mana ticks. The existing spell bus provides the room response. The raw loop has no attack/tail fades; crossfading its ends preserves a continuous wrap, and runtime volume handles entry/exit.
+
+`MeditationVfx.SetPose` starts an owned voice only on inactive→active, with 350 ms fade to -16 dB and fixed pitch. `Clear` kills the entrance tween and fades the voice over 180 ms. Repeated pose/snapshot updates reuse the voice. Casts, rest, race reload and state interruption already call Clear, and deleting the actor deletes the looping player. `SpellAudio.Load` configures WAV cues with stage `loop` for forward looping over the whole sample. Existing one-shot behaviour is preserved.
+
+Verification: `MeditationAudioTest.tscn` failed before integration (no meditation voice), then passed 8/8 using actual CoreAudio: start, deduplication, continued playback past sample duration, cast interruption, resumption, rapid restart, stop and actor disposal. Spell audio regression passed 40/40; build 0 errors / 9 existing warnings. `-- --record` saves `verification/spell-audio/meditation-demo.wav` with actual bus processing. Boundary discontinuity .000916 full scale, below the largest interior sample step .00851; source peak -11.7 dBFS. Human listening and physical mobile remain unverified.
+
+Try `Game/ScenesV3/Dev/MeditationVfxPreview.tscn` (M meditate, X stop), or meditation in the duel. It uses the same MeditationVfx lifecycle.
