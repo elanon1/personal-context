@@ -32,7 +32,7 @@ Verified against the working trees on 2026-09-07. Server repo = `~/GolandProject
 
 ## Server image (`Dockerfile`)
 
-Stage 1 `nakama-pluginbuilder:3.27.0` → `go mod vendor` → plugin build. Stage 2 `heroiclabs/nakama:3.27.0` + golang-migrate v4.18.3; copies `backend.so`, `data/spells`, `db/migrations`, `local.yml` and **`.env.dist → /nakama/.env`**. The plugin calls `godotenv.Load()` and `log.Fatal`s without a `.env` (`modules/main.go:32-34`), so the copied `.env.dist` is load-bearing. The only variable the Go code reads is `HEXBANE_ENABLE_DEBUG_RPCS` (`modules/character/init.go:17`); the `OPENAI_*` and `PLUGIN_PATH` entries in `.env.dist` are dead.
+Stage 1 `nakama-pluginbuilder:3.27.0` → `go mod vendor` → plugin build. Stage 2 `heroiclabs/nakama:3.27.0` + golang-migrate v4.18.3; copies `backend.so`, `data/spells`, `db/migrations`, `local.yml` and **`.env.dist → /nakama/.env`**. The plugin calls `godotenv.Load()` and `log.Fatal`s without a `.env` (`modules/main.go:32-34`), so the copied `.env.dist` is load-bearing. Current runtime reads `HEXBANE_ENABLE_CUSTOM_QUEUE`, `HEXBANE_ENABLE_FALLBACK`, `HEXBANE_QUEUE_REGION` and `HEXBANE_ENABLE_DEBUG_RPCS`; the older statement that the only variable was `HEXBANE_ENABLE_DEBUG_RPCS` is obsolete. `HEXBANE_ENABLE_DEBUG_RPCS` (`modules/character/init.go:17`); the `OPENAI_*` and `PLUGIN_PATH` entries in `.env.dist` are dead.
 
 Image name: `ghcr.io/elanon1/hexbane-server` (tags `latest` on default branch, branch name, git tag, `sha`).
 
@@ -127,7 +127,9 @@ Preflight DB: migration5 clean,9users/1character,0active character match locks. 
 
 Deployment `hexbane` rolled out successfully. Pod `hexbane-777d4d75b5-tzt8n` ready1/1,0restarts; digest `sha256:bcdda4ae4d1116abeb12ba097498f97b3faddff4b66e402bd8a1c344d90f8928`. Argo `Synced / Healthy / Succeeded`, server revision matches commit. Init logs applied migrations6/7/8; SQL `schema_migrations=(8,false)`. Startup done and public HTTPS healthcheck returned200. Both flags verified from actual Deployment env; authenticated public queue_config confirms enabled.
 
-Runtime verification in progress: dedicated temporary account/character created for one fallback smoke (no existing account modified), opponent assignment after27183ms. Final outcome and cleanup recorded below when complete.
+Public runtime smoke passed: dedicated temporary account/character, actual `opponent_kind=fallback`,180persisted personas, assignment after27183ms, completed defeat with124snapshots/218events. Replacement WebSocket reconnect, deliberately withheld opcode50 recovered through `get_match_result`, and repeated add_friend/report actions all passed. No physical Godot/Android UI was involved.
+
+Cleanup was scoped by the generated account UUID plus exact technical email inside a transaction; removed that account and its persona history. Technical account remaining0; production retained9users/1character, matching preflight counts. Existing accounts/characters were untouched. Isolated local test containers were removed; backup archive retained. No error/fatal entries in the inspected production runtime log after deployment.
 
 Rollback: set both flags false and repin `sha-f64b8fe` in GitOps, apply/sync after draining games. Migrations6–8 are additive; retain their tables during a runtime rollback. Do not restore backup or drop tables unless a separately diagnosed data failure requires it. Current new normal client can use built-in queue when queue_config returns false; truly old prequeue backend lacks that RPC, so prefer disabling flags on the new backend for a feature-only rollback.
 

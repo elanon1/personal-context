@@ -61,7 +61,7 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 
 - [[server-architecture]] — moduły, silnik meczu, maszyna faz z czasami, stan, współbieżność, bot
 - [[dev-setup]] — make/docker compose, env, migracje, testy, symulator
-- [[fallback-opponents]] — zaimplementowany lokalnie fallback 15–30 s, persony, lobby i AI.
+- [[fallback-opponents]] — wdrożony produkcyjnie fallback15–30s, persony, lobby i AI.
 - [[matchmaking]] — `normal` vs `ai_duel`, matchmaker, rejoin
 - [[spell-system]] — katalog 14 zaklęć, schema YAML, efekty, kolejka, jak dodać zaklęcie
 - [[spell-lore]] — natury i inkantacje, `get_spell_lore`
@@ -123,7 +123,7 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 
 ## Audyty (`docs/audits/`)
 
-- [[2026-09-12-fallback-verification]] — testy SQL/race/build/live, odzyskiwanie wyniku i ograniczenia.
+- [[2026-09-12-fallback-verification]] — testy SQL/race/build/live oraz produkcyjny rollout i ograniczenia.
 - [[2026-09-12-fallback-ai-calibration.json]] —3000 walk,1000 seedów, metryki i bramki strojenia.
 
 - [[2026-09-10-performance]] — mobile VFX allocations, Cleanse shader portability and server snapshot/resident-duel benchmarks.

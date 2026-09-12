@@ -10,7 +10,7 @@ tags: [hexbane, fallback, verification]
 ---
 # Fallback local verification
 
-> Deployment update: user explicitly requested production deployment and activation on2026-09-12, confirming that old-client compatibility is not required. Server commit `b2e7fe2862385d7bd5d756d73c2415804694c1ff` pushed to main; CI publication/deployment in progress. Earlier local-only statements below are the pre-deployment verification record. Final deployment evidence belongs in [[infra-and-deploy]].
+> Deployment update: user explicitly requested production deployment and activation on2026-09-12, confirming that old-client compatibility is not required. Server commit `b2e7fe2862385d7bd5d756d73c2415804694c1ff` pushed to main; CI and deployment completed successfully. Both flags enabled; public fallback27183ms with reconnect/lost-result/actions PASS. Earlier local-only statements below are the pre-deployment verification record. Full deployment evidence: [[infra-and-deploy]].
 
 
 Backend `feat/natural-fallback-player`, working tree implementation, no deployment/push. Server source baseline `f64b8fe`; client pre-existing dirty files preserved. Verification date2026-09-12. Runtime Nakama3.27.0 with Linux plugin built through `make build`; local Godot.NET SDK4.5.2/.NET9 compiled.
@@ -56,7 +56,11 @@ Existing combat tick benchmark on Apple M3 Pro: ~4.4–5.3us/op serial/parallel 
 - Full distributed failure/soak test (node/process death, DB outage, exact deadline races through live transport,100 simultaneous network matches) and isolated scorer p99.
 - Ordered opening-sequence metrics. The provided diversity proxy is explicitly weaker.
 - Shared persona/character nickname uniqueness at concurrent creation, bounded history retention policy, and unified pending friend/profile product surface.
-- Coordinated deployment with flags, migrations and compatible clients; not performed in this session.
+- Production deployment/activation was completed in the later authorized step (see below). Installed client distribution remains separate.
+
+## Subsequent authorized production verification
+
+CI run34699124648 PASS; server mainb2e7fe2, GitOps99aebe5, imagesha-b2e7fe2. Argo Synced/Healthy/Succeeded; pod1/1ready,0restarts. Migration8 clean,180personas. Public fallback27183ms, defeat,124snapshots/218events, reconnect and lost-result recovery PASS, repeated opponent actions PASS. Technical account removed,9users/1character retained. Full backup/deployment/rollback evidence: [[infra-and-deploy]]. Defaults stay false in the source example; production Helm explicitly overrides both flags to true at the user’s request.
 
 ## Source of truth in code
 - server: `modules/matchmaking`, `modules/bot_persona`, `modules/match_actions`, `modules/character/{rewards,match_result}.go`

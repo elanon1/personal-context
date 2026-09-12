@@ -58,6 +58,12 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+### 2026-09-12 — produkcyjne włączenie fallbacku
+- **Decision:** na jawne polecenie użytkownika wypchnięto i wdrożono server`b2e7fe2`, GitOps`99aebe5`; obie flagi true. Użytkownik potwierdził brak potrzeby wspierania starych klientów.
+- **Why:** wdrożenie i aktywacja15–30s zostały zatwierdzone po lokalnej weryfikacji, z pozostawionymi jawnymi ograniczeniami kalibracji/UI.
+- **Evidence:** CI PASS, ArgoSynced/Healthy/Succeeded, migrations8clean, public fallback27183ms + reconnect/result/actions PASS. Backup przed migracją; konto techniczne usunięte,9kont/1postać zachowane. [[infra-and-deploy]].
+
+
 ### 2026-09-12 — Fallback normal po15–30s, implementacja lokalna
 - **Decision:** custom queue/persistent personas/natural AI w zwykłym meczu; ranked nadal oddzielny. Flagi domyślnie false, bez wdrożenia produkcyjnego.
 - **Why:** użytkownik zatwierdził próg15–30s i implementację; priorytet człowieka i atomowa rezerwacja zapobiegają podwójnemu meczowi.

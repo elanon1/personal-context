@@ -12,6 +12,14 @@ aliases: [hexbane-dziennik, hexbane-worklog]
 
 # Hexbane — dziennik pracy
 
+## 2026-09-12 — Codex — produkcyjne wdrożenie fallbacku
+
+- Na kolejne jawne polecenie: commit server`b2e7fe2` pushmain, CI34699124648PASS, GitOps`99aebe5` push/apply/sync; obie flagi włączone zgodnie z odpowiedzią użytkownika.
+- Backup PostgreSQL przed zmianą. Migracje5→8bez resetu; ArgoSynced/Healthy/Succeeded, nowy pod1/1i0restartów.
+- Publiczny pełny mecz na osobnym koncie: fallback27183ms, zakończenie, reconnect, utrata50/recovery i idempotentne akcje PASS. Konto i jego historia usunięte;9kont/1postać pozostały. Usunięto dwa własne kontenery testowe.
+- Notatki: infra-and-deploy, fallback-opponents, implementation-progress, fallback-verification, _state/_index. Klient źródłowo zaktualizowany/buildPASS, bez dystrybucji nowego binarium. Strojenie AI i fizyczne playtesty nadal otwarte.
+
+
 ## 2026-09-12 — Codex — implementacja fallback15–30s
 
 - Zaimplementowano queue/assignment/admission,180person, legalne buildy, zmienne nicki, opóźniony draft/ready oraz AI14zaklęć z profilami i błędami. Serwer branch `feat/natural-fallback-player`; istniejące zmiany klienta zachowane.

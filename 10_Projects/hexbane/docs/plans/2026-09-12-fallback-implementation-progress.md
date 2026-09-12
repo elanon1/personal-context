@@ -2,14 +2,14 @@
 type: project
 project: Hexbane
 area: plans
-status: implemented-local
+status: deployed-calibration-pending
 created: 2026-09-12
 updated: 2026-09-12
 verified: 2026-09-12
 ---
 # Fallback implementation ledger
 
-> Deployment update: user explicitly requested production deployment and activation on2026-09-12, confirming that old-client compatibility is not required. Server commit `b2e7fe2862385d7bd5d756d73c2415804694c1ff` pushed to main; CI publication/deployment in progress. Earlier local-only statements below are the pre-deployment verification record. Final deployment evidence belongs in [[infra-and-deploy]].
+> Deployment update: user explicitly requested production deployment and activation on2026-09-12, confirming that old-client compatibility is not required. Server commit `b2e7fe2862385d7bd5d756d73c2415804694c1ff` pushed to main; CI and deployment completed successfully. Both flags enabled; public fallback27183ms with reconnect/lost-result/actions PASS. Earlier local-only statements below are the pre-deployment verification record. Full deployment evidence: [[infra-and-deploy]].
 
 
 Plan: [[2026-09-08-fallback-player-plan]]; spec: [[2026-09-08-fallback-player-design]].
@@ -38,7 +38,7 @@ Ruling: use existing backend checkout on a dedicated feature branch — backend 
 - Task4: shared ownership validation, actual drafted loadout, tick-scheduled choices/readiness, time-budget tests.
 - Tasks5–6: public delayed observation, reproducible brain/utility/14spells/context errors and ordinary Submit; unit/race tests.
 - Task7: normal client queue flow, cancellation/requeue/socket fences, exact result saved atomically in existing receipt, authenticated get_match_result/recovery, post-match friend/report action abstraction and migration8.
-- Task8: automated tests, Linux/plugin and client builds, full local fallback/PvP/reconnect/lost-result checks,3000+1000 simulation corpus. Production rollout, UI/device playtests and calibration are still open.
+- Task8: automated tests, Linux/plugin and client builds, full local fallback/PvP/reconnect/lost-result checks,3000+1000 simulation corpus. Production rollout completed after explicit authorization; UI/device playtests and calibration remain open.
 
 Evidence: [[2026-09-12-fallback-verification]], [[2026-09-12-fallback-ai-calibration.json]]. Runtime contract: [[fallback-opponents]].
 
@@ -50,7 +50,7 @@ Evidence: [[2026-09-12-fallback-verification]], [[2026-09-12-fallback-ai-calibra
 - Config flags are startup-read; the internal atomic fallback switch has no administration RPC. Invalid env config fails initialization rather than silently preserving a partial service.
 - No match profile UI currently needs a new profile lookup. Result actions use authoritative stored opponent IDs. Persona friend requests remain local pending records and are not in the SDK list; no fake social activity or stats.
 - Behavior report uses combat-valid simulator fixtures, not acquired SQL persona builds; complete persona legality is tested separately. Ordered opening diversity, scorer p99 and a100-network-match load test were not performed.
-- No production activation, push, merge or automatic commit. Backend feature branch and client changes remain reviewable locally.
+- Subsequent user instruction authorized server push/deployment and activation: server main `b2e7fe2`, GitOps `99aebe5`, both flags true, public smoke PASS. Client changes remain local and preserve pre-existing dirty work.
 
 ## Source of truth in code
 - server: modules/match, modules/matchmaking, modules/bot_persona

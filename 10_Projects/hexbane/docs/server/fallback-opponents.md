@@ -2,7 +2,7 @@
 type: project
 project: Hexbane
 area: server
-status: implemented-local
+status: deployed
 created: 2026-09-12
 updated: 2026-09-12
 verified: 2026-09-12
@@ -10,10 +10,10 @@ tags: [hexbane, matchmaking, fallback, ai]
 ---
 # Fallback opponents
 
-> Deployment update: user explicitly requested production deployment and activation on2026-09-12, confirming that old-client compatibility is not required. Server commit `b2e7fe2862385d7bd5d756d73c2415804694c1ff` pushed to main; CI publication/deployment in progress. Earlier local-only statements below are the pre-deployment verification record. Final deployment evidence belongs in [[infra-and-deploy]].
+> Deployment update: user explicitly requested production deployment and activation on2026-09-12, confirming that old-client compatibility is not required. Server commit `b2e7fe2862385d7bd5d756d73c2415804694c1ff` pushed to main; CI and deployment completed successfully. Both flags enabled; public fallback27183ms with reconnect/lost-result/actions PASS. Earlier local-only statements below are the pre-deployment verification record. Full deployment evidence: [[infra-and-deploy]].
 
 
-Implemented on backend branch `feat/natural-fallback-player`, with coordinated changes in the local Godot client. Production has not been changed. Design: [[2026-09-08-fallback-player-design]]; implementation evidence and remaining gates: [[2026-09-12-fallback-implementation-progress]].
+Implemented on backend branch `feat/natural-fallback-player`, published as `b2e7fe2` on main and deployed to production with both flags enabled. Coordinated client source changes are local; this session did not distribute an installed client binary. Design: [[2026-09-08-fallback-player-design]]; implementation evidence and remaining gates: [[2026-09-12-fallback-implementation-progress]].
 
 ## Queue and admission
 
