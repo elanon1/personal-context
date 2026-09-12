@@ -151,3 +151,10 @@ Added Compose passthrough for the three HEXBANE queue env variables (defaults fa
 - `server:deploy/argocd/application.yaml` — Argo CD Application (multi-source, automated)
 - `server:modules/main.go:32` — `godotenv.Load()` hard requirement; `server:modules/character/init.go:17` — `HEXBANE_ENABLE_DEBUG_RPCS`
 - `client:deploy.sh`, `client:export_presets.cfg`, `client:project.godot` `[hexbane]`, `client:Application/Nakama/NakamaClientManager.cs:106-160` — client build, presets, server table, `LocalHost()`
+
+
+## Production follow-up — active match rejection (2026-09-12)
+
+Backend `f05eabd58c1a45c4ac913312f321dded852cd0b8`, image `ghcr.io/elanon1/hexbane-server:sha-f05eabd`. GitHub Actions run 34707922252 succeeded. GitOps commit `ccee602` pins the new image; Application applied and explicitly synced. Verified rollout complete, Argo `Synced / Healthy / Succeeded`, pod `hexbane-67f49bfc95-j97t4` Ready with zero restarts. Both `HEXBANE_ENABLE_CUSTOM_QUEUE` and `HEXBANE_ENABLE_FALLBACK` remain true (15–30 s). No new migration or production lease deletion. Before rollout, the read-only count of unexpired character leases was zero.
+
+Local PostgreSQL regression and actual WebSocket joins verified busy rejection in normal and AI modes while preserving the existing lease; the Godot overlay test verified the wait message and no automatic requeue. Production verification covered rollout/readiness/configuration; this follow-up did not repeat a full production duel or device test. Client message changes require a rebuilt client.

@@ -58,6 +58,9 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+- **2026-09-12 — Preserve character match leases on rejected joins.** Both normal and AI joins return `character_in_match`; the client shows a wait message and does not requeue. No automatic orphan-lock deletion. **Why:** explicit user requirement to retain the in-progress match guard, including after server restarts.
+
+
 ### 2026-09-12 — aktualizacje lokalne obejmują migracje
 - **Decision:** make dev kopiuje migracje razem z pluginem, Compose przekazuje jawne flagi kolejki.
 - **Why:** sam rollout produkcyjny nie aktualizuje lokalnego endpointu klienta; stary kontener zwracał brak queue_config. Lokalny upgrade i test WebSocket potwierdziły naprawę.

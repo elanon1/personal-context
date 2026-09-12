@@ -571,3 +571,13 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Walidacja: DeathVerification PASS (6 ras × 2 jakości × 2 kierunki, terminalna poza, stale events/reload); DuelEndingVerification PASS (realny handler i scena, aktualizacja HP, winner, kliknięcie Continue, modal, timeout/remisy, 1360×612/844×390/2400×1080); MeditationTest PASS 12 kombinacji i player-state; CombatControlsVerification PASS 30 wariantów plus capture/cancel/apply. ResultMusicVerification PASS; rzeczywisty miks CoreAudio nagrany 25,228 s, peak -13,48 dBFS, oba utwory niezerowe. Build 0 błędów / 9 wcześniejszych ostrzeżeń; istniejące ObjectDB/resource-at-exit komunikaty.
 - Dowody: verification/duel-ending/ — logi, screenshoty, GIF sześciu animacji i result-music-reel.wav. Główne pliki: RaceSpriteAnimator, Player, ArenaMatch/DuelConclusion, ReferenceHud.Layout, CombatControlsDialog, SceneManager, MenuPlayer, GameOverScreen/.Layout, skrypty generacji i nowe sceny Dev. Notatki: duel-ending (nowa), vfx-and-race-animation, design-system, duel-v2-client, op_50_game_over, _index, _state.
 - Pozostało: pełna walka z żywym Nakama i kontrola na fizycznym urządzeniu, subiektywny odsłuch muzyki. Bez commita/deployu; zachowano wcześniejsze zmiany w repo i vaulcie.
+
+
+## 2026-09-12 — Odmowa wejścia przy trwającym meczu
+
+- Przyczyną lokalnego powrotu po Accept był `character already in a match` w obu handlerach po restarcie lokalnego serwera. Przed doprecyzowaniem wymagań ręcznie usunięto jeden konkretny lokalny osierocony lock; po poleceniu użytkownika nie wdrożono usuwania ani przejmowania takich blokad.
+- Backend `f05eabd`: wspólny sentinel `character_in_match`, read-only kontrola przed admission dla normal/AI, zachowany atomowy AcquireForMatch i 15-minutowy lease. Commit obejmuje również wcześniejszą poprawkę lokalnego make dev (kopiowanie migracji) i zmiennych kolejki w Compose.
+- Klient: wspólny komunikat i obsługa odmowy Accept/opcode 9 w ModeOverlay; bez automatycznej kolejki. Test SQL z race, pełne Go tests/vet, match race tests, lokalny test WebSocket obu trybów oraz headless test rzeczywistego overlay przeszły. Godot przy zamykaniu testu zgłasza resource/ObjectDB leak; nie jest to test urządzenia.
+- Zaktualizowano progression, matchmaking, op_09_match_canceled, client-architecture i decyzję w _state. Klient wymaga przebudowania/dostarczenia na urządzenie; sam deploy backendu nie aktualizuje aplikacji.
+
+- Produkcja wdrożona: backend `f05eabd`, GitOps `ccee602`, CI 34707922252 success; pod `hexbane-67f49bfc95-j97t4` Ready, 0 restartów, Argo Synced/Healthy/Succeeded. Fallback nadal 15–30 s. Notatka infra-and-deploy uzupełniona o dowody i granice weryfikacji.

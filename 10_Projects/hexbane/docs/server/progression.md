@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-08
-verified: 2026-09-08
+updated: 2026-09-12
+verified: 2026-09-12
 tags: [hexbane, server, progression, races, stats, skills, combat]
 sources: ["server:docs/progression/overview.md", "server:docs/progression/race.md", "server:docs/progression/stats.md", "server:docs/progression/skills.md", "server:docs/progression/progression.md", "server:docs/progression/combat.md", "server:docs/progression/match-integration.md", "server:docs/progression/modifiers.md", "server:docs/superpowers/specs/2026-09-02-race-system-redesign-design.md", "server:docs/superpowers/plans/2026-09-02-race-system-redesign.md", "client:docs/Server/progression/overview.md", "client:docs/Server/progression/race.md", "client:docs/Server/progression/stats.md", "client:docs/Server/progression/skills.md", "client:docs/Server/progression/progression.md", "client:docs/Server/progression/combat.md", "client:docs/Server/progression/match-integration.md", "client:docs/Server/progression/races_seed.sql"]
 ---
@@ -92,3 +92,9 @@ Migration **000004** snapshots existing character rows into `progression_redesig
 - `server:db/migrations/000004_progression_redesign.up.sql`, `000005_race_redesign.up.sql`
 - `server:modules/match/normal_match/{matchmaker,join}.go`
 - `server:modules/match/engine/{core/player_setup,phase/gameover/phase}.go`
+
+## Preserving active match leases (2026-09-12)
+
+`character.CheckMatchAvailability` performs a read-only check before a new normal/AI join. An unexpired lease for another match returns `ErrCharacterInMatch` (`character_in_match`). `AcquireForMatch` retains the atomic guard and returns the same sentinel. The 15-minute lease, renewal and settlement/release rules are unchanged. There is no orphan-lock reclamation based on whether a match exists in the current process; after a restart the player must wait for expiry if normal release did not happen. Same-match reconnect is permitted.
+
+Regression `TestMatchAvailabilityPreservesExistingLease` checks new-match refusal, same-match admission, unchanged existing lease and expiry in an isolated PostgreSQL test schema.

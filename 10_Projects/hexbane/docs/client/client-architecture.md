@@ -189,3 +189,9 @@ See [[duel-v2-client#Arena launch/countdown repair (2026-09-10)]]. The active HU
 ## Illustrated duel loading (2026-09-10)
 
 See [[duel-loading-screen]] for the persistent blue/emerald loading illustration, threaded resource progress, one stable random tip, responsive mobile layout and retry/cancellation verification. This user-requested background is a deliberate exception to shared menu artwork. It replaces only the arrangement-to-arena black transition.
+
+## Busy match admission (2026-09-12)
+
+`Core/Match/MatchAdmissionMessage.cs` recognizes `character_in_match` and legacy `character already in a match`. `ModeOverlay` handles both failed Accept and opcode 9 with a wait dialog and no automatic requeue. Only the newly offered match is declined; the existing server lease stays intact.
+
+`Tests/Matchmaking` covers reason classification. Headless `Game/ScenesV3/Dev/MatchBusyVerification.tscn` exercises the actual overlay using a fake manager: Accept rejection displays the Polish wait message, decline is called once, opcode 9 displays the same dialog, and no new search starts. PASS on Godot 4.5.2; shutdown reports an ObjectDB/resource leak warning. Client build passed with existing warnings. These checks do not prove an installed Android binary was updated.

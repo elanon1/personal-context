@@ -37,3 +37,7 @@ Client queue polling follows the current socket and account. Accept retries hand
 ## Source of truth in code
 - server: `modules/match/normal_match`, `modules/match/ai_match`, `modules/matchmaking`, `modules/match/engine/core`
 - client: `Application/ArcaneDuel/Normal`, `Application/ArcaneDuel/Bot/BotMatchManager.cs`
+
+## Character already in a match (2026-09-12)
+
+Both handlers run a read-only availability check before admitting a new player. `character_in_match` rejects a new match without removing the old lease or marking the queued player joined. The final atomic acquisition still guards races; its busy failure is opcode 9 with the same reason. Same-match reconnect remains allowed. See [[op_09_match_canceled]] for the client wait message. Fallback remains enabled at 15–30 seconds.
