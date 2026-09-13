@@ -648,3 +648,12 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Files: auth LoginService/RegisterService/GoogleOAuthSignIn/SignInJsonContext; LoginPanel/RegisterPanel; three bootstrap query handlers; TutorialSession; Build AOT config; hexbane.csproj; export_presets.cfg; deploy-ios-simulator.sh; Tests/Auth + Tests/NakamaAot. Docs: social-sign-in, deploy-ios, client-architecture (corrected current SDK), _state, dziennik.
 - Disk pressure: removed only regenerable cached Godot engine `.o` and release iOS intermediate `.o` files; source files, final exports and unrelated dirty work preserved.
 - Next: fresh complete iOS export, physical Google sign-in + registration smoke, then broader menu/gameplay AOT migration.
+
+
+## 2026-09-13 — macOS System Data cleanup for iOS builds
+
+- Investigated 201 GB System Data report: largest identified user data was UltraStar songs (~58 GiB), Steam (~17 GiB), Docker (~15 GiB), Claude VM (~10 GiB); caches ~19 GiB before cleanup. macOS category totals do not map exactly to directory totals. Protected OS directories were inaccessible and not modified.
+- Removed 22.71 GiB of measured cache/build artifacts: Homebrew/go/pip/pnpm, browser/Electron/Adobe caches, Gradle transforms, old archived Android build outputs/template download, Hexbane Xcode Build/Index and Godot .NET export intermediates, inactive IDE indexes/caches, own temporary simulator diagnostic bundle. Preserved source repositories, final iOS export/project, IDE local history, installed runtimes and VM data.
+- User explicitly authorized deleting songs; deleted only UltraStarDeluxe2026.5.0/songs and recreated it empty. Other music libraries untouched.
+- Verified available disk space: roughly 3.8 GiB before, 79.0 GiB (~84.8 GB) after. Export source hexbane.pck remains present (298 MiB). Deletion report: /tmp/system-data-cleanup-2026-09-13.json.
+- User can retry Xcode build; caches rebuild on demand. No new build was run as part of this cleanup.
