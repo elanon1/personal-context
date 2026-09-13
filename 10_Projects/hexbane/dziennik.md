@@ -627,3 +627,11 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Kamera reaguje na trafienia obu stron, słabiej na poison; tło podąża za impulsem, przyciski pozostają nieruchome. Poprawiono przycinanie dużych liczb przy krawędziach. Niezależny review wykrył nadpisanie bazowego przesunięcia tła: poprawiono i ponownie sprawdzono ustawienie platformy, overscan i relayout podczas wstrząsu.
 - Kod: Player, FloatingText, UiMessageManager, CameraHandler, RaceSpriteAnimator + nowy partial Hit, GestureLighting, ReferenceHud; nowa scena HitFeedbackVerification. Notatki: duel-v2-client, vfx-and-race-animation, _state. Zachowano zastane zmiany; bez commitów/deployu.
 - Walidacja: build 0 błędów / 11 istniejących ostrzeżeń; HitFeedbackVerification 26 sprawdzeń headless i GPU, 844×390 / 1360×612 / 1920×1080; CombatFeedbackVerification 9/9; DuelEndingVerification PASS. Renderowane kadry obejrzano. Dowody: verification/hit-feedback. Headless zgłasza ostrzeżenia zasobów przy zamknięciu. Bez fizycznego telefonu i bez meczu live; APK na urządzeniu pozostaje poprzedni.
+
+
+## 2026-09-13 — iPhone authentication error: initial investigation
+
+- Report: approximate "instance not an object" message during login/registration on physical iPhone. Read auth services, panels, DI bootstrap, Nakama initialization and client auth/iOS notes; no code changes or confirmed cause yet.
+- Device check: connected iPhone 15 Pro Max has `com.dev.hexbane` 1.0.0 installed. No log files found in inspected application Documents/Library locations.
+- Attempt to launch with `devicectl --console` was denied by iOS because the device was locked (CoreDeviceError 10002 / FBSOpenApplicationErrorDomain 7).
+- Next: unlock device, capture console while reproducing login/registration, obtain exact exception and locate failing call before implementing a fix.
