@@ -36,7 +36,7 @@ Each icon folder contains only `<folder>.png` and its Godot import metadata. Gen
 
 ## Spell icon redesign (2026-09-13)
 
-Twelve generated icons replace the legacy art; Magic Arrow and Mirror Reflection are preserved byte-for-byte. Regeneration now has its own icon. The style and exact prompts for future spells are recorded in [[spell-icon-art-direction]]. Canonical ids take priority over legacy icon aliases in dashboard/lobby/HUD lookups. Godot loaded all 14 square textures; the rendered catalog includes 160 px and 48 px previews. Build: zero errors, 11 warnings. Device/in-match visual review remains separate.
+Twelve generated icons replace the legacy art; Magic Arrow and Mirror Reflection are preserved byte-for-byte. Regeneration now has its own icon. The style and exact prompts for future spells are recorded in [[spell-icon-art-direction]]. Canonical ids take priority over legacy icon aliases in dashboard/lobby/HUD lookups. Source PNGs keep full resolution; Godot import limits runtime spell textures to 512 px. Godot loaded all 14 square textures; the rendered catalog includes 160 px and 48 px previews. Build: zero errors, 11 warnings. Device/in-match visual review remains separate.
 
 ## Effect configuration after 2026-09-08 cleanup
 

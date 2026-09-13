@@ -6,7 +6,7 @@ status: active
 state: active
 repo: https://github.com/elanon1/hexbane
 created: 2026-08-31
-updated: 2026-09-12
+updated: 2026-09-13
 verified: 2026-09-12
 tags: [hexbane, gamedev, godot, csharp, nakama, go, kubernetes, ai-art]
 aliases: [hexbane, hexbane-server]
@@ -57,6 +57,10 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 **Content:** 13 zachowanych ikon pokrywa 14 obecnych zaklęć; VFX obejmuje wszystkie 14 zaklęć: Mirror Reflection z przywróconymi dźwiękami, Magic Arrow i Firebolt/Fireball ze wspólnym cyklem życia pocisku oraz 11 różnorodnych efektów na postaci z warstwami przed/za sylwetką. Nowe animacje castingu i presety zachowane. Stare VFX/SFX i assety generatora usunięte 2026-09-08. → [[spell-vfx-configuration]]
 
 ## Decisions log
+
+- **2026-09-13 — Keep authoring and verification assets out of runtime exports.** Remove proven unused resources with a recovery manifest outside the repo; preserve dynamically loaded race, spell and audio resources. Authoring model sources stay available behind `.gdignore`; all export presets exclude source-only/dev directories. **Why:** `all_resources` packed source-model textures and review artifacts into the ~607 MiB Android bundle. Architecture support and used animation quality remain unchanged. See [[android-asset-cleanup]].
+
+- **2026-09-13 — Use a luminous dark-fantasy spell icon family.** Preserve the existing Magic Arrow and Mirror Reflection images as style anchors; differentiate the other twelve spells by silhouette and school palette, including a dedicated Regeneration icon. **Why:** the user requested a coherent replacement for the legacy set and reusable Obsidian guidance for future spells. See [[spell-icon-art-direction]].
 
 - **2026-09-12 — Preserve character match leases on rejected joins.** Both normal and AI joins return `character_in_match`; the client shows a wait message and does not requeue. No automatic orphan-lock deletion. **Why:** explicit user requirement to retain the in-progress match guard, including after server restarts.
 

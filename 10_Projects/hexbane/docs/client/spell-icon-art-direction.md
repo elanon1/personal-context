@@ -130,7 +130,7 @@ For a new spell, describe its mechanical meaning as a single visual metaphor, ch
 ## Integration and verification
 
 - Save the generated final PNG inside the client workspace. Keep original generated sources outside runtime folders.
-- Preserve existing Godot import UIDs for replaced PNGs; allow Godot to import new files.
+- Preserve existing Godot import UIDs for replaced PNGs; allow Godot to import new files. Set `process/size_limit=512` for the runtime texture: source PNGs retain full resolution while the UI ships a 512 px texture. Verify both 160 px and 48 px previews after importing.
 - Update canonical resolution and offline metadata for any new id.
 - Review the complete catalog using Godot-rendered 160 px and 48 px previews.
 - Evidence from this task: client:verification/spell-icons/ (manifest, build/import logs, preview).

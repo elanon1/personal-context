@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-12
-verified: 2026-09-12
+updated: 2026-09-13
+verified: 2026-09-13
 tags: [hexbane, client, android, deploy]
 sources: ["client:CLAUDE.md", "client:AGENTS.md", "client:deploy.sh", "client:export_presets.cfg"]
 ---
@@ -26,7 +26,13 @@ Server-side infra (docker, Nakama ports) is in [[infra-and-deploy]].
 3. Reads `network/local_host` from the `[hexbane]` section of `project.godot` and warns when `http://$HOST:7350/` does not answer (lines 29-34).
 4. Exports preset **Android** in debug, headless, to `hexbane1.apk` in the repo root, then `adb install -r` (lines 36-48).
 
-Allow ~10 minutes; the APK is large (mostly `Resources/`).
+See [[android-asset-cleanup]] for measured bundle/APK sizes and export exclusions. A universal debug APK contains native runtimes for all four configured architectures; compare like-for-like artifacts.
+
+## Asset export policy (2026-09-13)
+
+All presets exclude verification/reference artifacts, source models, authoring tools, MCP server, tests, exported iOS trees and dev-only scenes. Race source directories and verification output are also `.gdignore`d. Mobile keeps the SD animation set; desktop keeps HD. Spell icons import at 512 px without changing full-resolution source PNGs. No ABI support was removed.
+
+Validated replacement artifacts: `../export/android/hexbane-v10-asset-cleanup.aab` and `../export/android/hexbane-asset-cleanup.apk`. Version/signing settings remain unchanged; these are local exports, not a Play upload or device installation. Full audit and recovery manifest: [[android-asset-cleanup]].
 
 ## Server host on the device
 

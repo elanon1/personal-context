@@ -97,6 +97,7 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 ## Infra i assety (`docs/infra/`)
 
 - [[infra-and-deploy]] — lokalny stack, obraz, CI, Helm/Argo; wdrożono 2026-09-09, publiczne HTTPS zweryfikowane
+- [[android-asset-cleanup]] — rozmiar paczek Androida, usunięte assety, wykluczenia eksportu i weryfikacja.
 - [[assets-pipeline]] — jak powstaje sztuka (rasy Tripo→Mixamo→Blender→sheety, areny, ikony)
 - [[repos-and-branches]] — snapshot repo 2026-09-07
 

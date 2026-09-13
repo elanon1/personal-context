@@ -5,8 +5,8 @@ area: infra
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-13
+verified: 2026-09-13
 tags: [hexbane, infra, assets, races, environments, spell-visuals, ai-art]
 sources: ["vault:10_Projects/hexbane/assety-i-pipeline.md", "client:Resources/Races/_tools/build_races.sh", "client:Resources/Races/_tools/blender/README.md", "client:Resources/Races/_tpose/README.md", "client:Resources/Races/*/PLACEHOLDER.md", "client:Game/ScenesV3/Components/RaceAnimationPreview.cs", "client:export_presets.cfg", "client:.claude/skills/race-maker/SKILL.md", "client:.claude/skills/env-concept/SKILL.md", "client:.claude/skills/env-maker/SKILL.md", "client:Resources/Environments/*/environment.json", "client:Resources/SpellVisuals/README.md", "client:Resources/Images/Arenas/PROMPTS.md"]
 ---
@@ -14,6 +14,16 @@ sources: ["vault:10_Projects/hexbane/assety-i-pipeline.md", "client:Resources/Ra
 # Asset pipeline: how art is produced and where it lands
 
 Everything below is the client repo (`client:` = `~/RiderProjects/hexbane`). All numbers were taken from the working tree on 2026-09-07 (`ls`, PNG headers, grep). Almost none of the race art is committed yet: under `Resources/Races/` only the two `_tpose` files are tracked; the six race folders, `3d/` and the new `_tools/` scripts are untracked or staged (see [[repos-and-branches]]).
+
+## Runtime asset cleanup (2026-09-13; supersedes the historical inventory below)
+
+The Android bundle audit found authoring model textures, reference images, unused packs and developer artifacts in `all_resources` exports. See [[android-asset-cleanup]] for measurements, removed-file manifest, exclusions and verification.
+
+- Unused UI packs, old arena concepts (`Resources/Environments`), obsolete artwork, unused font variants and unused music/stems were removed from the client tree, with a recoverable archive at `~/hexbane-archive/unused-assets-2026-09-13/`. Historical paths below may therefore refer to that archive.
+- `Resources/Races/3d`, `_tools` and `_tpose` remain available for authoring but are `.gdignore`d and excluded from export. They are inputs to the animation pipeline, not unused disposable runtime assets.
+- Verification output is `.gdignore`d. Reference art, scripts, tests, MCP server, exported iOS app and dev-only scenes do not ship. Old `Resources/Backgrounds` remain for legacy/dev previews and are excluded from exported games together with their two legacy arena scenes.
+- Current spell art uses 14 separate icons: 12 new images and the preserved Magic Arrow/Mirror Reflection pair. For future icons use [[spell-icon-art-direction]], not the obsolete n8n notes below.
+
 
 ## Races (`Resources/Races/<race_id>/`)
 

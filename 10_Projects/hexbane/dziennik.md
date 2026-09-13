@@ -589,3 +589,18 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Styl: świetlista magia na niemal czarnym tle, palety szkół, czytelne sylwetki. Zapisano dokładne prompty i zasady kolejnych ikon w spell-icon-art-direction; zaktualizowano spell-vfx-configuration, design-system i _index.
 - Dowody: verification/spell-icons — manifest źródeł i promptów, hashe zachowanych ikon, build (0 błędów, 11 ostrzeżeń), import i render katalogu (14 tekstur, 0 błędów weryfikatora). Przy zamknięciu Godot występują istniejące ostrzeżenia zasobów. Bez testu fizycznego urządzenia.
 - Użytkownik rozszerzył zadanie o audyt rozmiaru Androida i usunięcie nieużywanych assetów; praca trwa. Bez commita/deployu.
+
+## 2026-09-13 — Rozmowa o atrakcyjności pojedynków
+
+- Rozpoczęto rozmowę o odbiorze statycznej walki i możliwości trybu z ruchem po komentarzu testerki. Przeczytano indeks dokumentacji; bez zmian w kodzie i bez decyzji o rozbudowie.
+- Do ustalenia: hipoteza autora dotycząca konkretnego momentu utraty zainteresowania, następnie propozycje i sposób ich sprawdzenia.
+- Autor doprecyzował obserwacje: statyczność i powtarzalność, zbyt szybka walka utrudniająca reakcje oraz zależność PvP od społeczności mimo botów. Kierunki do dyskusji: czytelność i tempo pojedynku, krótka wyprawa PvE, ewentualnie ograniczony ruch pozycyjny. To propozycje, bez zatwierdzonej zmiany projektu; przyczyny wymagają testu z graczami.
+
+
+## 2026-09-13 — Oczyszczenie assetów i paczek Androida
+
+- Zidentyfikowano ~600 MB jako AAB 606,83 MiB; stary root debug APK miał 1002,18 MiB. Przyczyna: all_resources pakował także źródłowe tekstury modeli, referencje, screenshoty, stare paczki UI/fonty/muzykę; cztery ABI dodają silnik i .NET.
+- Usunięto z drzewa 4589 plików (233,97 MiB) z odzyskiwalnym archiwum ~/hexbane-archive/unused-assets-2026-09-13 i manifestem SHA-256. Zachowano dynamiczne zasoby ras/czarów/audio. Źródła animacji pozostawiono, ale .gdignore/filtry wykluczają je z paczek. Wykluczono także tooling/dev/referencje i stare tła. Ikony importują się do 512 px, oryginały PNG pozostają pełne.
+- Końcowy AAB: 400,80 MiB (-34,0%); debug APK: 642,22 MiB (-35,9%). Gotowe pliki w ../export/android/hexbane-v10-asset-cleanup.aab i hexbane-asset-cleanup.apk. Bez zmiany ABI, jakości animacji, wersji/podpisu, instalacji czy publikacji.
+- Walidacja: build/import/oba eksporty exit 0; MobileLayout zero overflows 1360×612; GameplaySandbox PASS (14 czarów, odbicie/unik/reset/medytacja/audio/status); render ikon 160/48 px, 14 tekstur; analiza obu końcowych paczek: 14 ikon, sześć zestawów SD, zero wykluczonych zasobów; zero referencji do usuniętych plików. Zachowane dwa PNG: hashe zgodne. Istniejące ostrzeżenia zamykania Godot pozostają; bez testu fizycznego Androida.
+- Notatki: android-asset-cleanup (pełny audyt), deploy-android, assets-pipeline, spell-icon-art-direction, spell-vfx-configuration, _index i _state. Dowody: verification/asset-cleanup i verification/spell-icons.
