@@ -613,3 +613,9 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Nagranie Godot Movie Maker 1920×1080: lokalny TrainingBattle przez rzeczywisty MainReference/HUD/VFX oraz GameplaySandbox i SpellArrangementView. Trening pokazuje odbicie, medytację, poison/cleanse, barierę i firebolt; sceny prezentacyjne pokazują sześć ras i cztery areny. To lokalne scenariusze z parametrami fixture, nie mecz z autorytatywnym serwerem PvP. Oznaczenie źródła obrazu jest w filmach.
 - Tymczasowy adapter przechwytywania przeniesiono poza repo do `work/capture-source/`; nie zmieniono mechanik produkcyjnych. Zachowano istniejące niezacommitowane prace. Pierwsze nagranie odrzucono z powodu rozdzielczości okna; końcowe AVI ma pełne 1920×1080.
 - Walidacja eksportów: pełne dekodowanie obu MP4, 870 / 642 klatki, zgodny czas audio/wideo 29,0 / 21,4 s, wizualna kontrola kadrów i plansz. Głośność końcowa: -13,53 / -13,94 LUFS; true peak -1,49 / -1,53 dBTP. Build adaptera: 0 błędów, 11 istniejących ostrzeżeń; Godot zgłasza istniejące ostrzeżenia zasobów przy zamknięciu. Bez odsłuchu przez człowieka, publikacji, testu urządzenia ani live PvP.
+
+
+## 2026-09-13 — Czytelność obrażeń i trafień: rozpoznanie
+
+- Rozpoczęto analizę zgłoszenia: liczby obrażeń przy postaci, reakcja na trafienie i efekty kamery. Przeczytano indeks dokumentacji i kod Player.cs; ten komponent obsługuje aktualnie napisy czarowania i śmierć, bez jawnej reakcji na obrażenia. Nie ukończono jeszcze śledzenia pozostałych ścieżek efektów.
+- Bez zmian kodu i bez testów; zachowano istniejące niezacommitowane prace. Następnie: jedna decyzja użytkownika o prezentacji równoczesnych zmian HP zgodnie z trybem selektywnego uczenia, analiza zdarzeń walki i implementacja oraz weryfikacja wizualna.
