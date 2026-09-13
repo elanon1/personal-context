@@ -58,6 +58,12 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+### 2026-09-13 — Separate damage and healing presentation
+
+- Show each positive authoritative damage/heal amount separately at its recipient, with red/green signed animated numbers. Preserve cast animation while adding cosmetic recoil, and keep controls fixed during camera impulses.
+- **Why:** User chose both values for simultaneous damage 10 / healing 3; net HP change hides what happened. Event-driven presentation retains that information without changing combat or inventing hits from reconnect snapshots.
+
+
 - **2026-09-13 — Keep authoring and verification assets out of runtime exports.** Remove proven unused resources with a recovery manifest outside the repo; preserve dynamically loaded race, spell and audio resources. Authoring model sources stay available behind `.gdignore`; all export presets exclude source-only/dev directories. **Why:** `all_resources` packed source-model textures and review artifacts into the ~607 MiB Android bundle. Architecture support and used animation quality remain unchanged. See [[android-asset-cleanup]].
 
 - **2026-09-13 — Use a luminous dark-fantasy spell icon family.** Preserve the existing Magic Arrow and Mirror Reflection images as style anchors; differentiate the other twelve spells by silhouette and school palette, including a dedicated Regeneration icon. **Why:** the user requested a coherent replacement for the legacy set and reusable Obsidian guidance for future spells. See [[spell-icon-art-direction]].

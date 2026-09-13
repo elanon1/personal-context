@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-12
-verified: 2026-09-12
+updated: 2026-09-13
+verified: 2026-09-13
 tags: [hexbane, client, races, animation, vfx, arena]
 sources: ["client:Resources/Races/_tools/blender/README.md", "client:docs/client/arena-maps/README.md", "client:docs/client/cast-charge/README.md", "client:docs/client/gesture-occlusion/README.md", "client:docs/client/gesture-vfx/README.md", "client:docs/client/meditation/README.md", "client:docs/client/mirror-reflection/README.md", "client:docs/client/reference-duel/README.md", "client:Resources/SpellVisuals/README.md", "client:CLAUDE.md"]
 ---
@@ -111,3 +111,8 @@ Meditation audio (2026-09-12): `MeditationVfx` now owns a quiet ElevenLabs air/g
 ## Duel ending presentation (2026-09-12)
 
 All six races now include a 25-frame non-looping skeletal `death` clip in HD and SD. HP-driven terminal presentation and the asset pipeline are documented in [[duel-ending]].
+
+
+## Health event reactions (2026-09-13)
+
+`RaceSpriteAnimator.Hit.cs` overlays procedural, feet-pivoted recoil and a brief `GestureLighting` silhouette flash for positive damage; healing uses a softer green flash. The base cast/idle/meditation clip is preserved. Death or race reload clears transforms and tint. Live `Player` routes each accepted damage/heal event to its recipient on the scene thread; numbers and arena camera impulse follow the same authoritative stream. See [[duel-v2-client]] for timing, layout, verification and device/live-test boundaries.

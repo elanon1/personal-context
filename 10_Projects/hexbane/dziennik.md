@@ -619,3 +619,11 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 
 - Rozpoczęto analizę zgłoszenia: liczby obrażeń przy postaci, reakcja na trafienie i efekty kamery. Przeczytano indeks dokumentacji i kod Player.cs; ten komponent obsługuje aktualnie napisy czarowania i śmierć, bez jawnej reakcji na obrażenia. Nie ukończono jeszcze śledzenia pozostałych ścieżek efektów.
 - Bez zmian kodu i bez testów; zachowano istniejące niezacommitowane prace. Następnie: jedna decyzja użytkownika o prezentacji równoczesnych zmian HP zgodnie z trybem selektywnego uczenia, analiza zdarzeń walki i implementacja oraz weryfikacja wizualna.
+
+
+## 2026-09-13 — Liczby obrażeń, reakcje postaci i kamera
+
+- Użytkownik wybrał osobne wartości obrażeń i leczenia, odróżnione kolorem i animacją. Zdiagnozowano brak podpięcia zdarzeń damage/heal do prezentacji postaci. Dodano czerwone −HP i zielone +HP, niezależne od napisów czarowania, z powiększeniem, ruchem i wygaszeniem. Reakcja ciała i rozbłysk nie przerywają czarowania; śmierć ma pierwszeństwo.
+- Kamera reaguje na trafienia obu stron, słabiej na poison; tło podąża za impulsem, przyciski pozostają nieruchome. Poprawiono przycinanie dużych liczb przy krawędziach. Niezależny review wykrył nadpisanie bazowego przesunięcia tła: poprawiono i ponownie sprawdzono ustawienie platformy, overscan i relayout podczas wstrząsu.
+- Kod: Player, FloatingText, UiMessageManager, CameraHandler, RaceSpriteAnimator + nowy partial Hit, GestureLighting, ReferenceHud; nowa scena HitFeedbackVerification. Notatki: duel-v2-client, vfx-and-race-animation, _state. Zachowano zastane zmiany; bez commitów/deployu.
+- Walidacja: build 0 błędów / 11 istniejących ostrzeżeń; HitFeedbackVerification 26 sprawdzeń headless i GPU, 844×390 / 1360×612 / 1920×1080; CombatFeedbackVerification 9/9; DuelEndingVerification PASS. Renderowane kadry obejrzano. Dowody: verification/hit-feedback. Headless zgłasza ostrzeżenia zasobów przy zamknięciu. Bez fizycznego telefonu i bez meczu live; APK na urządzeniu pozostaje poprzedni.

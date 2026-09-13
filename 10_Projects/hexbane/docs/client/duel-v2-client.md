@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-12
-verified: 2026-09-12
+updated: 2026-09-13
+verified: 2026-09-13
 tags: [hexbane, client, duel-v2, combat, hud]
 sources: ["client:docs/opcodes/duel-v2.md", "client:docs/opcodes/duel-v2-verification.md", "client:docs/client/reference-duel/README.md"]
 ---
@@ -142,3 +142,18 @@ The lobby uses one shared spell detail presenter for library cards and both fill
 ## Duel ending presentation (2026-09-12)
 
 The arena now remains visible after MatchEnded: dead actors fall and hold their final pose, a winner panel announces the result, and Continue opens the full results. Presentation does not delay authoritative state or rewards. See [[duel-ending]].
+
+
+## Damage and healing readability (2026-09-13)
+
+`Player.OnDuelEvent` consumes accepted `damage` and `heal` events and dispatches presentation to the scene thread. Each positive authoritative `amount` appears at the recipient (`target_id`, falling back to `player_id`); snapshot HP differences never fabricate numbers. Simultaneous damage 10 and healing 3 therefore display **−10** and **+3**, not net −7. Protocol sequencing remains in `DuelProtocol`/`DuelState`; no combat or server changes. Fully absorbed/zero HP damage creates no red number or body/camera hit. Existing barrier VFX/logs retain absorption feedback.
+
+`UiMessageManager.CombatNumber` uses separate red damage and green healing lanes with explicit signs, a 90 ms pop, upward/outward drift and 1.25 s lifetime. Lane spacing accounts for text width; repeated numbers in the same lane move previous numbers upward. Screen clamping includes the animated rectangle. Cast captions remain independent. Match end clears cast captions while final numbers may finish over the death presentation.
+
+`RaceSpriteAnimator.Hit.cs` adds a short procedural body recoil around the feet and silhouette flash; healing adds a softer green pulse. It overlays existing animation without changing cast frames, combat deadlines or meditation rules. Death and race reload reset the reaction.
+
+`CameraHandler` follows positive damage to either duelist with a directional, damped 0.36 s impulse capped at 14 world pixels. Poison impulses are reduced. `ReducedAtmosphereMotion` suppresses new camera impulses. The background follows camera offset around its preserved layout position; controls stay stationary. Background overscan prevents exposed edges. Relayout during a hit uses the neutral camera placement so actors do not retain a displaced resting position.
+
+Validation: `dotnet build hexbane.csproj --no-restore` passed with 0 errors / 11 existing warnings. `HitFeedbackVerification.tscn` passed 26 checks headless and with GPU rendering: separate simultaneous values, targeting, colours, duplicate/zero events, snapshot-only correction, expiry, three viewport sizes (844×390 / 1360×612 mobile profile and 1920×1080 desktop), clipping/overlap/background coverage/platform alignment, relayout during shake, reduced motion, casting and death priority. `CombatFeedbackVerification` passed 9 checks; `DuelEndingVerification` passed. GPU captures inspected under `client:verification/hit-feedback/`. Headless shutdown reports retained resources/ObjectDB warnings, also present in the earlier combat-feedback verifier. No physical Android installation, device playtest or live Nakama duel performed. Restart/rebuild the client to see the new assembly; existing installed APKs are unchanged.
+
+Source files: `client:Game/ScenesV3/GameHud/ArcaneDuel/Components/{Player,FloatingText}.cs`, `client:Game/ScenesV3/GameHud/ArcaneDuel/{UiMessageManager,CameraHandler}.cs`, `client:Game/ScenesV3/Components/{RaceSpriteAnimator.Hit.cs,GestureLighting.gdshader}`, `client:Game/ScenesV3/ReferenceDuel/ReferenceHud.cs`, `client:Game/ScenesV3/Dev/HitFeedbackVerification.{cs,tscn}`.
