@@ -5,15 +5,15 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-12
-verified: 2026-09-12
+updated: 2026-09-13
+verified: 2026-09-13
 tags: [hexbane, client, architecture, godot]
 sources: ["client:CLAUDE.md", "client:AGENTS.md", "client:project.godot", "client:Game/Autoloads/SceneManager.cs", "client:Game/DI/ServiceBootstrapper.cs"]
 ---
 
 # Client architecture (Godot + C# .NET 9)
 
-Repo: `/Users/elanon/RiderProjects/hexbane`. Local checkout verified 2026-09-12: Godot.NET.Sdk **4.5.2** (`hexbane.csproj`). Earlier 4.7 upgrade notes describe a different snapshot; no SDK change was made during fallback implementation. Backend: Nakama via `NakamaClient 3.16.0`, DI via `Microsoft.Extensions.DependencyInjection 9.0.7`, `Newtonsoft.Json 13.0.3` (`hexbane.csproj:46-50`). The unused GTweens/Godot tween plugin and autoload were removed on 2026-09-08; animations use Godot Tween.
+Repo: `/Users/elanon/RiderProjects/hexbane`. Local checkout verified 2026-09-13: Godot.NET.Sdk **4.7.0** (`hexbane.csproj`). Backend: Nakama via `NakamaClient 3.16.0`, DI via `Microsoft.Extensions.DependencyInjection 9.0.7`, `Newtonsoft.Json 13.0.3` (`hexbane.csproj:46-50`). The unused GTweens/Godot tween plugin and autoload were removed on 2026-09-08; animations use Godot Tween.
 
 ## Layers
 

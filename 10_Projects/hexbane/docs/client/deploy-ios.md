@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-08
-updated: 2026-09-09
-verified: 2026-09-09
+updated: 2026-09-13
+verified: 2026-09-13
 tags: [hexbane, client, ios, deploy]
 sources: ["client:export_presets.cfg", "client:hexbane.csproj"]
 ---
@@ -41,7 +41,7 @@ The resulting static library is cached under
 
 The script exports the iOS Xcode project, adds the missing ARM64 slice to its engine
 XCFramework, builds with `CODE_SIGNING_ALLOWED=NO`, installs on an available iPhone
-simulator (preferring an already booted one), and launches `com.hexbane.game`.
+simulator (preferring an already booted one), and launches the bundle identifier read from the built app Info.plist.
 No physical device, Apple Developer profile, or signed IPA is needed. Set iOS
 `application/code_sign_identity_debug="-"` for ad-hoc library signing during the Godot
 export; otherwise Godot still invokes Apple Development signing even with Export Project
@@ -70,12 +70,18 @@ Verified 2026-09-09 on Godot 4.7: full source build succeeded (~5.5 minutes), Xc
 succeeded, app installed and launched on iPhone 17 Pro / iOS 26.5, and the Hexbane
 authentication screen rendered. Full login and network gameplay were not validated.
 
+## Authentication runtime requirements (2026-09-13)
+
+Keep `Build/NakamaAot.props` and its descriptor in the project: Nakama reflection needs explicit preservation under iOS Native AOT. Post-login bootstrap/tutorial JSON uses generated metadata. The iOS preset also registers the `hexbane` URL scheme to return from browser authentication; see [[social-sign-in]] for the diagnosis, regression tests and validation limits.
+
+`deploy-ios-simulator.sh` reads the bundle id from the built Info.plist instead of assuming the earlier `com.hexbane.game` id. Syntax checked after this change; the full export script was not rerun. The 2026-09-13 auth diagnostic used the earlier simulator app/resources with a freshly published ARM64 C# framework and matching scheme entry. It is a simulator diagnostic, not a signed device release.
+
 ## Development signing (physical devices only)
 
 Turn off **Export Project Only** and restore Debug Code Sign Identity to blank /
 `Apple Development` when a signed device IPA is wanted.
 
-The bundle identifier is `com.hexbane.game`. Xcode needs an Apple Development certificate,
+The current preset bundle identifier is `com.dev.hexbane`. Xcode needs an Apple Development certificate,
 the selected team, and a development provisioning profile covering a registered device.
 Connect an iPhone/iPad, open the generated `hexbane.xcodeproj`, select the target's
 Signing & Capabilities, enable automatic signing, select the intended team and device,

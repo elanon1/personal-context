@@ -58,6 +58,9 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+- **2026-09-13 — iOS authentication AOT preservation and generated bootstrap JSON.** Preserve Nakama's reflection-discovered API/collection members and generate System.Text.Json metadata for post-login/tutorial RPCs. **Why:** simulator reproduction and native regression isolated missing request getters/constructors and disabled JSON reflection; fixing only the visible error would still block entry after login. Browser return uses the registered `hexbane` scheme with Safari confirmation and a fallback link; full native Google iOS integration remains outside this fix.
+
+
 ### 2026-09-13 — Separate damage and healing presentation
 
 - Show each positive authoritative damage/heal amount separately at its recipient, with red/green signed animated numbers. Preserve cast animation while adding cosmetic recoil, and keep controls fixed during camera impulses.

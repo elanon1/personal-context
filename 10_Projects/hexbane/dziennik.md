@@ -635,3 +635,16 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Device check: connected iPhone 15 Pro Max has `com.dev.hexbane` 1.0.0 installed. No log files found in inspected application Documents/Library locations.
 - Attempt to launch with `devicectl --console` was denied by iOS because the device was locked (CoreDeviceError 10002 / FBSOpenApplicationErrorDomain 7).
 - Next: unlock device, capture console while reproducing login/registration, obtain exact exception and locate failing call before implementing a fix.
+
+
+## 2026-09-13 — iOS login/registration AOT and Google browser return
+
+- Reproduced the reported null-object authentication error in the ARM64 iPhone 17 Pro / iOS 26.5 simulator. Added exception type/stack diagnostics. Isolated Nakama TinyJson losing request fields/collection constructors under Native AOT; fixed with shared `Build/NakamaAot.props` / `.xml` imported by the client and native regression harness.
+- Fixed follow-on disabled System.Text.Json reflection in character/race/starter/tutorial bootstrap using `SignInJsonContext`. Preserved RPC field names and tutorial ownership.
+- Added iOS `hexbane://signed-in` automatic return page + visible fallback link, registered scheme in export preset. Android intent behavior retained. Safari asks to open the game; after Open, it returns to Hexbane. Tested the actual generated page body, without Google credentials.
+- Fixed hidden RegisterPanel initialization resetting Prod to Local; visible forms sync server selection. Simulator deploy script now reads actual bundle id from built Info.plist.
+- Validation: main/Auth build 0 errors, 11 existing warnings; 32 auth checks pass (existing ObjectDB cleanup warning remains); standalone macOS Native AOT regression 5 checks pass; ARM64 iOS AOT publish succeeds with existing AOT/linker warnings. Existing production test account authenticated and connected WebSocket in simulator; cached session remained on Prod; post-login data/tutorial status loaded and first tutorial screen rendered.
+- Simulator diagnostic reused the earlier exported pack/engine and refreshed the compiled C# framework + scheme plist, so it is not a fresh signed device export. No physical iPhone, full Google account flow, new live registration, complete tutorial or online duel validation. Other menu/gameplay JSON paths still use reflection and are outside this auth/bootstrap fix.
+- Files: auth LoginService/RegisterService/GoogleOAuthSignIn/SignInJsonContext; LoginPanel/RegisterPanel; three bootstrap query handlers; TutorialSession; Build AOT config; hexbane.csproj; export_presets.cfg; deploy-ios-simulator.sh; Tests/Auth + Tests/NakamaAot. Docs: social-sign-in, deploy-ios, client-architecture (corrected current SDK), _state, dziennik.
+- Disk pressure: removed only regenerable cached Godot engine `.o` and release iOS intermediate `.o` files; source files, final exports and unrelated dirty work preserved.
+- Next: fresh complete iOS export, physical Google sign-in + registration smoke, then broader menu/gameplay AOT migration.

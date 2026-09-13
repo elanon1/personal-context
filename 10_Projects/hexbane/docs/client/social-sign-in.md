@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-10
-verified: 2026-09-10
+updated: 2026-09-13
+verified: 2026-09-13
 tags: [hexbane, client, auth, google, android]
 sources: ["client:docs/client/social-sign-in.md", "client:CLAUDE.md"]
 ---
@@ -70,6 +70,20 @@ Regression verification: mocked AndroidRuntime bridge with each package, checked
 `NakamaClientManager.SetupSocket` explicitly uses `Socket.From(client, new WebSocketStdlibAdapter())`. NakamaClient 3.16.0's parameterless-adapter factory still selects the legacy `WebSocketAdapter`; against production it rejected the certificate with `RemoteCertificateValidationCallback`, although HTTPS email authentication succeeded. Native .NET WebSocket connected successfully with standard certificate validation. Do not disable TLS verification to work around this error.
 
 Verified old/new adapters against the same production session (existing test account, create=false), then real Godot4.7 LoginPanel → LoginService → NakamaClientManager production login: socket connected and login succeeded. Main/Auth build: zero errors, 11 existing warnings; all 17 auth regression checks pass. Existing exported applications need rebuilding to receive the fix; physical-device and full duel checks were not performed.
+
+## iOS authentication and browser return (2026-09-13)
+
+The reported `Object reference not set to an instance of an object` was reproduced in an ARM64 iOS 26.5 simulator. Nakama 3.16.0 uses TinyJson reflection: Native AOT removed generated request getters and collection capacity constructors. The request could lose its email field; parsing an error/session then threw `NullReferenceException`. `RetryInvoker` rethrows the exception and loses the original stack, so its frame alone does not identify the failing serializer.
+
+`Build/NakamaAot.props` is imported by the client and native regression harness. For AOT builds it roots the Nakama assembly and uses `Build/NakamaAot.xml` to preserve List/Dictionary constructors. It does not turn off trimming for the whole application. `Tests/NakamaAot` exercises email sign-in, registration, Google sign-in, session/error parsing and list parsing without network calls. The original native test failed on the missing email field, then exposed the missing collection constructor; all five checks pass with the configuration.
+
+The post-login character/race/starter and tutorial RPC paths use source-generated `SignInJsonContext` metadata. iOS disables System.Text.Json's default reflection resolver, which otherwise caused a second failure after successful authentication. Tutorial requests still send exactly `{"action":"status"}` (or the selected operation); server contracts and tutorial ownership do not change. Other gameplay/menu serializers have not undergone a complete AOT audit.
+
+The hidden registration panel no longer changes the selected server during initialization. Both forms synchronize their displayed selection when shown. This prevents a cached Prod session from being silently routed to Local while the login dropdown still says Prod.
+
+On iOS, the existing browser flow now answers with a page that automatically opens `hexbane://signed-in` and retains a visible return link. The iOS preset registers the scheme using `application/additional_plist_content` / `CFBundleURLTypes`; no code, token or state is placed in the wake-up URL. Android keeps its package-specific intent URLs. Safari in the simulator displayed its system **Open in hexbane?** prompt and returned to the game after **Open**. This is not an unconditional prompt-free app switch. Google remains the existing Desktop-client loopback flow; native Google iOS SDK/ASWebAuthenticationSession integration is not part of this change.
+
+Validation: 32 Godot auth checks; five standalone macOS Native AOT checks; ARM64 iOS AOT publish. In the simulator, existing production test-account email authentication and WebSocket connection succeeded; cached-session restoration retained Prod and the first tutorial arena/instruction screen rendered successfully. The actual generated return-page body was served locally to simulator Safari to verify scheme handling. Full Google credential/consent/token-exchange flow, physical iPhone, signed device export, new live-account registration and complete gameplay are not validated by these checks. Simulator testing reused the existing exported resource pack with freshly published C# framework and the preset's URL scheme; distribute a fresh complete export.
 
 ## Known gaps
 
