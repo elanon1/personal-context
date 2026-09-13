@@ -4,7 +4,7 @@ project: Hexbane
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-12
+updated: 2026-09-13
 tags: [hexbane, docs, index, moc]
 aliases: [hexbane-docs, hexbane-index]
 ---
@@ -79,6 +79,7 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 - [[duel-v2-client]] — implementacja pojedynku (scena, HUD, klawisze, snapshoty, reconnect, weryfikacja)
 - [[cqrs]] — jak używać dispatchera / handlerów
 - [[spell-effect-system]] — architektura efektów zaklęć (interfejsy, rejestr, konfiguracje)
+- [[spell-icon-art-direction]] — styl ikon zaklęć, palety, motywy, dokładne prompty i zasady kolejnych grafik.
 - [[spell-vfx-configuration]] — które z 14 id mają VFX/SFX/ikony, presety `SpellVisuals`, jak dodać
 - [[vfx-and-race-animation]] — sprite’y ras, `RaceSpriteAnimator`, gesty, cast-charge, okluzja,
   medytacja, bariera, areny; sceny dev i weryfikatory (`verification/` w repo)

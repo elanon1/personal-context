@@ -581,3 +581,11 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Zaktualizowano progression, matchmaking, op_09_match_canceled, client-architecture i decyzję w _state. Klient wymaga przebudowania/dostarczenia na urządzenie; sam deploy backendu nie aktualizuje aplikacji.
 
 - Produkcja wdrożona: backend `f05eabd`, GitOps `ccee602`, CI 34707922252 success; pod `hexbane-67f49bfc95-j97t4` Ready, 0 restartów, Argo Synced/Healthy/Succeeded. Fallback nadal 15–30 s. Notatka infra-and-deploy uzupełniona o dowody i granice weryfikacji.
+
+
+## 2026-09-13 — Nowy zestaw ikon zaklęć
+
+- Wygenerowano wbudowanym ImageGen i podłączono 12 ikon; Magic Arrow i Mirror Reflection pozostawiono bez zmian. Regeneration ma własny motyw i ścieżkę, oddzieloną od Mend. Ujednolicono priorytet canonical id w dashboard/lobby/starych komponentach HUD.
+- Styl: świetlista magia na niemal czarnym tle, palety szkół, czytelne sylwetki. Zapisano dokładne prompty i zasady kolejnych ikon w spell-icon-art-direction; zaktualizowano spell-vfx-configuration, design-system i _index.
+- Dowody: verification/spell-icons — manifest źródeł i promptów, hashe zachowanych ikon, build (0 błędów, 11 ostrzeżeń), import i render katalogu (14 tekstur, 0 błędów weryfikatora). Przy zamknięciu Godot występują istniejące ostrzeżenia zasobów. Bez testu fizycznego urządzenia.
+- Użytkownik rozszerzył zadanie o audyt rozmiaru Androida i usunięcie nieużywanych assetów; praca trwa. Bez commita/deployu.

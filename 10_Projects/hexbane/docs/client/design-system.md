@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-12
-verified: 2026-09-12
+updated: 2026-09-13
+verified: 2026-09-13
 tags: [hexbane, client, ui, design-system, themes]
 sources: ["client:docs/DESIGN_SYSTEM.md"]
 ---
@@ -154,3 +154,8 @@ Sources: `client:Game/ScenesV3/CharacterDetail/CharacterDetailScreen.Primary.cs`
 ## Duel ending presentation (2026-09-12)
 
 Results now use native warm-toned cards with outcome/XP/level-up as the primary hierarchy, smaller skill/match details and a persistent Continue button. The shared backdrop and theme remain. See [[duel-ending]] for layouts and music.
+
+
+## Spell icons
+
+Use [[spell-icon-art-direction]] for the luminous dark-fantasy icon family, school palettes, silhouette rules, reference pair and generation prompts. Keep frames in the UI; the square bitmap contains only the spell on a nearly black background.

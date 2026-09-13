@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-12
-verified: 2026-09-12
+updated: 2026-09-13
+verified: 2026-09-13
 tags: [hexbane, client, spells, vfx, sfx, icons]
 sources: ["client:CLAUDE.md", "client:Resources/SpellVisuals/README.md", "client:docs/opcodes/spell-visual-key.md", "client:docs/opcodes/duel-v2-verification.md"]
 ---
@@ -27,12 +27,16 @@ Current catalog: `magic_arrow, mirror_reflection, firebolt, heavy_bolt, delayed_
 | cleanse | cure | Cleanse.tscn | ElevenLabs, see [[spell-audio]] |
 | mend | heal | Mend.tscn | ElevenLabs, see [[spell-audio]] |
 | greater_heal | great_heal | GreaterHeal.tscn | ElevenLabs, see [[spell-audio]] |
-| regeneration | heal (shared) | Regeneration.tscn | ElevenLabs, see [[spell-audio]] |
+| regeneration | regeneration | Regeneration.tscn | ElevenLabs, see [[spell-audio]] |
 | barrier | arcane_shield | Barrier.tscn | ElevenLabs, see [[spell-audio]] |
 | dispel | gust | Dispel.tscn | ElevenLabs, see [[spell-audio]] |
 | consume_venom | venom_shot | ConsumeVenom.tscn | ElevenLabs, see [[spell-audio]] |
 
 Each icon folder contains only `<folder>.png` and its Godot import metadata. Generator leftovers, other old icon folders and old spell sounds were removed; Mirror Reflection formation/shatter audio was subsequently restored. `Spell.GetIconPath` retains the aliases needed by current UI.
+
+## Spell icon redesign (2026-09-13)
+
+Twelve generated icons replace the legacy art; Magic Arrow and Mirror Reflection are preserved byte-for-byte. Regeneration now has its own icon. The style and exact prompts for future spells are recorded in [[spell-icon-art-direction]]. Canonical ids take priority over legacy icon aliases in dashboard/lobby/HUD lookups. Godot loaded all 14 square textures; the rendered catalog includes 160 px and 48 px previews. Build: zero errors, 11 warnings. Device/in-match visual review remains separate.
 
 ## Effect configuration after 2026-09-08 cleanup
 
