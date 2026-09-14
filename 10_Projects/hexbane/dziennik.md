@@ -676,3 +676,11 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Preserved existing `.idea/`; game/server sources untouched. No deployment or public release claims.
 - Validation: production build and TypeScript check passed; browser visual QA not performed.
 - Note: [[website-structure]]. Remaining: final design/media, confirmed destinations, responsive browser review, hosting.
+
+
+## 2026-09-14 — Website dark-fantasy redesign
+
+- Replaced the scaffold presentation with cinematic emerald/gold design, local game art/fonts, CSS 3D sigil, spell-card depth, six-race selector, and Android/iOS download tabs. Added generated QR codes sharing the store buttons’ configured placeholder destinations.
+- Included explicit demo/release labels, keyboard tab controls, motion pause, reduced-motion support, and mobile layout rules. Game/server sources unchanged; no publication.
+- Build and typecheck passed; homepage HTTP 200; local asset references resolved. Browser visual QA and physical-phone scanning remain unverified.
+- Updated [[website-structure]]. Next: real store URLs, browser/phone review, then hosting.
