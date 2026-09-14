@@ -74,7 +74,7 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 
 ## Klient (`docs/client/`)
 
-- [[client-architecture]] — warstwy, autoloady, DI, CQRS, przepływ wiadomości, trasy scen, testy
+- [[client-architecture]] — warstwy, autoloady, DI, CQRS, przepływ wiadomości, trasy scen, testy, reguły iOS Native AOT
 - [[duel-ending]] — upadek postaci, zwycięzca i Continue na arenie, wyniki oraz muzyka ElevenLabs.
 - [[duel-v2-client]] — implementacja pojedynku (scena, HUD, klawisze, snapshoty, reconnect, weryfikacja)
 - [[cqrs]] — jak używać dispatchera / handlerów
@@ -89,7 +89,7 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 - [[design-system]] — tokeny UI, fonty, motywy (`ui-designer` jest do niego przywiązany)
 - [[social-sign-in]] — Google sign-in na PC i Androidzie, konfiguracja, znane luki
 - [[client-tutorial]] — lokalny tutorial
-- [[deploy-ios]] — eksport iOS, nazwa pliku, wykluczenie Ridera i provisioning urządzenia
+- [[deploy-ios]] — eksport iOS, symulator, reguły Native AOT (generowany JSON, bez `dynamic`), logi z symulatora, provisioning urządzenia
 - [[deploy-android]] — `deploy.sh`, ADB, LAN host, presety eksportu
 - [[google-play-first-release]] — od zera: Play Console, klucz upload, AAB, podpis Google, testy wewnętrzne i konfiguracja PGS.
 - [[legacy-and-tooling]] — martwe trasy/kod, `.env`, stary pipeline n8n, archiwa sztuki, addony

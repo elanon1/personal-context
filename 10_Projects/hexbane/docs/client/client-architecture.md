@@ -127,7 +127,8 @@ Display: 2400×1080 viewport, `canvas_items` stretch, `expand` aspect, per-pixel
 | `Tests/DuelV2/DuelV2.csproj` | `dotnet run --project Tests/DuelV2/DuelV2.csproj [ai|pvp]` | offline duel_v2 model checks; with an argument a live SDK smoke that requires `NAKAMA_URL` and the seeded `elf@test.pl` / `dark_elf@test.pl` accounts (`Live.cs:72-77`) |
 | `Tests/Tutorial/Tutorial.csproj` | `dotnet run --project Tests/Tutorial/Tutorial.csproj` | `TrainingBattle` steps and `ProgressionLesson.ShouldStart` |
 | `Tests/Tutorial/live_rpc.py` | `python3 Tests/Tutorial/live_rpc.py` | `tutorial` RPC against `127.0.0.1:7350` with a disposable device account |
-| `Tests/JsonAot/JsonAot.csproj` | `dotnet build Tests/JsonAot/JsonAot.csproj`, then `HEXBANE_IGNORE_ENV_FILE=1 DEV_AUTO_LOGIN=false <Godot 4.7 .NET> --headless --path Tests/JsonAot` | every shipped JSON path with reflection-based System.Text.Json disabled (the iOS Native AOT rule): RPC handlers through the real Nakama client and a canned HTTP adapter, queue client, opcode messages, notifications, duel v2 command/snapshot/event, race hand tracks (157 checks, 2026-09-14) |
+| `Tests/JsonAot/JsonAot.csproj` | `dotnet build Tests/JsonAot/JsonAot.csproj`, then `HEXBANE_IGNORE_ENV_FILE=1 DEV_AUTO_LOGIN=false <Godot 4.7 .NET> --headless --path Tests/JsonAot` | every shipped JSON path with reflection-based System.Text.Json disabled (the iOS Native AOT rule): RPC handlers through the real Nakama client and a canned HTTP adapter, queue client, opcode messages, notifications, duel v2 command/snapshot/event, race hand tracks plus `SignalUtils.EmitSafe` argument delivery (162 checks, 2026-09-14) |
+| `Tests/NakamaAot/NakamaAot.csproj` | `dotnet publish Tests/NakamaAot/NakamaAot.csproj -c Release -r osx-arm64 -o <dir>`, then `<dir>/NakamaAot` (5 offline SDK checks), `… live-socket` (device auth + socket RPC `healthcheck` / `create_ai_arcane_duel` against `127.0.0.1:7350`), `… dynamic-check` (proves `dynamic` fails under Native AOT) | real Native AOT behaviour of the Nakama SDK and of C# features on macOS |
 | Godot headless scenes | `Game/ScenesV3/Dev/*.tscn`, `ReferenceDuel/ReferenceVerification.tscn` | see [[duel-v2-client]], [[client-tutorial]], [[vfx-and-race-animation]] |
 
 Build: `dotnet build hexbane.csproj`. No formatter/linter; `.editorconfig` only sets UTF-8.
@@ -136,7 +137,7 @@ Build: `dotnet build hexbane.csproj`. No formatter/linter; `.editorconfig` only 
 
 Four-space indent, file-scoped namespaces, `_camelCase` private fields, PascalCase public members, scene sub-components may be `_Name.cs`, signal delegates end in `EventHandler`. Services via `DIHost.Services` or `GameContext.Instance`.
 
-## JSON serialization: generated metadata only (2026-09-14)
+## iOS Native AOT rules: generated JSON, no `dynamic` (2026-09-14)
 
 iOS ships as **Native AOT** (`Godot.NET.Sdk/Sdk/iOS.props` sets `PublishAot=true`), and .NET then disables reflection-based System.Text.Json: every `JsonSerializer.Serialize(value)` / `Deserialize<T>(json)` without generated metadata throws `InvalidOperationException: Reflection-based serialization has been disabled for this application`. Desktop and Android never hit this, so the failure only shows on the phone (2026-09-13 login; 2026-09-14 character creation, invisible race sprites, and every later RPC/socket path).
 
@@ -149,7 +150,9 @@ Rule for shipped code (`Game/`, `Application/`, `Core/`):
 - Godot hosts the game assembly inside its own runtime and ignores the project's `runtimeconfig.json`, so `JsonSerializerIsReflectionEnabledByDefault` in `hexbane.csproj` would not change the desktop; `Tests/JsonAot` flips the `System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault` AppContext switch in code instead.
 - Newtonsoft.Json remains only in `GoogleOAuthSignIn` (`JObject.Parse` of the token response/ID token); it does not use reflection on user types. Not exercised on iOS with real Google credentials yet.
 
-Checks: `Scripts/check_aot_json.sh` builds with the AOT/trim analyzers and fails on any `IL3050` outside the dev scenes; `Tests/JsonAot` (see the table above) fails with the iOS exception when a path regresses. See [[deploy-ios]] for the simulator reproduction and validation.
+**No C# `dynamic` in shipped code.** The runtime binder does not exist under Native AOT: `Tests/NakamaAot dynamic-check` shows `RuntimeBinderException: 'DynamicProbe' does not contain a definition for 'Wrap'` for a `dynamic` call into a generic method, and in the app it surfaced as *Object reference not set to an instance of an object* the moment `MatchState.ChangeStatus` emitted `MatchStatusChanged` (bot match found, after a successful `create_ai_arcane_duel`). `SignalUtils.EmitSafe` now converts arguments with an explicit type switch (`int`, `long`, `float`, `double`, `bool`, `string`, `StringName`, `NodePath`, `GodotObject`, Godot `Array`/`Dictionary`, `Array<string>`, `Array<int>`, primitive arrays) and throws `NotSupportedException` for anything else, so a new argument shape fails loudly on the desktop instead of silently on the phone. `ModeOverlay` logs the full matchmaking exception (`GD.PrintErr`) before showing the dialog.
+
+Checks: `Scripts/check_aot_json.sh` builds with the AOT/trim analyzers, fails on any `IL3050` outside the dev scenes and on any `dynamic` in `Game/`, `Application/`, `Core/` (the Roslyn analyzer only reports `dynamic` as `IL2026`, so it is grepped); `Tests/JsonAot` (see the table above) fails with the iOS exception when a JSON path regresses and verifies `EmitSafe` argument delivery (162 checks); `Tests/NakamaAot` (`dotnet publish -r osx-arm64`, Native AOT) has `live-socket` (socket RPC envelope against local Nakama) and `dynamic-check` probes. See [[deploy-ios]] for the simulator reproduction and validation.
 
 ## Runtime socket recovery (2026-09-10)
 

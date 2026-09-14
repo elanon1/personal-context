@@ -99,6 +99,10 @@ Logging: Godot on iOS writes `GD.Print` to the unified log at **info** level and
 
 `deploy-ios-simulator.sh` now really reads the bundle id from the built `Info.plist` (the 2026-09-13 note described this, but the script still launched the hard-coded `com.hexbane.game`, i.e. the stale 2026-09-09 install); that stale app was uninstalled from the simulator.
 
+### Second root cause on the same day: C# `dynamic`
+
+With every JSON path migrated, the bot duel still failed on iOS: **Matchmaking — Object reference not set to an instance of an object** right after tapping *vs AI*, while the server log showed the match created (`Match started` → `Nobody joined within the grace period`). `Tests/NakamaAot live-socket` (real Native AOT on macOS) proved the socket RPC envelope is intact, which ruled out the SDK; the remaining `IL2026` in shipped code was `SignalUtils.EmitSafe`'s `dynamic` argument conversion, called by `MatchState.ChangeStatus` for `MatchFound`. `Tests/NakamaAot dynamic-check` reproduces the binder failure natively. Fix: explicit `Variant` conversion (see [[client-architecture]] → *iOS Native AOT rules*); `Scripts/check_aot_json.sh` now also fails on `dynamic`.
+
 ## Development signing (physical devices only)
 
 Turn off **Export Project Only** and restore Debug Code Sign Identity to blank /
