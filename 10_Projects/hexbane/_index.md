@@ -4,7 +4,7 @@ project: Hexbane
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-13
+updated: 2026-09-14
 tags: [hexbane, docs, index, moc]
 aliases: [hexbane-docs, hexbane-index]
 ---
@@ -153,3 +153,7 @@ Raporty weryfikacji docs vs kod z 2026-09-07 — sekcje „code smells” i „o
 
 - [[spell-audio]] — ElevenLabs SFX wszystkich 14 czarów, miks, generowanie i odsłuch.
 - [[2026-09-12-spell-audio]] — plan i walidacja systemu dźwięków czarów.
+
+## Website (`docs/website/`)
+
+- [[website-structure]] — local promotional website scaffold, content sources, commands, and remaining work.

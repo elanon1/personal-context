@@ -668,3 +668,11 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Weryfikacja w symulatorze (świeży pełny eksport, `deploy-ios-simulator.sh` naprawiony: startuje bundle id z Info.plist, wcześniej hard-kodował stare `com.hexbane.game`): auto-rejestracja → `create_character` (postać `Dev3912` w bazie) → tutorial z widocznymi sprite'ami; `orc@test.pl` → szczegóły postaci → lekcja rozwoju (`allocate_stat_points`, `learn_spell`, `get_player_spells`) → `get/set_primary_path` → vs AI → Match Found → lobby draftu (op 0/3/70) → arrange → pojedynek (op 10/16/7, 29–32, VFX, liczby obrażeń) → remis → wyniki (op 50, +70 XP) → dashboard → Social/Settings → logout; nowe konto → kreator 5 kroków → `Cassian`/elf na dashboardzie. Zero wpisów błędów aplikacji w unified logu przez cały przebieg.
 - Poza zakresem / nie sprawdzone: fizyczny iPhone i podpisany eksport, pełny przepływ Google na iOS (Newtonsoft `JObject.Parse` zostaje tylko tam), sceny Dev nadal na refleksji, podwójne wywołania handlerów opcode (oba menedżery meczu spięte z socketem — zachowanie sprzed zmian, nie iOS). Sesja klienta wygasa po ~2 h bezczynności i wraca do logowania (polityka klienta). Dane lokalne: konta `dev_*`, `ios-wizard-*`, wiersze `account_tutorials` dla `orc@test.pl` i konta testowego dodane ręcznie.
 - Notatki: client-architecture (sekcja *iOS Native AOT rules*, tabela testów), deploy-ios (reguła, recepta logów z symulatora, druga przyczyna), social-sign-in, rpcs, `_index`, `_state` (decyzja). Repo: `CLAUDE.md` (sekcja *iOS build: Native AOT rules*). Bez commitów i deployu na urządzenie.
+
+
+## 2026-09-14 — Website project foundation
+
+- Prepared local `hexbane-website` structure with Sites/Vinext, React, TypeScript, homepage sections, curated game content, navigation config, theme tokens, and media directories. Reviewed Obsidian, client race/standard-spell code, and server spell code/data.
+- Preserved existing `.idea/`; game/server sources untouched. No deployment or public release claims.
+- Validation: production build and TypeScript check passed; browser visual QA not performed.
+- Note: [[website-structure]]. Remaining: final design/media, confirmed destinations, responsive browser review, hosting.
