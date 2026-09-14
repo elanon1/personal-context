@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-13
-verified: 2026-09-13
+updated: 2026-09-14
+verified: 2026-09-14
 tags: [hexbane, client, architecture, godot]
 sources: ["client:CLAUDE.md", "client:AGENTS.md", "client:project.godot", "client:Game/Autoloads/SceneManager.cs", "client:Game/DI/ServiceBootstrapper.cs"]
 ---
@@ -127,6 +127,7 @@ Display: 2400×1080 viewport, `canvas_items` stretch, `expand` aspect, per-pixel
 | `Tests/DuelV2/DuelV2.csproj` | `dotnet run --project Tests/DuelV2/DuelV2.csproj [ai|pvp]` | offline duel_v2 model checks; with an argument a live SDK smoke that requires `NAKAMA_URL` and the seeded `elf@test.pl` / `dark_elf@test.pl` accounts (`Live.cs:72-77`) |
 | `Tests/Tutorial/Tutorial.csproj` | `dotnet run --project Tests/Tutorial/Tutorial.csproj` | `TrainingBattle` steps and `ProgressionLesson.ShouldStart` |
 | `Tests/Tutorial/live_rpc.py` | `python3 Tests/Tutorial/live_rpc.py` | `tutorial` RPC against `127.0.0.1:7350` with a disposable device account |
+| `Tests/JsonAot/JsonAot.csproj` | `dotnet build Tests/JsonAot/JsonAot.csproj`, then `HEXBANE_IGNORE_ENV_FILE=1 DEV_AUTO_LOGIN=false <Godot 4.7 .NET> --headless --path Tests/JsonAot` | every shipped JSON path with reflection-based System.Text.Json disabled (the iOS Native AOT rule): RPC handlers through the real Nakama client and a canned HTTP adapter, queue client, opcode messages, notifications, duel v2 command/snapshot/event, race hand tracks (157 checks, 2026-09-14) |
 | Godot headless scenes | `Game/ScenesV3/Dev/*.tscn`, `ReferenceDuel/ReferenceVerification.tscn` | see [[duel-v2-client]], [[client-tutorial]], [[vfx-and-race-animation]] |
 
 Build: `dotnet build hexbane.csproj`. No formatter/linter; `.editorconfig` only sets UTF-8.
@@ -134,6 +135,21 @@ Build: `dotnet build hexbane.csproj`. No formatter/linter; `.editorconfig` only 
 ## Conventions
 
 Four-space indent, file-scoped namespaces, `_camelCase` private fields, PascalCase public members, scene sub-components may be `_Name.cs`, signal delegates end in `EventHandler`. Services via `DIHost.Services` or `GameContext.Instance`.
+
+## JSON serialization: generated metadata only (2026-09-14)
+
+iOS ships as **Native AOT** (`Godot.NET.Sdk/Sdk/iOS.props` sets `PublishAot=true`), and .NET then disables reflection-based System.Text.Json: every `JsonSerializer.Serialize(value)` / `Deserialize<T>(json)` without generated metadata throws `InvalidOperationException: Reflection-based serialization has been disabled for this application`. Desktop and Android never hit this, so the failure only shows on the phone (2026-09-13 login; 2026-09-14 character creation, invisible race sprites, and every later RPC/socket path).
+
+Rule for shipped code (`Game/`, `Application/`, `Core/`):
+
+- Serialize and deserialize only through a generated `JsonSerializerContext` property: `ClientJsonContext.Default.<Type>` (`Application/Serialization/ClientJsonContext.cs`, everything after sign-in: RPC requests/responses, queue, opcode messages, notifications, duel v2), `SignInJsonContext` (`Application/Authentication/`, post-login bootstrap and tutorial), `GameJsonContext` (`Game/Serialization/`, race hand tracks). Generic and collection roots get concatenated names, e.g. `RpcResponseFriendSearchDto`, `DictionaryStringPalmTrack`; a duplicate simple name needs `TypeInfoPropertyName` (the lobby draft's own `Spell` is `LobbySpell`).
+- Anonymous request objects are not possible with generated metadata. RPC payloads are named DTOs with `[JsonPropertyName]`: `CreateCharacterRequest`, `CharacterIdRequest`, `AllocateStatPointsRequest`, `SetTutorialCompletedRequest` (Character/Dto), `SpellIdRequest`, `LearnSpellRequest`, `SpellCatalogRequest` (Spell/Dto), `UserListRequest`, `UsersResponse` (Social/Dto), `MatchIdRequest`, `OpponentActionRequest`, `ClientReadyPayload` (`Application/Match/MatchPayloads.cs`), `QueueJoinRequest`, `QueueReferenceRequest`, `QueueAssignmentRequest` (`QueueClient.cs`). Wire field names and order are unchanged from the previous anonymous objects.
+- Register the **root** type of a payload in the context; nested types are discovered. `MatchMessageHandler.RegisterHandlersFromAssembly` prints an error at startup for any `[MatchOpcode]` message missing from `ClientJsonContext`.
+- `JsonDocument` / `JsonElement` navigation is allowed (no metadata needed). Dev-only scenes under `Game/ScenesV3/Dev/` and `ReferenceDuel/Verify*.cs` still use reflection serialization and are exempt because they never run on a device.
+- Godot hosts the game assembly inside its own runtime and ignores the project's `runtimeconfig.json`, so `JsonSerializerIsReflectionEnabledByDefault` in `hexbane.csproj` would not change the desktop; `Tests/JsonAot` flips the `System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault` AppContext switch in code instead.
+- Newtonsoft.Json remains only in `GoogleOAuthSignIn` (`JObject.Parse` of the token response/ID token); it does not use reflection on user types. Not exercised on iOS with real Google credentials yet.
+
+Checks: `Scripts/check_aot_json.sh` builds with the AOT/trim analyzers and fails on any `IL3050` outside the dev scenes; `Tests/JsonAot` (see the table above) fails with the iOS exception when a path regresses. See [[deploy-ios]] for the simulator reproduction and validation.
 
 ## Runtime socket recovery (2026-09-10)
 

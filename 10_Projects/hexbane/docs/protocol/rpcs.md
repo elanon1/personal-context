@@ -5,7 +5,7 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-12
+updated: 2026-09-14
 verified: 2026-09-12
 tags: [hexbane, protocol, rpc, nakama]
 sources: ["server:RPCs.md", "server:docs/API-REFERENCE-v2.md", "server:docs/match/api-reference.md", "server:docs/progression/client/menu-rpc-requirements.md", "client:docs/Server/progression/menu-rpc-requirements.md", "server:docs/client/client-implementation-prompt.md"]
@@ -43,7 +43,7 @@ Prepared client primary/respec integration is described in [[duel-v2-client]]; d
 ## Character module (`server:modules/character/init.go`)
 
 ### `create_character`
-- Registered `init.go:11`, handler `rpc.go:14`. Client: `client:Application/Modules/Character/Commands/CreateCharacter/CreateCharacterCommandHandler.cs:40-53`.
+- Registered `init.go:11`, handler `rpc.go:14`. Client: `client:Application/Modules/Character/Commands/CreateCharacter/CreateCharacterCommandHandler.cs:40-55` (payload type `Character/Dto/CreateCharacterRequest.cs`, serialized through the generated `ClientJsonContext` — see [[client-architecture]] → *JSON serialization*).
 - Request (`types.go:4-12`):
   ```json
   {"name":"Merlin","avatar":"human","race_id":"human",

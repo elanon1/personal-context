@@ -5,7 +5,7 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-13
+updated: 2026-09-14
 verified: 2026-09-13
 tags: [hexbane, client, auth, google, android]
 sources: ["client:docs/client/social-sign-in.md", "client:CLAUDE.md"]
@@ -77,7 +77,7 @@ The reported `Object reference not set to an instance of an object` was reproduc
 
 `Build/NakamaAot.props` is imported by the client and native regression harness. For AOT builds it roots the Nakama assembly and uses `Build/NakamaAot.xml` to preserve List/Dictionary constructors. It does not turn off trimming for the whole application. `Tests/NakamaAot` exercises email sign-in, registration, Google sign-in, session/error parsing and list parsing without network calls. The original native test failed on the missing email field, then exposed the missing collection constructor; all five checks pass with the configuration.
 
-The post-login character/race/starter and tutorial RPC paths use source-generated `SignInJsonContext` metadata. iOS disables System.Text.Json's default reflection resolver, which otherwise caused a second failure after successful authentication. Tutorial requests still send exactly `{"action":"status"}` (or the selected operation); server contracts and tutorial ownership do not change. Other gameplay/menu serializers have not undergone a complete AOT audit.
+The post-login character/race/starter and tutorial RPC paths use source-generated `SignInJsonContext` metadata. iOS disables System.Text.Json's default reflection resolver, which otherwise caused a second failure after successful authentication. Tutorial requests still send exactly `{"action":"status"}` (or the selected operation); server contracts and tutorial ownership do not change. The remaining gameplay/menu serializers were migrated to generated metadata on 2026-09-14 (`ClientJsonContext`, `GameJsonContext`; rule and checks in [[client-architecture]], reproduction in [[deploy-ios]]).
 
 The hidden registration panel no longer changes the selected server during initialization. Both forms synchronize their displayed selection when shown. This prevents a cached Prod session from being silently routed to Local while the login dropdown still says Prod.
 

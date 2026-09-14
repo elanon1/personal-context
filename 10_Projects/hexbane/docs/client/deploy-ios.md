@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-08
-updated: 2026-09-13
-verified: 2026-09-13
+updated: 2026-09-14
+verified: 2026-09-14
 tags: [hexbane, client, ios, deploy]
 sources: ["client:export_presets.cfg", "client:hexbane.csproj"]
 ---
@@ -72,9 +72,32 @@ authentication screen rendered. Full login and network gameplay were not validat
 
 ## Authentication runtime requirements (2026-09-13)
 
-Keep `Build/NakamaAot.props` and its descriptor in the project: Nakama reflection needs explicit preservation under iOS Native AOT. Post-login bootstrap/tutorial JSON uses generated metadata. The iOS preset also registers the `hexbane` URL scheme to return from browser authentication; see [[social-sign-in]] for the diagnosis, regression tests and validation limits.
+Keep `Build/NakamaAot.props` and its descriptor in the project: Nakama reflection needs explicit preservation under iOS Native AOT. Post-login bootstrap/tutorial JSON uses generated metadata; since 2026-09-14 every other shipped JSON path does too (next section). The iOS preset also registers the `hexbane` URL scheme to return from browser authentication; see [[social-sign-in]] for the diagnosis, regression tests and validation limits.
 
 `deploy-ios-simulator.sh` reads the bundle id from the built Info.plist instead of assuming the earlier `com.hexbane.game` id. Syntax checked after this change; the full export script was not rerun. The 2026-09-13 auth diagnostic used the earlier simulator app/resources with a freshly published ARM64 C# framework and matching scheme entry. It is a simulator diagnostic, not a signed device release.
+
+## Runtime rule: generated JSON only (2026-09-14)
+
+Symptom on the phone after the 2026-09-13 login fix: character creation failed, the tutorial arena showed no race sprites, and every later RPC/socket screen would have failed the same way. Reproduced in the ARM64 iPhone 17 Pro / iOS 26.5 simulator with the current tree: unified log `InvalidOperationException: Reflection-based serialization has been disabled for this application` from `RaceSpriteAnimator.Load` (hand tracks) and, per the AOT analyzer, from ~30 more `JsonSerializer` calls (`CreateCharacterCommandHandler`, spells, social, notifications, `MatchMessageHandler`, `DuelProtocol`, queue, game over). Cause: iOS is Native AOT, which disables reflection-based System.Text.Json; only the sign-in bootstrap used generated metadata.
+
+Fix: generated contexts for every shipped path (`ClientJsonContext`, `GameJsonContext`, existing `SignInJsonContext`) and named request DTOs instead of anonymous objects — the rule and the type list are in [[client-architecture]] → *JSON serialization*. Nothing changed on the wire.
+
+Verification recipe (all run 2026-09-14):
+
+1. `Scripts/check_aot_json.sh` — AOT/trim analyzer build; fails on any `IL3050` (reflection serializer) outside dev-only scenes. Before the fix: 73 `IL3050` sites, ~30 in shipped code; after: none.
+2. `Tests/JsonAot` — Godot headless project that disables JSON reflection through the AppContext switch (Godot ignores the game's `runtimeconfig.json`) and drives the real handlers through the Nakama client with a canned `IHttpAdapter`. Before the fix: 1 passed / 19 failed with the iOS exception; after: 157 passed.
+3. `Tests/Auth` still passes (30 checks) — sign-in untouched.
+4. Simulator: `./deploy-ios-simulator.sh`, then an automated pass through registration → character creation → post-login screens using the dev auto-login. `EnvLoader` reads process environment variables, and `simctl` forwards `SIMCTL_CHILD_*` to the app:
+
+```bash
+SIMCTL_CHILD_DEV_AUTO_LOGIN=true SIMCTL_CHILD_DEV_AUTO_LOGIN_MODE=new_character \
+SIMCTL_CHILD_NAKAMA_SERVER=local SIMCTL_CHILD_NAKAMA_HOST=127.0.0.1 \
+xcrun simctl launch --console-pty --terminate-running-process <udid> com.dev.hexbane
+```
+
+Logging: Godot on iOS writes `GD.Print` to the unified log at **info** level and `GD.PrintErr`/exceptions at error level; `simctl launch --stdout=/path` created no file and `--console` / `--console-pty` showed only Objective-C runtime lines. Read the app's output with `xcrun simctl spawn <udid> log show --info --last 5m --predicate 'process == "hexbane"' --style compact` (drop `--info` for errors only). The local stack must be up (`docker compose up -d` in the server repo; the simulator reaches the Mac's loopback). Evidence 2026-09-14: `[DevAutoLogin] new_character: creating 'Dev3912' race=human …` → `connected (mode=new_character, hasCharacter=True)` → `TutorialScreen`, character row present in the local database, both race sprites visible in the tutorial arena, no serialization errors in the log.
+
+`deploy-ios-simulator.sh` now really reads the bundle id from the built `Info.plist` (the 2026-09-13 note described this, but the script still launched the hard-coded `com.hexbane.game`, i.e. the stale 2026-09-09 install); that stale app was uninstalled from the simulator.
 
 ## Development signing (physical devices only)
 

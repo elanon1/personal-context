@@ -6,8 +6,8 @@ status: active
 state: active
 repo: https://github.com/elanon1/hexbane
 created: 2026-08-31
-updated: 2026-09-13
-verified: 2026-09-12
+updated: 2026-09-14
+verified: 2026-09-14
 tags: [hexbane, gamedev, godot, csharp, nakama, go, kubernetes, ai-art]
 aliases: [hexbane, hexbane-server]
 ---
@@ -57,6 +57,8 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 **Content:** 13 zachowanych ikon pokrywa 14 obecnych zaklęć; VFX obejmuje wszystkie 14 zaklęć: Mirror Reflection z przywróconymi dźwiękami, Magic Arrow i Firebolt/Fireball ze wspólnym cyklem życia pocisku oraz 11 różnorodnych efektów na postaci z warstwami przed/za sylwetką. Nowe animacje castingu i presety zachowane. Stare VFX/SFX i assety generatora usunięte 2026-09-08. → [[spell-vfx-configuration]]
 
 ## Decisions log
+
+- **2026-09-14 — Generated JSON metadata for every shipped serializer; no reflection-based System.Text.Json outside dev scenes.** `ClientJsonContext` (post-sign-in RPC/socket/notification/duel), `GameJsonContext` (race hand tracks) plus the existing `SignInJsonContext`; anonymous RPC payloads replaced by named DTOs with unchanged wire fields; `MatchMessageHandler` reports unregistered opcode messages at startup. Guarded by `Tests/JsonAot` (JSON reflection switched off like iOS; 157 checks) and `Scripts/check_aot_json.sh` (AOT analyzer, fails on `IL3050`). **Why:** iOS is Native AOT and disables reflection serialization, so after the login fix every next screen failed on the phone (character creation, invisible race sprites, all later RPCs). Enabling `JsonSerializerIsReflectionEnabledByDefault` under AOT is unsupported and would still break on generic value-type instantiations, and Godot ignores the game's `runtimeconfig.json` on the desktop anyway, so a runtime harness that flips the switch in code is the regression net. Dev-only verification scenes stay on reflection because they never ship. See [[client-architecture]], [[deploy-ios]].
 
 - **2026-09-13 — iOS authentication AOT preservation and generated bootstrap JSON.** Preserve Nakama's reflection-discovered API/collection members and generate System.Text.Json metadata for post-login/tutorial RPCs. **Why:** simulator reproduction and native regression isolated missing request getters/constructors and disabled JSON reflection; fixing only the visible error would still block entry after login. Browser return uses the registered `hexbane` scheme with Safari confirmation and a fallback link; full native Google iOS integration remains outside this fix.
 
