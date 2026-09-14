@@ -699,3 +699,11 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Extended client `.gitignore` for local environment/OAuth credentials, IDE/OS state, .NET/Node/Python output, exported packages, legacy generated iOS project, and temporary backups. Preserved existing render/verification exclusions.
 - Removed 4,996 matching files from the Git index only; all remain on disk. Unrelated staged entries verified byte-for-byte unchanged. `Build/NakamaAot.*`, Godot `.uid`/`.import`, assets, sources and package lockfiles remain eligible for tracking.
 - Validation: 22 positive/negative ignore checks passed; no tracked files match ignore rules; `.gitignore` whitespace check passed. No commit/push. Existing Git history was not rewritten; `.env` exists in HEAD.
+
+
+## 2026-09-14 — Experimental playable browser build
+
+- Created isolated `codex/web-build` worktree at `~/RiderProjects/hexbane-web`; main checkout and its concurrent export configuration edit preserved.
+- Installed separate .NET 10.0.401/wasm-tools and 2dog 4.7.2.84, generated web host, selected Compatibility/SD asset packaging, rooted Nakama for trimming and omitted desktop OAuth secret from web project settings.
+- C# build and full WebAssembly publish succeeded. Served locally at http://127.0.0.1:8067; observed real login screen and later active Training in Dia while the user interacted with the game. No online PvP or Google auth claim.
+- Added `Scripts/web.sh` in the experimental worktree and [[deploy-web]]; updated [[_index]] and [[_state]]. No commit, merge or public deploy. Remaining: download-size optimization, online flows and broader browser testing.

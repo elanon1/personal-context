@@ -58,6 +58,11 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+### 2026-09-14 — Isolated 2dog browser experiment
+- **Decision:** Keep the first playable browser build on `codex/web-build` in `~/RiderProjects/hexbane-web` using 2dog/.NET 10. See [[deploy-web]].
+- **Why:** Official Godot 4 C# export does not support web; 2dog successfully built the existing game and rendered active Training in Dia. Isolation keeps its SDK/runtime migration separate from the established mobile toolchain until broader validation.
+
+
 - **2026-09-14 — Website foundation:** independent local React/TypeScript Sites/Vinext scaffold with curated game content. **Why:** reuse the available website tooling while keeping marketing rendering independent of Nakama and private game configuration. Final design and hosting remain pending.
 
 - **2026-09-14 — Generated JSON metadata for every shipped serializer; no reflection-based System.Text.Json outside dev scenes.** `ClientJsonContext` (post-sign-in RPC/socket/notification/duel), `GameJsonContext` (race hand tracks) plus the existing `SignInJsonContext`; anonymous RPC payloads replaced by named DTOs with unchanged wire fields; `MatchMessageHandler` reports unregistered opcode messages at startup. Guarded by `Tests/JsonAot` (JSON reflection switched off like iOS; 157 checks) and `Scripts/check_aot_json.sh` (AOT analyzer, fails on `IL3050`). **Why:** iOS is Native AOT and disables reflection serialization, so after the login fix every next screen failed on the phone (character creation, invisible race sprites, all later RPCs). Enabling `JsonSerializerIsReflectionEnabledByDefault` under AOT is unsupported and would still break on generic value-type instantiations, and Godot ignores the game's `runtimeconfig.json` on the desktop anyway, so a runtime harness that flips the switch in code is the regression net. Dev-only verification scenes stay on reflection because they never ship. The same session removed the only C# `dynamic` (`SignalUtils.EmitSafe`), which has no runtime binder under Native AOT and broke every match status change on iOS; the check script also greps for `dynamic`. See [[client-architecture]], [[deploy-ios]].
