@@ -684,3 +684,18 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Included explicit demo/release labels, keyboard tab controls, motion pause, reduced-motion support, and mobile layout rules. Game/server sources unchanged; no publication.
 - Build and typecheck passed; homepage HTTP 200; local asset references resolved. Browser visual QA and physical-phone scanning remain unverified.
 - Updated [[website-structure]]. Next: real store URLs, browser/phone review, then hosting.
+
+
+## 2026-09-14 — Website fire/ice presentation and original branding
+
+- Full-screen fire/ice entrance, oversized client logo, deferred Three.js portal with vortex/shards/particles, selectable floating spell cards, portrait race navigation, and game icon in download panel.
+- Original `logo_fire.png` and app X icon copied unchanged; derived browser/touch icons and consistent social thumbnail. Verified source PNG hashes, visible WebP pixels/alpha, and rendered metadata references.
+- Preserved store/QR placeholders. Added GPU lifecycle limits, explicit pause, reduced motion, and static fallback. No deployment or client/server edits.
+- Updated [[website-structure]]. Browser/GPU/mobile visual validation and real store links remain pending.
+
+
+## 2026-09-14 — Client Git ignore cleanup
+
+- Extended client `.gitignore` for local environment/OAuth credentials, IDE/OS state, .NET/Node/Python output, exported packages, legacy generated iOS project, and temporary backups. Preserved existing render/verification exclusions.
+- Removed 4,996 matching files from the Git index only; all remain on disk. Unrelated staged entries verified byte-for-byte unchanged. `Build/NakamaAot.*`, Godot `.uid`/`.import`, assets, sources and package lockfiles remain eligible for tracking.
+- Validation: 22 positive/negative ignore checks passed; no tracked files match ignore rules; `.gitignore` whitespace check passed. No commit/push. Existing Git history was not rewritten; `.env` exists in HEAD.
