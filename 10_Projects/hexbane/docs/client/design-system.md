@@ -36,6 +36,16 @@ The old doc claimed `SubheadLabel`, `SideTitle`, `StepName` and `TabButton` were
 
 ## Background
 
+### Shared artwork replacement — 2026-09-15
+
+The shared `ui_background.png` was replaced in place with an original 1931×814 panoramic dark-fantasy sanctuary generated with the built-in imagegen tool. Warm basalt, bronze, embers and restrained distant teal magic match the menu palette; atmospheric negative space preserves readability. The previous portrait artwork with the Gemini mark is no longer in the working asset. The path, Godot import UID and all consumers are retained.
+
+Rendered verification: Auth and Dashboard inspected at 1360×612 using `MobileLayoutVerification`; captures in `/tmp/hexbane-menu-background/`. This is a desktop-rendered mobile-size check, not a physical-device test. Editor import also reports an unrelated pre-existing untracked `GameHudPreview.tscn` referencing missing `GameHudPreview.cs`, plus editor shutdown errors.
+
+Generation prompt (built-in imagegen):
+
+> Use case: stylized-concept. Asset type: finished shared background illustration for Hexbane dark fantasy spell-dueling game login and menus. Create a brand NEW original image, wide panoramic 21:9 composition, ideally 2560x1080. Premium painterly cinematic game environment, convincing weathered materials and atmospheric depth. Ancient ruined arcane dueling sanctum, monumental worn basalt arches framing the far left and right edges, a circular engraved stone dueling floor in the lower third, distant ruined sanctuary fading into smoky darkness. Restrained ember-orange firelight in side braziers and scattered tiny warm embers, faint muted teal arcane energy deep in distant stone cracks, bronze ornament details. Palette predominantly warm charcoal, umber and aged bronze matching an orange accented medieval fantasy interface. Rich artistic detail concentrated on outer sides; the broad middle 55 percent and upper middle must remain softly atmospheric dark negative space for overlaid login form, logo and menu cards. Quiet evocative anticipation before a magical duel, mysterious and powerful, beautiful rather than generic. Grounded perspective, refined painterly realism, soft volumetric mist, controlled contrast, no large bright central light. Full bleed landscape background artwork only. No characters, no text, no letters, no readable runes, no logos, no Gemini symbol, no watermarks, no signatures, no UI, no borders. Do not reproduce the previous image or its character portraits.
+
 Every ScenesV3 screen and GameOver use `Resources/UI/Shared/Backgrounds/ui_background.png` (9 scene/script references) under a dark `BgOverlay` panel. The duel scene has its own arena stage ([[vfx-and-race-animation]]). Do not generate per-screen backgrounds. Auth-only assets: `Resources/UI/Auth/` (ornament, sigil, icons, `button_bg.png` 9-patch).
 
 ## Palette (warm-toned: R > G > B in every dark, never grey or blue-black)

@@ -739,3 +739,9 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Notes: [[assets-pipeline]], legacy/design/animation notes; docs/audits/2026-09-15-legacy-resource-removal.json. No commit or push. Preserved unrelated export preset edit and prior resource migration.
 
 - Final follow-up verification: all 598 retained resources/scenes loaded; no remaining references to deleted files, no broken scene/resource dependencies and no Legacy directories under Resources. Rendered GameplaySandboxVerification passed all fourteen casts/icons plus reflection/dodge, cancellation and meditation/audio; screenshot reviewed. Godot editor filesystem refreshed; git diff --check passed.
+
+## 2026-09-15 — nowe wspólne tło logowania i menu
+
+- Zastąpiono `Resources/UI/Shared/Backgrounds/ui_background.png` nową ilustracją sanktuarium pojedynków (built-in imagegen, 1931×814): ciepły kamień, żar, brąz i subtelna magia. Stara grafika ze znakiem Gemini została zastąpiona; zachowano ścieżkę i UID.
+- Obejrzano rendery Auth i Dashboard w 1360×612; nowa grafika współgra z przyciemnieniem, logo i kartami. Zrzuty: `/tmp/hexbane-menu-background/`. Pełny prompt i pochodzenie zapisane w `docs/client/design-system.md`.
+- Import Godot wykonany; zgłasza niezwiązany brak `GameHudPreview.cs` w zastanej, nieśledzonej scenie i błędy zamykania edytora. Cudzy plik pozostawiono bez zmian. Bez eksportu i testu na fizycznym telefonie.
