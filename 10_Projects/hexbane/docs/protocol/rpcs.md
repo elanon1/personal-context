@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-14
-verified: 2026-09-12
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, protocol, rpc, nakama]
 sources: ["server:RPCs.md", "server:docs/API-REFERENCE-v2.md", "server:docs/match/api-reference.md", "server:docs/progression/client/menu-rpc-requirements.md", "client:docs/Server/progression/menu-rpc-requirements.md", "server:docs/client/client-implementation-prompt.md"]
 ---
@@ -288,6 +288,13 @@ Authenticated `match_opponent_action {match_id,action:"add_friend"|"report"}` re
 Migration8 `match_opponent_actions` stores one action per `(match_id,actor_user_id,action)` with internal human/persona attribution. Real-account friend requests invoke Nakama FriendsAdd; persona requests remain locally pending and never fabricate acceptance or online activity. Reports for either type are recorded internally. There is no moderation dashboard/notification delivery for these report rows yet. Persona pending requests do not appear in the current SDK-backed Friends list; a unified list/profile surface remains a product follow-up, not proof of indistinguishability.
 
 Concurrent retries serialize under a transaction advisory lock. Once committed they return the saved response without repeating FriendsAdd. A DB commit failure after successful Nakama FriendsAdd can cause that idempotent operation to be invoked again; external delivery is not transactionally atomic with the action row. GameOver sends both actions through this RPC and shows Invite sent/Report sent. Current lobby/result UI has no opponent profile link; training still hides opponent actions.
+
+
+## News RPCs (2026-09-15)
+
+- `get_news {}`: authenticated; `{success:true,data:{articles:[{id,title,summary,content,date,category,highlight,updated_at}],refresh_after_seconds:60}}`. Latest20 published articles, full content, date in `YYYY-MM-DD`, sorted date/id descending. Cache shared per instance; no client caller yet.
+- `admin_upsert_news {id,title,summary,content,date,category,highlight,published}`: requires an account in `news_administrators`; full replacement, same ID edits, published=false withdraws. `{success:true,data:{id,published}}`. Never trusts client-provided roles.
+- See [[news]] for validation, error codes, cache consistency and administration examples.
 
 ## Source of truth in code
 - `server:modules/main.go` — module registration order (race before character).

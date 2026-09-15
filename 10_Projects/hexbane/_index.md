@@ -68,6 +68,7 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 - [[combat-stat-rules]] — aktywne statystyki, odporności, regeneracja, skille i bonusy ras w duel_v2.3
 - [[progression]] — 6 ras, staty, skille, XP/poziomy/MP, sloty, reguły walki duel_v2
 - [[database]] — schemat i rozszerzenia fallbacku, tabele Nakamy, reset
+- [[news]] — server-managed articles, administrator RPC and bounded feed cache.
 - [[social]] · [[notifications]] — moduły na wbudowanych API Nakamy
 - [[server-tutorial]] — RPC `tutorial` i flagi
 - [[google-auth]] — kontrakt logowania Google (wbudowane `AuthenticateGoogle`)

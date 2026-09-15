@@ -745,3 +745,11 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Zastąpiono `Resources/UI/Shared/Backgrounds/ui_background.png` nową ilustracją sanktuarium pojedynków (built-in imagegen, 1931×814): ciepły kamień, żar, brąz i subtelna magia. Stara grafika ze znakiem Gemini została zastąpiona; zachowano ścieżkę i UID.
 - Obejrzano rendery Auth i Dashboard w 1360×612; nowa grafika współgra z przyciemnieniem, logo i kartami. Zrzuty: `/tmp/hexbane-menu-background/`. Pełny prompt i pochodzenie zapisane w `docs/client/design-system.md`.
 - Import Godot wykonany; zgłasza niezwiązany brak `GameHudPreview.cs` w zastanej, nieśledzonej scenie i błędy zamykania edytora. Cudzy plik pozostawiono bez zmian. Bez eksportu i testu na fizycznym telefonie.
+
+## 2026-09-15 — Server-managed news and feed cache
+
+- Inspected client NewsData, NewsScreen and Dashboard: title, summary, plain-text content, date, category, highlight; icons remain client-derived. Client implementation unchanged; existing fictional/obsolete fixture announcements were not seeded.
+- Added server `modules/news/`, registration in `modules/main.go`, migration9 for article data and operator-granted administrator accounts. Authenticated `get_news`, role-checked full-replacement `admin_upsert_news`, draft/withdraw publication flag and audit fields.
+- Bounded latest20 feed, ready JSON cached60s per process, coalesced concurrent refresh, 3s DB deadline and 5s error retry suppression. Local write invalidation; other instances converge via TTL.
+- Verification: full `make test`, PostgreSQL17 integration with migration up/down and `go test -race ./modules/news`, `go vet ./modules/news`, Linux Nakama plugin `make build`, whitespace check passed. Integration used a separate disposable container/database; no real accounts or application database altered.
+- Notes: [[news]], [[database]], [[rpcs]], [[_index]], [[_state]]. Remaining activation: deploy migration/plugin, grant intended admin account; separately wire client fetching/empty/error states and date formatting. No production release, HTTP/live-client test, commit or push.

@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-12
-verified: 2026-09-12
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, server, database, migrations, postgres]
 sources: ["server:docs/spell_system/database-v2.md", "server:docs/progression/progression.md", "client:docs/Server/progression/races_seed.sql"]
 ---
@@ -78,6 +78,11 @@ Versions 4/5 already contain the current progression redesign, `character_match_
 ## Match actions and result receipts (2026-09-12)
 
 Migration8 adds `match_opponent_actions` (actor FK to users, UUID target with internal kind, action/status CHECKs, match+actor+action PK). The existing `character_match_rewards.result` now optionally includes exact `match_result` opcode50 JSON, committed with the reward. No extra result ledger or reward migration. Historical receipts without that field cannot be recovered from current character state. See [[op_50_game_over]] and [[rpcs]].
+
+
+## News migration (2026-09-15)
+
+Migration9 adds `news_administrators` (operator-granted account role) and `news_articles` (six client fields, stable ID, publication flag and audit metadata). UTF-8 byte limits, category/date/ID constraints and a partial feed-order index bound and support the latest20 query. No seed news or real administrator grants. See [[news]] for the schema contract and operator procedure.
 
 ## Source of truth in code
 
