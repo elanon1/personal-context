@@ -4,7 +4,7 @@ project: Hexbane
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-14
+updated: 2026-09-15
 tags: [hexbane, docs, index, moc]
 aliases: [hexbane-docs, hexbane-index]
 ---
@@ -89,7 +89,7 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 - [[design-system]] — tokeny UI, fonty, motywy (`ui-designer` jest do niego przywiązany)
 - [[social-sign-in]] — Google sign-in na PC i Androidzie, konfiguracja, znane luki
 - [[client-tutorial]] — lokalny tutorial
-- [[deploy-web]] — experimental 2dog/.NET 10 browser build, local launch and proof boundaries.
+- [[deploy-web]] — 2dog/.NET 10 browser build, from-scratch reconstruction, local verification and `$hexbane-web-build` skill.
 - [[deploy-ios]] — eksport iOS, symulator, reguły Native AOT (generowany JSON, bez `dynamic`), logi z symulatora, provisioning urządzenia
 - [[deploy-android]] — `deploy.sh`, ADB, LAN host, presety eksportu
 - [[google-play-first-release]] — od zera: Play Console, klucz upload, AAB, podpis Google, testy wewnętrzne i konfiguracja PGS.

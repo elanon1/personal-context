@@ -4,7 +4,7 @@ project: Hexbane
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-14
+updated: 2026-09-15
 verified: 2026-09-12
 tags: [hexbane, log, worklog]
 aliases: [hexbane-dziennik, hexbane-worklog]
@@ -707,3 +707,12 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Installed separate .NET 10.0.401/wasm-tools and 2dog 4.7.2.84, generated web host, selected Compatibility/SD asset packaging, rooted Nakama for trimming and omitted desktop OAuth secret from web project settings.
 - C# build and full WebAssembly publish succeeded. Served locally at http://127.0.0.1:8067; observed real login screen and later active Training in Dia while the user interacted with the game. No online PvP or Google auth claim.
 - Added `Scripts/web.sh` in the experimental worktree and [[deploy-web]]; updated [[_index]] and [[_state]]. No commit, merge or public deploy. Remaining: download-size optimization, online flows and broader browser testing.
+
+
+## 2026-09-15 — Reproducible web build skill
+
+- Created personal Codex skill `~/.codex/skills/hexbane-web-build/SKILL.md` with `agents/openai.yaml`; invocation: `$hexbane-web-build`. Technical reconstruction remains in [[deploy-web]] as the single project documentation source.
+- Expanded [[deploy-web]] with pinned SDK/CLI installation, isolated source selection, 2dog scaffold commands, precise renderer/export/trimming/OAuth adjustments, direct build/serve commands and browser validation boundaries. Explicitly recorded that the original web changes are uncommitted and a branch alone cannot recover them.
+- Baseline read-only review found the former note insufficient if the worktree disappears. Skill validator passed; recipe helper passed temporary-fixture checks for renderer, secret omission, valid Nakama root, repeat execution and failure before writing when the Android preset is missing.
+- No game source changes or new full browser build in this documentation session. The last browser gameplay evidence remains 2026-09-14. Updated [[_index]]; existing uncommitted web build remains in its original checkout.
+- Independent read-only forward test reconstructed the missing-worktree procedure from the skill and note, and correctly excluded promotional website work. No blocking omission found for the pinned case; a fresh full build remains untested in this session.
