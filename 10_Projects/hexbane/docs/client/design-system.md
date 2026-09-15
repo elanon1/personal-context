@@ -191,3 +191,7 @@ Rendered offline checks:1360×612 and960×540; actual pointer tap on avatar open
 ## AI difficulty selection (HEX-21, 2026-09-15)
 
 vs AI opens a compact five-button difficulty selector with Back. Each choice starts the selected level through the shared match manager. Lobby, arena placeholders and results use AI instead of Bot; the server name includes the chosen level. Rendered selector fits960×540.
+
+## Collection (HEX-23, 2026-09-15)
+
+Dashboard Shop opens the scrollable collection. Titles, ownership, equipped state and expiry come from Nakama. Owned supported cosmetics can be equipped; default items restore the original appearance. Locked items have no purchase action yet. The client whitelist maps stable presentation keys to Ashen skin tint, Arcane portrait frame, Cinzel name font and a restrained casting-rune ornament. Unknown keys fall back to originals and cannot be newly equipped from an outdated client. Cosmetic identity is shown for both duelists from server player views. See [[commerce]].

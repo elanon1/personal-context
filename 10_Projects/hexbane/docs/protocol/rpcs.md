@@ -303,3 +303,7 @@ Concurrent retries serialize under a transaction advisory lock. Once committed t
 - `server:modules/spell_system/version.go` — version stamp; `server:data/spells/*.yaml` — catalog.
 - `client:Application/Modules/**/*Handler.cs`, `client:Application/Tutorial/TutorialSession.cs`, `client:Application/ArcaneDuel/*/MatchManager.cs` — every `RpcAsync` caller.
 - `client:Core/Match/DuelV2.cs` — client-side version gate.
+
+## Cosmetic collection (HEX-23, 2026-09-15)
+
+Authenticated `get_collection {}` and `equip_cosmetic {kind,item_id}` return the server-owned catalog, active ownership and equipped presentation keys. The client sends stable item IDs, never ownership claims or resource paths. Empty item/default resets a slot. There is no client-accessible purchase/grant RPC. Full contract and future verified-payment boundary: [[commerce]].

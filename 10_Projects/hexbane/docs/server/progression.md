@@ -98,3 +98,7 @@ Migration **000004** snapshots existing character rows into `progression_redesig
 `character.CheckMatchAvailability` performs a read-only check before a new normal/AI join. An unexpired lease for another match returns `ErrCharacterInMatch` (`character_in_match`). `AcquireForMatch` retains the atomic guard and returns the same sentinel. The 15-minute lease, renewal and settlement/release rules are unchanged. There is no orphan-lock reclamation based on whether a match exists in the current process; after a restart the player must wait for expiry if normal release did not happen. Same-match reconnect is permitted.
 
 Regression `TestMatchAvailabilityPreservesExistingLease` checks new-match refusal, same-match admission, unchanged existing lease and expiry in an isolated PostgreSQL test schema.
+
+## Optional level XP acceleration (HEX-23, 2026-09-15)
+
+Base match rewards remain120/70. A server-granted active XP boost can add a bounded bonus only into the level-progress gap remaining after base XP; it never raises level/stat caps, skill gains or study XP. Active boosts use maximum percentage, not stacking. The seeded25%/24h product is locked until a trusted grant; there is no purchase API yet. The settlement transaction checks ownership after receipt lookup, so retries return the original reward even after expiry. See [[commerce]] for formula and verified examples.

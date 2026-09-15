@@ -809,3 +809,11 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Usunięto przycisk i skrót medytacji (także zapisane stare przypisania); pozostał gest w górę. Zmiany: TrainingBattle, TutorialScreen/Overlay/Controls, ReferenceHud, CombatControls i odpowiadające weryfikatory.
 - Walidacja: regresje Core (w tym okno ochrony 0.1 s i spam kliknięć), build, kontrolki Godot/30 układów, pełne ćwiczenia do Summary przez rzeczywisty input touch przy 1360x612 z mobilnym HUD i katalogiem izolowanej Nakama; oględziny renderów. Review bez otwartych uwag. Bez testu telefonu.
 - Dokumentacja: client-tutorial, combat-ui-profiles. Do zakończenia backlogu pozostaje HEX-23, przygotowanie monetyzacji. Nie wykonano commit/push/deploymentu.
+
+## 2026-09-15 — HEX-23: monetyzacja przygotowana po stronie serwera i klienta
+
+- Serwer: migration11/catalog/entitlements/loadout/receipts; `get_collection`, `equip_cosmetic`, wewnętrzne idempotentne `Grant` dla przyszłej zweryfikowanej płatności; ograniczony bonus XP przed capem, bez zwiększania study/skills. Kosmetyka obu graczy w widokach meczu, niezależna od obliczeń walki.
+- Klient: Shop otwiera kolekcję z własnością i wyposażaniem; znane klucze skórki/ramki/fontu/ozdoby castu, obsługa błędów i ustawień konta, JSON Native AOT. Przeciwnik dostaje wygląd zatwierdzony przez serwer.
+- Test dwóch kont wykrył brak opcode10 przy reconnectcie; naprawiono replay widoków przed snapshotem32. Review wykrył reset animacji trwającego czaru; test z tym samym action ID odtworzył błąd i przeszedł po naprawie.
+- Walidacja: Go full suite z rzeczywistym PostgreSQL w izolowanych schematach; build klienta0errors/11warn;179AOT; pluginLinux; realne RPC/grant/equip/draft/combat/reconnect dwóch kont na izolowanej Nakama; GPU kolekcji960x432 i areny1360x612 z przechwyconym payloadem przeciwnika; review po poprawkach.
+- Dokumenty: nowa commerce i plan; index, database, progression, rpcs, opcode10, design-system, spell-effect-system, state. Płatności sklepów pozostają do podłączenia do zaufanego Grant; niczego nie kupiono ani nie przyznano na produkcji. Testowe kontenery usunięto; bez commit/push/deploymentu/testu fizycznego telefonu. Wszystkie9zadań początkowego backlogu zrealizowane.

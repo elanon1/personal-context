@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, protocol, opcode, game-data]
 sources: ["client:docs/opcodes/op_10_game_data.md", "server:docs/opcodes/op_10_game_data.md", "server:docs/client/combat-v2.md"]
 ---
@@ -17,7 +17,7 @@ sources: ["client:docs/opcodes/op_10_game_data.md", "server:docs/opcodes/op_10_g
 |---|---|
 | Server const / client enum | `OpGameData` / `GAME_ENTRY_DATA` |
 | Direction | Server → client, unicast to the requesting player |
-| Phase | `game_countdown` |
+| Phase | `game_countdown`, combat reconnect |
 | Sender | `server:modules/match/engine/phase/game_countdown/phase.go:44-60,99` |
 | Client handler | `client:Application/Match/Incoming/GameEntryData/GameEntryDataHandler.cs` |
 
@@ -50,3 +50,9 @@ Stores both views in `MatchContext.PendingGameLoadMe/Enemy` (so a HUD that spawn
 - `server:modules/match/engine/phase/game_countdown/phase.go` — `GetGameData`
 - `server:modules/match/engine/state/player_state.go:251-266` — `ToPrivateView`
 - `client:Application/Match/Incoming/GameEntryData/GameEntryDataMessage.cs` — DTO
+
+## Reconnect identity and cosmetics (HEX-23, 2026-09-15)
+
+Both private player views include optional `cosmetics: {skin,frame,font,spell_effect}` presentation keys, loaded from authoritative account ownership when the match state is constructed. On combat reconnect, `core.RestorePresence` reliably unicasts opcode10 before opcode32, using those frozen views without a SQL reload. This restores opponent appearance even when the client's previous identity payload is gone; combat state remains unchanged. Existing `GameEntryDataHandler` caches the payload and updates arena actors/HUD without navigation. Unknown/absent cosmetics render defaults. See [[commerce]].
+
+Client actor reload also clears the previous cast identifier: the following snapshot rebuilds a still-active cast even when its action ID is unchanged. A captured-payload Godot regression verified this reconnect case.

@@ -58,6 +58,9 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+- **2026-09-15 — HEX-23 server-owned cosmetics and bounded acceleration.** Catalog/equip/ownership are authoritative; both player views carry a match-frozen presentation loadout. Future payment verification calls internal idempotent Grant; no client grant or purchase endpoint is exposed. XP bonus fills only the gap to the existing level cap, preserving normal study and skill gains. **Why:** opponents must see the same purchased look, client edits must not grant items, and acceleration must not introduce a higher combat-power ceiling. Payment-provider integration remains a separate release step.
+
+
 - **2026-09-15 — Ranked unavailable (HEX-20).** Removed player-facing ranked controls/copy and reject new ranked tickets/cohorts. **Why:** user explicitly states ranked is not available yet; retaining an unlock promise would misrepresent the current game. Existing match admission guards remain for compatibility.
 
 ### 2026-09-15 — Server-managed news

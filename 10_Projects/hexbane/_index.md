@@ -68,6 +68,7 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 - [[combat-stat-rules]] — aktywne statystyki, odporności, regeneracja, skille i bonusy ras w duel_v2.3
 - [[progression]] — 6 ras, staty, skille, XP/poziomy/MP, sloty, reguły walki duel_v2
 - [[database]] — schemat i rozszerzenia fallbacku, tabele Nakamy, reset
+- [[commerce]] — server-owned cosmetic catalog, entitlements, equip, future verified-purchase grants and level XP boost.
 - [[news]] — server-managed articles, administrator RPC and bounded feed cache.
 - [[social]] · [[notifications]] — moduły na wbudowanych API Nakamy
 - [[server-tutorial]] — RPC `tutorial` i flagi
@@ -162,3 +163,5 @@ Raporty weryfikacji docs vs kod z 2026-09-07 — sekcje „code smells” i „o
 ## Website (`docs/website/`)
 
 - [[website-structure]] — local promotional website scaffold, content sources, commands, and remaining work.
+
+- [[2026-09-15-monetization-foundation]] — HEX-23 implementation plan and validation checklist.

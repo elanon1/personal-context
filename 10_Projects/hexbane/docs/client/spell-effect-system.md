@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-12
-verified: 2026-09-12
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, client, spells, vfx, architecture]
 sources: ["client:Application/ArcaneDuel/README.md"]
 ---
@@ -118,3 +118,7 @@ Source of truth: `client:Game/FX/SpellField.cs`, `SpellField.gdshader`, individu
 Validation 2026-09-08: build **0 errors / 9 existing warnings**; full GPU `VerifySpellFields` **146/146**, including 24 front/rear pixel assertions for six races × both sides. Adjacent regressions: Magic Arrow **25/25**, Firebolt **25/25**, GPU MirrorWard **60/60**. Two review findings fixed and rechecked (late hex damage, barrier absorption). Rear pass contributes zero measured RGB difference on fully opaque sampled body pixels; front pass visibly changes those pixels. All eleven ArenaMapsDev captures inspected. Live Nakama and physical Android performance remain untested.
 
 Tutorial integration repair (2026-09-08): local `TrainingBattle` now emits canonical `cast_released`, stable per-cast action ids, resolved mentor impacts and status lifecycle ids. It is a producer of the shared manager's events rather than a separate rendering path. The tutorial keeps the arena unobscured for one second after exercise impact before displaying the next explanation. See [[client-tutorial]].
+
+## Account cosmetic casting ornament (HEX-23, 2026-09-15)
+
+`RaceSpriteAnimator.ApplyCosmetics` receives server loadout keys; `spell_effect=arcane` adds `CosmeticCastRune` during the shared BeginCast path used by live actors and previews. This thin gold foot rune is separate from the spell: it does not recolor projectiles/statuses, change cast/impact times or mutate presets. Cast finish/cancel, death, reload and actor disposal remove it. Unknown/default keys add nothing. The Ashen skin tint affects only the actor sprite, not attached spell VFX. Shared actor/cast GPU verification and interruption/default checks passed; see [[commerce]].

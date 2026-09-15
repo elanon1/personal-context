@@ -92,3 +92,7 @@ Migration9 adds `news_administrators` (operator-granted account role) and `news_
 - `server:modules/character/db.go`, `server:modules/playstyle/db.go`, `server:modules/character/tutorial.go` — every write path and its validation
 - `server:scripts/reset_dev_db.sh`, `seed_dev_accounts.sh`, `clear_dev_characters.sh`, `server:Makefile` — development database operations
 - `server:docker-compose.yml`, `server:helm/hexbane/templates/deployment.yaml` — migration ordering at startup
+
+## Commerce migration11 (HEX-23, 2026-09-15)
+
+`commerce_catalog` defines enabled/default products and bounded boost parameters; `commerce_entitlements` owns account/item expiry; `commerce_loadout` has one owned item per compatible slot; `commerce_receipts` binds an idempotency key to its original account/product. Receipt bindings survive account deletion; ownership and loadout cascade. SQL foreign keys and transactions enforce ownership/kind, while runtime validates active expiry. See [[commerce]].
