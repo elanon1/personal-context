@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-12
-verified: 2026-09-12
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, protocol, opcode, lobby-spell-selected]
 sources: ["client:docs/opcodes/op_04_lobby_spell_selected.md", "server:docs/opcodes/op_04_lobby_spell_selected.md"]
 ---
@@ -42,7 +42,7 @@ Acting user is the message sender (`SelectSpell(data.GetUserId(), …)`).
 4. player still has a free slot;
 5. spell belongs to the player’s owned draftable collection.
 
-On success the spell is appended to the player's `SelectedSpells`, the turn moves (`determineNextTurn`, `lobby/utils.go:34`: alternate while both have slots, otherwise whoever still has slots), and `SpellbookRefresh` is set so [[op_70_lobby_spellbook_spells]] is re-sent next tick. Success or failure, the server then broadcasts [[op_03_lobby_update]] and [[op_05_lobby_spell_selected_update]]; when all slots are full it transitions to `lobby_countdown`.
+On success the spell is appended to the player's `SelectedSpells`, the turn moves (`determineNextTurn`, `lobby/utils.go:34`: one opening pick, then two per turn: A, B, B, A, A, B…; skip a full player), and `SpellbookRefresh` is set so [[op_70_lobby_spellbook_spells]] is re-sent next tick. Success or failure, the server then broadcasts [[op_03_lobby_update]] and [[op_05_lobby_spell_selected_update]]; when all slots are full it transitions to `lobby_countdown`.
 
 Human picks, bot picks and timeout auto-fill share `SelectSpell`; successful selection appends the actual owned spell to the combat loadout. Standard spells are already present and never drafted.
 
@@ -50,3 +50,7 @@ Human picks, bot picks and timeout auto-fill share `SelectSpell`; successful sel
 - `server:modules/match/engine/phase/lobby/types.go:3-6` — `SpellSelected` struct
 - `server:modules/match/engine/phase/lobby/phase.go` — `SelectSpell`, `HandleMessage`
 - `client:Application/Match/Outgoing/SpellSelection/LobbySpellSelectionCommand.cs` — payload
+
+## Snake draft (HEX-22, 2026-09-15)
+
+Only accepted optional selections advance the sequence; rejected/duplicate/standard picks do not consume a choice. Players keep their own slot limits, including unequal limits. A starter with zero slots is skipped immediately. The per-player35-second aggregate budget remains; expiry auto-fills that player and gives the opponent their remaining choices and timer. Bot scheduling keys each individual pick and therefore handles consecutive turns. Opcode3 still identifies the current picker after every accepted pick; no client wire change is needed.

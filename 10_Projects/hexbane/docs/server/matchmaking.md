@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-12
-verified: 2026-09-12
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, server, matchmaking, nakama]
 sources: ["server:docs/match/matchmaking.md", "server:docs/match/api-reference.md", "server:docs/API-REFERENCE-v2.md"]
 ---
@@ -19,10 +19,10 @@ Both handlers run the shared engine at 10 ticks/s. Current normal fallback contr
 |---|---|---|
 | `normal` | normal, custom queue enabled | queue RPCs create either two-human or human+persona assignments |
 | `normal` | normal, custom queue disabled | Nakama matchmaker |
-| `normal` | ranked | Nakama matchmaker, level ≥30 required |
+| `normal` | ranked (disabled) | New tickets and matched cohorts are rejected |
 | `ai_duel` | explicit training | `create_ai_arcane_duel` |
 
-Built-in tickets use `queue=normal|ranked` (omitted means normal), forced 2-player counts and server query `+properties.queue:<queue>`. Unknown/mixed queues fail. Custom-enabled servers reject normal built-in tickets, including stale matched cohorts. Ranked stays separate. Normal match initialization reads its invitation allowlist; socket admission rejects outsiders and synthetic IDs.
+Built-in tickets accept `queue=normal` (omitted means normal), forced 2-player counts and server query `+properties.queue:normal`. Ranked requests fail with `queue unavailable` (code9), including stale matched cohorts. Unknown/mixed queues fail. Custom-enabled servers reject normal built-in tickets, including stale matched cohorts. Existing match invitation/join guards remain for already-created matches; no new ranked queue is exposed (HEX-20). Normal match initialization reads its invitation allowlist; socket admission rejects outsiders and synthetic IDs.
 
 The new queue selects a fallback deadline in 15–30 s, gives compatible humans priority before reservation, and presents one common match-found/accept flow. Details of reservation, leases and reconnect are in [[fallback-opponents]] and RPC shapes in [[rpcs]]. Ordinary human setup loads the current character, stats-derived combat profile, owned collection and race-specific slots; no fixed 200HP/100mana override.
 

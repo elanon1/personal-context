@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-07
-verified: 2026-09-07
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, protocol, opcode, lobby-update]
 sources: ["client:docs/opcodes/op_03_lobby_update.md", "server:docs/opcodes/op_03_lobby_update.md"]
 ---
@@ -62,3 +62,5 @@ Only `time_remaining` (15 → 0).
 - `server:modules/match/engine/phase/lobby/phase.go:63-85` — `GetJsonPayload`
 - `server:modules/match/engine/phase/lobby_countdown/phase.go:29-39` — countdown payload
 - `client:Application/Match/Incoming/LobbyUpdate/LobbyUpdateMessage.cs` — DTO
+
+Draft turn identity follows the one-then-pairs snake sequence (HEX-22): A, B, B, A, A, B… while both players have capacity. Repeated identical `draft_turn_user_id` after a pick means another choice is available on that turn, not a stale message. See [[op_04_lobby_spell_selected]].

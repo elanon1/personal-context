@@ -762,3 +762,30 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Validation: server `make test`, PostgreSQL17 `go test -race ./modules/news`, all migrations plus real HTTP RPC on isolated Nakama3.27 passed. Client build0 errors/11 existing warnings; reflection-disabled JsonAot173 checks passed. NewsVerification passed10 checks at1360×612 and960×540; screenshots inspected in `/tmp/hexbane-news-captures{,-compact}`. One ObjectDB exit warning in the harness; no physical-device test/export.
 - Preserved pre-existing client background PNG modification and unrelated untracked GameHudPreview scene, plus the earlier backend news work. No commit/push or production deployment. Disposable test services removed after validation.
 - Notes: [[news]], [[rpcs]], [[database]], [[client-architecture]], [[_state]]. Activation requires migration9/10 and the new server plugin/client build on the target environment.
+
+
+## 2026-09-15 — Linear backlog, HEX-16
+
+- Live inventory: HEX-16–24 in Backlog; earlier HEX-6–15 Done. Preserved existing client/server news changes, shared background and untracked GameHudPreview scene.
+- Added results XP animation with per-level scale, full/empty holds, level advances and cap handling. Server receipts now preserve optional pre-reward XP for correct cap-overflow start.
+- Validation: failing regression reproduced160/171 instead of40/45; rendered animation and boundary suite passed; full server go test ./... passed; client build0 errors/11 warnings. Godot harness shutdown warnings remain. Notes: [[duel-ending]], [[op_50_game_over]].
+- Continuing HEX-17–24. No commit/push/deployment; new receipt field requires target server build for exact cap-crossing starts.
+
+
+## 2026-09-15 — Linear backlog, HEX-17–20
+
+- Removed external highlighted-news marker and fixed narrow-card wrapping; news icon hides below300px card width. Whole points-panel background/border pulses, badge offsets removed, full avatar button shares Summary navigation with View Details.
+- Character header retains race/name without tagline or trait prose. Removed ranked UI/promises/milestone/result placeholder. Backend rejects new ranked tickets/cohorts even at level30; existing match guards retained.
+- Verification: GPU layouts1360×612 and960×540 pass0 measured overflows; screenshots inspected. Visual review found a clipped narrow news title that automated metrics missed; fixed and re-rendered. Actual avatar pointer tap opens CharacterDetail. Full Go tests, progression checks,173 JSON/AOT checks and build0 errors/11 warnings passed.
+- Auth preview initially restored a saved session and interrupted the generic verifier; stopped it and made Auth opt-in in that harness. Final checks use offline fixtures; expected unauthenticated lookup logs/one ObjectDB shutdown warning. No live match/device/export/deploy/commit/push.
+- Notes: [[design-system]], [[character-details]], [[progression]], [[matchmaking]], [[duel-ending]], [[_state]]. Remaining backlog: HEX-21–24; independent read-only review found no concrete defects.
+
+
+## 2026-09-15 — Linear backlog, HEX-22 snake draft
+
+- Changed accepted-pick order to A,B,B,A,A,B… with independent player slot caps. Starter with zero optional slots is skipped immediately. Existing aggregate timer/autofill and per-pick AI scheduling retained.
+- Regression failed on third selection under old alternation; now passes. Tests exercise3/3,5/3,1/4,4/1 slot counts, real owned spell selection, rejected out-of-turn/standard/unknown requests, outgoing turn ID, zero-slot starter, timeout fill and consecutive AI choices through countdown. Focused lobby/core suites and full server go test ./... passed.
+- Notes: [[op_03_lobby_update]], [[op_04_lobby_spell_selected]]. Client already follows server turn IDs, including repeated same-player IDs; no wire shape change. No live/device test or deployment.
+- Remaining HEX-21 (five AI levels/fast explicit AI draft/fallback10–20s), HEX-23 (usable cosmetics/XP boost foundation), HEX-24 (action-driven tutorial/mirror timing/mobile-only meditation). Full objective remains active.
+
+- HEX-16–20 and HEX-22 marked Done in Linear after verification. Independent read-only reviews found no concrete defects in either batch. HEX-21/23/24 remain Backlog and the all-backlog goal stays active. Changes are local and uncommitted.

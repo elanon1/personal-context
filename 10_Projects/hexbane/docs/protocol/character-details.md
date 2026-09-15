@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-10
-verified: 2026-09-10
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, protocol, character-details, menu]
 sources: ["server:docs/API-REFERENCE-v2.md", "server:docs/progression/client/menu-rpc-requirements.md", "client:docs/Server/rpc_get_character_details.md", "client:docs/Server/progression/menu-rpc-requirements.md"]
 ---
@@ -117,3 +117,7 @@ The compact character/stat card, Attributes and Modifiers form the left column; 
 - `server:modules/spell_system/spell.go` — millisecond conversions, `EffectiveMagicPointCost`.
 - `client:Application/Modules/Character/Queries/GetCharacterDetails/GetCharacterDetailsQuery.cs` — client DTOs.
 - `client:Game/ScenesV3/CharacterDetail/CharacterDetailScreen.cs` — consumer and fallback path.
+
+## Header cleanup and unavailable ranked (2026-09-15)
+
+HEX-19: the summary header shows name and race only; race tagline and trait-summary prose are omitted. Structured combat modifiers remain in the appropriate summary section. HEX-20: no ranked eligibility or unlock copy appears in the header, study bar, journey or level30 milestone. The compatibility `ranked_eligible` DTO remains mapped but is not presented as an available mode.

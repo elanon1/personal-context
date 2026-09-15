@@ -4,7 +4,7 @@ project: Hexbane
 area: server
 status: deployed
 created: 2026-09-12
-updated: 2026-09-12
+updated: 2026-09-15
 verified: 2026-09-12
 tags: [hexbane, matchmaking, fallback, ai]
 ---
@@ -17,7 +17,7 @@ Implemented on backend branch `feat/natural-fallback-player`, published as `b2e7
 
 ## Queue and admission
 
-Normal queue uses authenticated `queue_config`, `queue_join`, `queue_status`, `queue_cancel`, `queue_accept`, `queue_decline`. Ranked retains Nakama matchmaking and the level-30 gate. Training retains explicit `ai_duel`.
+Normal queue uses authenticated `queue_config`, `queue_join`, `queue_status`, `queue_cancel`, `queue_accept`, `queue_decline`. Ranked is disabled for new tickets/cohorts as of HEX-20 (2026-09-15); see [[matchmaking]]. Training retains explicit `ai_duel`.
 
 Each search gets a server-time triangular fallback deadline: minimum 15 s, mode 22.5 s, maximum 30 s. Compatible humans take priority before a synthetic allocation is reserved. Status polling (normally 1 s), database latency and match creation add to the visible wait; 30 s is not an unconditional UI deadline under failures/exhaustion. Queue pool is server region + mode + protocol. Queue RPCs, not per-search goroutines, drive progress.
 

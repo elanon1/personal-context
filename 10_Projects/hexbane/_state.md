@@ -58,6 +58,8 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+- **2026-09-15 — Ranked unavailable (HEX-20).** Removed player-facing ranked controls/copy and reject new ranked tickets/cohorts. **Why:** user explicitly states ranked is not available yet; retaining an unlock promise would misrepresent the current game. Existing match admission guards remain for compatibility.
+
 ### 2026-09-15 — Server-managed news
 
 - PostgreSQL stores the six fields consumed by the client, stable IDs and publication/audit metadata. Administrator access is an operator-granted DB role; full-replacement upsert publishes or withdraws articles.

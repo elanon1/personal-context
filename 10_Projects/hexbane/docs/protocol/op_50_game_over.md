@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-12
-verified: 2026-09-12
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, protocol, opcode, game-over]
 sources: ["client:docs/opcodes/op_50_game_over.md", "server:docs/opcodes/op_50_game_over.md"]
 ---
@@ -32,7 +32,7 @@ After the final [[op_32_combat_snapshot]] (`over:true`) and `match_ended`, the s
 | `outcome` | string | `victory`, `defeat`, `draw` |
 | `reason` | string | `defeated`, `timeout`, `draw` |
 | `opponent` | `{user_id, username}` | |
-| `xp` | `{gained, total_experience, experience_to_next, current_level, is_first_win_bonus}` | ints + bool |
+| `xp` | `{gained, previous_experience?, total_experience, experience_to_next, current_level, is_first_win_bonus}` | ints + bool |
 | `level_up` | `{previous_level, new_level, stat_points_gained, magic_points_gained, new_spell_slots}` | omitted when no level-up |
 | `skill_gains` | `{meditation, spell_resistance, magery}` each `{previous, current, gained}` (float64) | frozen before/after skill values from settlement |
 | `stats` | `{level, strength, intelligence, dexterity, spell_slots, magic_points, unspent_stat_points}` | post-match character row |
@@ -59,3 +59,7 @@ Outcome rules (`determineOutcomes`, `:105-131`): exactly one player with HP > 0 
 ## Duel ending presentation (2026-09-12)
 
 Client presentation now retains the arena until Continue, when an active DuelConclusion exists. Character cache/result dispatch are still immediate and opcode 50 is unchanged. Terminal actor death follows HP or the explicit defeated outcome; timeout does not create a death. See [[duel-ending]].
+
+## XP animation receipt (HEX-16, 2026-09-15)
+
+New settlements capture `previous_experience` before applying rewards or clamping the total at6177. This optional integer is retained in the receipt and opcode50, so the client animates the true starting value even on cap overflow. Existing saved payloads remain immutable and may omit it. New clients fall back to total minus gained for old receipts; an already capped character without a level-up stays at cap. Historical cap-crossing receipts cannot reconstruct exact overflow. No migration is required.

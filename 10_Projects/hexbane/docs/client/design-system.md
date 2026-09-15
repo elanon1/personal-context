@@ -179,3 +179,11 @@ See [[assets-pipeline]] for the current asset tree and [[2026-09-15-resources-or
 ### Final legacy removal — 2026-09-15
 
 User explicitly requested deletion of remaining legacy assets. UI/LegacyHud, Arenas/Legacy, UI/Avatars, obsolete bar PSDs and their exclusive HUD/preview/component consumers have now been deleted. Earlier statements about retaining these resources are superseded. DuelV2Preview uses only the current ReferenceDuel scene. Shared procedural helpers used by the current HUD remain. See [[assets-pipeline]] and the legacy removal manifest.
+
+## Dashboard backlog corrections (2026-09-15, HEX-17/18/20)
+
+Highlighted news retain the accented border but no external diamond marker. At card widths below300 logical pixels the news icon is hidden to preserve title/summary width; both use smart word wrapping. Point badges use centered labels without vertical offsets. When points are available, a duplicated per-panel style smoothly brightens the full background and border; inactive panels restore their original style. This does not tint the labels. The avatar has a full-frame pointer/touch button that uses the same Summary route as View Details.
+
+Ranked was removed from mode selection, dashboard character subtitle, detail header/study/journey and result metrics/unlock announcements. Only vs Player and vs AI are available. No asset names or compatible protocol fields were renamed solely because they contain ranked.
+
+Rendered offline checks:1360×612 and960×540; actual pointer tap on avatar opens CharacterDetail. `MobileLayoutVerification` skips Auth by default to prevent a saved-session restoration from navigating away mid-test; opt in with `MOBILE_INCLUDE_AUTH=1` when intentionally testing login. `MOBILE_CHECK_AVATAR=1` verifies navigation. Fake news is scoped to the verification scene.

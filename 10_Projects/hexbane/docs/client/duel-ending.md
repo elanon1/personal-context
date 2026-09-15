@@ -27,7 +27,7 @@ All six races (`human`, `elf`, `dark_elf`, `shadow`, `gnome`, `orc`) have actual
 
 ## Results hierarchy
 
-`GameOverScreen` has a shared victory/defeat/draw layout in the existing warm brown, cream and gold theme and uses the existing menu backdrop. A small vector seal is fractured on defeat. The primary card emphasizes the outcome, earned XP, level and level-up rewards. The second column retains all three current skill values and gains, record, duel duration, rank-change placeholder, opponent and existing Add friend / Report actions. First-win bonus, XP total / remaining / progress, stat points, MP, new slots, primary tiers and ranked unlock messages remain. Report is still the existing logging-only action; this task does not implement a reporting backend.
+`GameOverScreen` has a shared victory/defeat/draw layout in the existing warm brown, cream and gold theme and uses the existing menu backdrop. A small vector seal is fractured on defeat. The primary card emphasizes the outcome, earned XP, level and level-up rewards. The second column retains all three current skill values and gains, record, duel duration, opponent and existing Add friend / Report actions. First-win bonus, XP total / remaining / progress, stat points, MP, new slots, primary tiers remain. Report uses the existing authenticated match_opponent_action RPC.
 
 Below 1000 logical pixels the cards stack in a scroll view; Continue stays outside that scroll. Large viewports scale the content up to 1.55 times. Data uses native controls, not text baked into a mockup.
 
@@ -63,3 +63,11 @@ These are offline fixtures with actual Godot rendering/audio; a live Nakama matc
 ## Resource organization (2026-09-15)
 
 See [[assets-pipeline]] for the current asset tree and [[2026-09-15-resources-organization]] for the migration. Spell icons now use canonical ids in `Resources/Spells/Icons/<id>.png`; old icon ids and old full spell paths are accepted by `Spell.GetIconPath`. Editable material and race tools live under `.gdignore`d `ArtSource/`. Duplicate character-creation portraits resolve to the identical `Resources/Races/<race>/avatar.png`. The two unreferenced old arena scenes (`GameHud/Main.tscn`, `GameHud/ArcaneDuel/Main.tscn`) and their exclusive resources were deleted. Historical sections above describe earlier states; they do not imply those removed files remain.
+
+## Animated experience (HEX-16, 2026-09-15)
+
+Results animate from pre-reward cumulative XP through each crossed level: fill, short full hold, advance the level label, visible empty hold, then fill again. Bar values are relative to the current level threshold, while Total remains cumulative. At level30 the bar stays full and displays MAX LEVEL; post-cap rewards retain the spell-study explanation. Continue remains usable throughout and leaving kills the tween. Reward data and settlement are unchanged.
+
+`ResultXpVerification.tscn` checks starting40/45, both full/empty transitions through levels1–3, final58/69, same-level rewards, exact threshold, zero rewards, cap overflow6150→6177, already capped results and exit during playback. Real GPU rendering inspected at1360×612; headless boundary run passed. Full server Go tests passed, including serialized pre-reward XP regression; C# build passed with11 existing warnings. Offline harness retains ObjectDB/resource shutdown warnings. No physical-device/export or deployed backend validation.
+
+HEX-20 removes rank-change placeholders and ranked-unlock announcements from results.

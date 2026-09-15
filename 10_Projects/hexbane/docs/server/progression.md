@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-12
-verified: 2026-09-12
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, server, progression, races, stats, skills, combat]
 sources: ["server:docs/progression/overview.md", "server:docs/progression/race.md", "server:docs/progression/stats.md", "server:docs/progression/skills.md", "server:docs/progression/progression.md", "server:docs/progression/combat.md", "server:docs/progression/match-integration.md", "server:docs/progression/modifiers.md", "server:docs/superpowers/specs/2026-09-02-race-system-redesign-design.md", "server:docs/superpowers/plans/2026-09-02-race-system-redesign.md", "client:docs/Server/progression/overview.md", "client:docs/Server/progression/race.md", "client:docs/Server/progression/stats.md", "client:docs/Server/progression/skills.md", "client:docs/Server/progression/progression.md", "client:docs/Server/progression/combat.md", "client:docs/Server/progression/match-integration.md", "client:docs/Server/progression/races_seed.sql"]
 ---
@@ -74,9 +74,9 @@ Previously earned higher slots are grandfathered. Match setup clamps usable pick
 
 Each primary independently earns tiers 1–6 at character levels 1/5/10/16/23/30. Tier entitlement is not an automatically allocated path: empty saved paths resolve to the free root. `set_primary_path` permits a legal contiguous prefix up to the earned tier. Bonuses accumulate through reconnecting graph branches; unspent tiers supply no effect. Graph version is 1. See [[spell-system]].
 
-## Ranked access
+## Ranked availability
 
-The normal matchmaker accepts string property `queue=normal|ranked` (omitted means normal). The server replaces the query with `+properties.queue:<queue>`, forces two distinct players, rejects mixed queues and checks ranked character level ≥30 at queueing, match creation and invited join. No skill, MP, collection or primary-allocation requirement exists. Ranked matches use the same combat/economy; this implements an access gate and separate queue, **not MMR, rating, seasons or leaderboards**.
+Ranked is currently unavailable (HEX-20, 2026-09-15). The client exposes only vs Player and vs AI, with no ranked milestone, unlock hint or result metric. New ranked tickets and matchmaker cohorts are rejected regardless of character level. Historical eligibility fields/constants and existing-match join validation remain for compatibility; they do not open a new queue. See [[matchmaking]].
 
 ## Settlement and migration operations
 
