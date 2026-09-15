@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-14
-verified: 2026-09-14
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, client, architecture, godot]
 sources: ["client:CLAUDE.md", "client:AGENTS.md", "client:project.godot", "client:Game/Autoloads/SceneManager.cs", "client:Game/DI/ServiceBootstrapper.cs"]
 ---
@@ -127,7 +127,7 @@ Display: 2400×1080 viewport, `canvas_items` stretch, `expand` aspect, per-pixel
 | `Tests/DuelV2/DuelV2.csproj` | `dotnet run --project Tests/DuelV2/DuelV2.csproj [ai|pvp]` | offline duel_v2 model checks; with an argument a live SDK smoke that requires `NAKAMA_URL` and the seeded `elf@test.pl` / `dark_elf@test.pl` accounts (`Live.cs:72-77`) |
 | `Tests/Tutorial/Tutorial.csproj` | `dotnet run --project Tests/Tutorial/Tutorial.csproj` | `TrainingBattle` steps and `ProgressionLesson.ShouldStart` |
 | `Tests/Tutorial/live_rpc.py` | `python3 Tests/Tutorial/live_rpc.py` | `tutorial` RPC against `127.0.0.1:7350` with a disposable device account |
-| `Tests/JsonAot/JsonAot.csproj` | `dotnet build Tests/JsonAot/JsonAot.csproj`, then `HEXBANE_IGNORE_ENV_FILE=1 DEV_AUTO_LOGIN=false <Godot 4.7 .NET> --headless --path Tests/JsonAot` | every shipped JSON path with reflection-based System.Text.Json disabled (the iOS Native AOT rule): RPC handlers through the real Nakama client and a canned HTTP adapter, queue client, opcode messages, notifications, duel v2 command/snapshot/event, race hand tracks plus `SignalUtils.EmitSafe` argument delivery (162 checks, 2026-09-14) |
+| `Tests/JsonAot/JsonAot.csproj` | `dotnet build Tests/JsonAot/JsonAot.csproj`, then `HEXBANE_IGNORE_ENV_FILE=1 DEV_AUTO_LOGIN=false <Godot 4.7 .NET> --headless --path Tests/JsonAot` | every shipped JSON path with reflection-based System.Text.Json disabled (the iOS Native AOT rule): RPC handlers through the real Nakama client and a canned HTTP adapter, queue client, opcode messages, notifications, duel v2 command/snapshot/event, race hand tracks plus `SignalUtils.EmitSafe` argument delivery (173 checks, 2026-09-14) |
 | `Tests/NakamaAot/NakamaAot.csproj` | `dotnet publish Tests/NakamaAot/NakamaAot.csproj -c Release -r osx-arm64 -o <dir>`, then `<dir>/NakamaAot` (5 offline SDK checks), `… live-socket` (device auth + socket RPC `healthcheck` / `create_ai_arcane_duel` against `127.0.0.1:7350`), `… dynamic-check` (proves `dynamic` fails under Native AOT) | real Native AOT behaviour of the Nakama SDK and of C# features on macOS |
 | Godot headless scenes | `Game/ScenesV3/Dev/*.tscn`, `ReferenceDuel/ReferenceVerification.tscn` | see [[duel-v2-client]], [[client-tutorial]], [[vfx-and-race-animation]] |
 
@@ -152,7 +152,7 @@ Rule for shipped code (`Game/`, `Application/`, `Core/`):
 
 **No C# `dynamic` in shipped code.** The runtime binder does not exist under Native AOT: `Tests/NakamaAot dynamic-check` shows `RuntimeBinderException: 'DynamicProbe' does not contain a definition for 'Wrap'` for a `dynamic` call into a generic method, and in the app it surfaced as *Object reference not set to an instance of an object* the moment `MatchState.ChangeStatus` emitted `MatchStatusChanged` (bot match found, after a successful `create_ai_arcane_duel`). `SignalUtils.EmitSafe` now converts arguments with an explicit type switch (`int`, `long`, `float`, `double`, `bool`, `string`, `StringName`, `NodePath`, `GodotObject`, Godot `Array`/`Dictionary`, `Array<string>`, `Array<int>`, primitive arrays) and throws `NotSupportedException` for anything else, so a new argument shape fails loudly on the desktop instead of silently on the phone. `ModeOverlay` logs the full matchmaking exception (`GD.PrintErr`) before showing the dialog.
 
-Checks: `Scripts/check_aot_json.sh` builds with the AOT/trim analyzers, fails on any `IL3050` outside the dev scenes and on any `dynamic` in `Game/`, `Application/`, `Core/` (the Roslyn analyzer only reports `dynamic` as `IL2026`, so it is grepped); `Tests/JsonAot` (see the table above) fails with the iOS exception when a JSON path regresses and verifies `EmitSafe` argument delivery (162 checks); `Tests/NakamaAot` (`dotnet publish -r osx-arm64`, Native AOT) has `live-socket` (socket RPC envelope against local Nakama) and `dynamic-check` probes. See [[deploy-ios]] for the simulator reproduction and validation.
+Checks: `Scripts/check_aot_json.sh` builds with the AOT/trim analyzers, fails on any `IL3050` outside the dev scenes and on any `dynamic` in `Game/`, `Application/`, `Core/` (the Roslyn analyzer only reports `dynamic` as `IL2026`, so it is grepped); `Tests/JsonAot` (see the table above) fails with the iOS exception when a JSON path regresses and verifies `EmitSafe` argument delivery (173 checks); `Tests/NakamaAot` (`dotnet publish -r osx-arm64`, Native AOT) has `live-socket` (socket RPC envelope against local Nakama) and `dynamic-check` probes. See [[deploy-ios]] for the simulator reproduction and validation.
 
 ## Runtime socket recovery (2026-09-10)
 
@@ -165,6 +165,10 @@ See [[social-sign-in#Runtime connection recovery (HEX-6, 2026-09-10)]] for seria
 ## Queue/result race handling (2026-09-12)
 
 Cancellation completion includes pending Join cleanup, and the manager serializes a fresh queue intent behind that cleanup. A new intent clears the old custom queue owner before built-in ranked matching. ModeOverlay handles Searching/Idle, stopping obsolete accept/join timers when a counterpart requeues or an offer expires. Temporary polling failures retry without abandoning the active search UI. Result recovery is fenced again after awaits; failed rejoin also enters bounded receipt retries. GameOver friend/report use `match_opponent_action`. These paths are compile/unit/protocol-tested; no rendered Godot/device test of all UI transitions was performed.
+
+## Server-managed news (2026-09-15)
+
+Dashboard/NewsScreen use CQRS `GetNewsQuery` and DI singleton `NewsService`, replacing hardcoded `NewsData.Articles`. Core NewsArticle DTOs include stable IDs and display-date formatting; response metadata is in ClientJsonContext. Shared cache60s, coalesced requests, failure backoff5s, session/client checks and10s RPC cancellation. Screens handle loading/empty/error/retry, protect scene-exit continuations, and preserve selected article by ID. Plain text is escaped before BBCode formatting. See [[news]] for the full contract, seed migration and live/rendered verification.
 
 ## Source of truth in code
 - `client:project.godot` — autoload order, `[hexbane]` settings, display/stretch, main scene

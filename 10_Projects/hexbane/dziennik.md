@@ -753,3 +753,12 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Bounded latest20 feed, ready JSON cached60s per process, coalesced concurrent refresh, 3s DB deadline and 5s error retry suppression. Local write invalidation; other instances converge via TTL.
 - Verification: full `make test`, PostgreSQL17 integration with migration up/down and `go test -race ./modules/news`, `go vet ./modules/news`, Linux Nakama plugin `make build`, whitespace check passed. Integration used a separate disposable container/database; no real accounts or application database altered.
 - Notes: [[news]], [[database]], [[rpcs]], [[_index]], [[_state]]. Remaining activation: deploy migration/plugin, grant intended admin account; separately wire client fetching/empty/error states and date formatting. No production release, HTTP/live-client test, commit or push.
+
+
+## 2026-09-15 — Welcome news seed and client integration
+
+- Added migration10 with one short English welcome announcement. Idempotent seed preserves administrator edits; down removes its stable ID. Database test covers seed contents, replay/edit preservation and rollback.
+- Replaced hardcoded client NewsData articles with Core DTO, source-generated JSON, singleton NewsService and CQRS query. Dashboard and NewsScreen share a60-second cache, coalesce concurrent requests, retry failures after5s and discard late responses after logout/scene exit. Added loading/empty/error/retry UI, stable selection IDs, display dates and plain-text BBCode escaping.
+- Validation: server `make test`, PostgreSQL17 `go test -race ./modules/news`, all migrations plus real HTTP RPC on isolated Nakama3.27 passed. Client build0 errors/11 existing warnings; reflection-disabled JsonAot173 checks passed. NewsVerification passed10 checks at1360×612 and960×540; screenshots inspected in `/tmp/hexbane-news-captures{,-compact}`. One ObjectDB exit warning in the harness; no physical-device test/export.
+- Preserved pre-existing client background PNG modification and unrelated untracked GameHudPreview scene, plus the earlier backend news work. No commit/push or production deployment. Disposable test services removed after validation.
+- Notes: [[news]], [[rpcs]], [[database]], [[client-architecture]], [[_state]]. Activation requires migration9/10 and the new server plugin/client build on the target environment.

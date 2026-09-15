@@ -61,7 +61,7 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 ### 2026-09-15 — Server-managed news
 
 - PostgreSQL stores the six fields consumed by the client, stable IDs and publication/audit metadata. Administrator access is an operator-granted DB role; full-replacement upsert publishes or withdraws articles.
-- **Why:** a fixed latest20 feed cached as JSON for60s coalesces concurrent reads and bounds memory/DB work without a new service. Other nodes converge by TTL; errors retry after5s. Existing client fixtures remain until RPC integration. See [[news]].
+- **Why:** a fixed latest20 feed cached as JSON for60s coalesces concurrent reads and bounds memory/DB work without a new service. Other nodes converge by TTL; errors retry after5s. Client integration now uses the shared feed cache and stable selection IDs. Migration10 seeds one English welcome announcement; old client fixtures are removed. See [[news]].
 
 ### 2026-09-15 — Delete remaining legacy asset consumers
 

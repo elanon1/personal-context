@@ -292,7 +292,7 @@ Concurrent retries serialize under a transaction advisory lock. Once committed t
 
 ## News RPCs (2026-09-15)
 
-- `get_news {}`: authenticated; `{success:true,data:{articles:[{id,title,summary,content,date,category,highlight,updated_at}],refresh_after_seconds:60}}`. Latest20 published articles, full content, date in `YYYY-MM-DD`, sorted date/id descending. Cache shared per instance; no client caller yet.
+- `get_news {}`: authenticated; `{success:true,data:{articles:[{id,title,summary,content,date,category,highlight,updated_at}],refresh_after_seconds:60}}`. Latest20 published articles, full content, date in `YYYY-MM-DD`, sorted date/id descending. Cache shared per instance; client Dashboard and NewsScreen call via `GetNewsQuery`/singleton `NewsService` (60-second client cache).
 - `admin_upsert_news {id,title,summary,content,date,category,highlight,published}`: requires an account in `news_administrators`; full replacement, same ID edits, published=false withdraws. `{success:true,data:{id,published}}`. Never trusts client-provided roles.
 - See [[news]] for validation, error codes, cache consistency and administration examples.
 

@@ -14,7 +14,9 @@ sources: ["server:modules/news", "server:db/migrations/000009_news.up.sql", "cli
 
 ## Scope and client mapping
 
-The server implements persistent articles and administrator writes. The existing client still reads the hardcoded `NewsData.Articles`; switching Dashboard and NewsScreen to RPC is a separate integration step. No sample client announcements were published or seeded: they include obsolete gameplay claims.
+The server implements persistent articles and administrator writes. Dashboard and NewsScreen now fetch `get_news` through the shared client NewsService/CQRS query. The hardcoded client articles were removed. Migration `000010_welcome_news` seeds one published, highlighted English announcement (`welcome-to-hexbane`) with brief onboarding advice. Obsolete sample announcements were not copied.
+
+The seed uses `ON CONFLICT(id) DO NOTHING`, so replay does not overwrite an administrator edit. Its down migration removes that ID (including subsequent edits). Creator/editor account IDs are null for this system seed. Deploy migration9 before10; an existing installation at9 only needs the new seed migration.
 
 | Client field | API / database | Contract |
 |---|---|---|
@@ -37,7 +39,16 @@ Authenticated Nakama RPC, request `{}` (empty payload also accepted). Unknown fi
 
 Returns the latest **20 published** articles, ordered by `date DESC, id DESC` (stable tie-break). Empty result is `[]`. Full content is included for immediate article opening. No archive pagination, per-user variants or scheduling: `date` is editorial display/order metadata, even a future date publishes immediately when `published=true`. Highlight affects presentation, not ordering.
 
-Errors: unauthenticated `16`, invalid request `3`, temporarily unavailable `14`. Client should reuse the response for 60 seconds, keep selection by stable ID, handle empty feed/loading/error, and avoid refreshing on every scene transition. C# DTOs need source-generated serialization metadata for iOS Native AOT.
+Errors: unauthenticated `16`, invalid request `3`, temporarily unavailable `14`. Client behavior is implemented below; C# DTOs use source-generated serialization metadata for iOS Native AOT.
+
+## Client integration
+
+- `Core/News/NewsArticle` maps wire fields, provides read-only properties and invariant English display dates (`Sep 15, 2026`). `NewsFeedResponse` is registered in `ClientJsonContext`.
+- DI singleton `NewsService` owns one immutable feed snapshot. Transient `GetNewsQueryHandler` delegates to it, so opening Dashboard and NewsScreen shares the cache. An async semaphore coalesces concurrent misses.
+- TTL is the server's suggested interval clamped to60–300 seconds (current server sends60). Errors/invalid envelopes use a5-second backoff and no stale articles. Requests have a10-second cancellation deadline. No RPC without an authenticated session. Cache keys include user ID and client instance; late responses after session/client replacement are discarded.
+- Both screens request on entry and show loading, empty or retryable failure states. Retry goes through the same backoff. There is no background timer: an already open screen refreshes on re-entry or error retry. After refresh, another client's cache can add up to60 seconds to the server cache's propagation delay.
+- `NewsData` retains only `SelectedId`, not article data. Each scene renders its own snapshot; reordering preserves selection by ID, withdrawal chooses the first remaining article, empty feed clears selection. Scene exit invalidates pending UI updates.
+- Plain text is escaped before existing BBCode heading/bullet formatting, so remote bracket text cannot inject links or formatting. Icons still derive locally. No bundled article fallback masks a missing server deployment.
 
 ## `admin_upsert_news`
 
@@ -66,7 +77,7 @@ Errors: unauthenticated `16`, malformed `3`, missing/revoked role `7`, database 
 
 ## Operator procedure
 
-1. Deploy migration `000009_news` and the new plugin through the existing release process. No runtime environment variables or new services are needed.
+1. Deploy migrations `000009_news`, `000010_welcome_news` and the new plugin through the existing release process. No runtime environment variables or new services are needed.
 2. Grant an existing Nakama account the role from a trusted database session (replace the example UUID with the actual account ID):
 
 ```sql
@@ -103,7 +114,11 @@ The existing Nakama SDK can also call `RpcAsync(session, "admin_upsert_news", js
 
 ## Verification
 
-`make test`, `go vet ./modules/news` and Linux plugin `make build` passed. Unit/race tests exercise 100 simultaneous readers, expiry, invalidation, failed-refresh retry suppression, strict parsing and validation. Isolated PostgreSQL 17 tests cover migration up/down, role denial/revocation, create/edit/withdraw, all article data, empty arrays, ordering/20-row limit, local invalidation and second-instance TTL refresh. No production migration, HTTP smoke test or client integration has been performed.
+`make test`, `go vet ./modules/news` and Linux plugin `make build` passed. Unit/race tests exercise 100 simultaneous readers, expiry, invalidation, failed-refresh retry suppression, strict parsing and validation. Isolated PostgreSQL 17 tests cover migration up/down, role denial/revocation, create/edit/withdraw, all article data, empty arrays, ordering/20-row limit, local invalidation and second-instance TTL refresh. Follow-up verification (2026-09-15): migration10 up/replay/down passed on isolated PostgreSQL17; replay preserves edits. A disposable Nakama3.27 loaded the Linux plugin with all migrations and passed real HTTP authentication, seeded feed, denied player write, administrator publication/withdrawal and immediate local invalidation. Production client NewsService fetched the seed from that instance.
+
+Client build passed (0 errors,11 existing warnings). The reflection-disabled JsonAot harness passed173 checks, including100 concurrent news readers/one RPC, cache expiry, empty results, malformed payload/backoff/recovery, unauthenticated access and late logout response. `NewsVerification` passed10 UI/service checks at1360×612 and960×540; rendered screenshots inspected for dashboard, reader, empty and error states. Verification uses actual live data for the welcome screens and injected service snapshots for reorder/empty/error cases. A single ObjectDB shutdown warning remains in the Godot harness. No production deployment or physical-device export/test was performed.
+
+Repeatable client harness: start a disposable Nakama with migrations on localhost:57350, then run `HEXBANE_IGNORE_ENV_FILE=1 DEV_AUTO_LOGIN=false NAKAMA_HOST=127.0.0.1 NAKAMA_PORT=57350 NEWS_CAPTURE=/tmp/hexbane-news-captures <Godot .NET> --path . res://Game/ScenesV3/Dev/NewsVerification.tscn`. Optional `NEWS_SIZE=960x540`. The scene refuses any other host/port. Test account exists only inside the disposable database.
 
 ## Source of truth in code
 
@@ -113,3 +128,8 @@ The existing Nakama SDK can also call `RpcAsync(session, "admin_upsert_news", js
 - `server:db/migrations/000009_news.{up,down}.sql`
 - `client:Game/ScenesV3/News/{NewsData,NewsScreen}.cs`
 - `client:Game/ScenesV3/Dashboard/DashboardScreen.cs`
+
+- `server:db/migrations/000010_welcome_news.{up,down}.sql`
+- `client:Core/News/NewsArticle.cs`, `Application/Modules/News/`, `Application/Serialization/ClientJsonContext.cs`
+- `client:Game/ScenesV3/News/NewsFeedUi.cs`, `Game/DI/ServiceBootstrapper.cs`
+- `client:Tests/JsonAot/JsonAotVerification.cs`, `Game/ScenesV3/Dev/NewsVerification.cs`

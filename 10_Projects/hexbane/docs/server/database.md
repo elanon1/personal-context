@@ -82,7 +82,7 @@ Migration8 adds `match_opponent_actions` (actor FK to users, UUID target with in
 
 ## News migration (2026-09-15)
 
-Migration9 adds `news_administrators` (operator-granted account role) and `news_articles` (six client fields, stable ID, publication flag and audit metadata). UTF-8 byte limits, category/date/ID constraints and a partial feed-order index bound and support the latest20 query. No seed news or real administrator grants. See [[news]] for the schema contract and operator procedure.
+Migration9 adds `news_administrators` (operator-granted account role) and `news_articles` (six client fields, stable ID, publication flag and audit metadata). UTF-8 byte limits, category/date/ID constraints and a partial feed-order index bound and support the latest20 query. Migration10 adds one published English welcome article (`welcome-to-hexbane`) with `ON CONFLICT DO NOTHING`; down removes that article ID. No real administrator grants. See [[news]] for the schema contract and operator procedure.
 
 ## Source of truth in code
 
