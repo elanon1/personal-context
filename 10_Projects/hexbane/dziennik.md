@@ -789,3 +789,9 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Remaining HEX-21 (five AI levels/fast explicit AI draft/fallback10–20s), HEX-23 (usable cosmetics/XP boost foundation), HEX-24 (action-driven tutorial/mirror timing/mobile-only meditation). Full objective remains active.
 
 - HEX-16–20 and HEX-22 marked Done in Linear after verification. Independent read-only reviews found no concrete defects in either batch. HEX-21/23/24 remain Backlog and the all-backlog goal stays active. Changes are local and uncommitted.
+
+## 2026-09-15 — audyt kosztu multiplatformowości
+
+- Przegląd kodu platformowego, Android/iOS/PC, serializacji AOT, adaptacji menu, HUD i wejścia; osobno eksperymentalny checkout web. Baza pomiaru około 31,8 tys. linii C#, szacunki usuwalnych fragmentów zależne od scenariusza.
+- Raport: `docs/audits/2026-09-15-platform-complexity.md`, dodany do `_index.md`. Wskazano nieaktywną integrację Play Games oraz wspólne zachowania, których nie należy usuwać przy rezygnacji z pojedynczej platformy.
+- Bez zmian kodu, eksportów i testów runtime. Szacunek statyczny, nie zatwierdzony plan usuwania; zachowano zastane zmiany równoległe.

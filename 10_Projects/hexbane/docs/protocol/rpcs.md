@@ -225,7 +225,7 @@ Envelope: `{success:true,data:...}`. QueueView: `{queue_id,generation,state,assi
 
 ### `create_ai_arcane_duel`
 - `server:modules/match/ai_match/init.go:34`. Client: `client:Application/ArcaneDuel/Bot/BotMatchManager.cs:92` (socket RPC).
-- Creates an `ai_duel` match; response `{"success":true,"message":"Match created","data":{"match_id":"<id>.nakama1"}}`; failure is a gRPC error from `MatchCreate`. See [[matchmaking]].
+- Request `{ "difficulty": 1..5 }`; omitted difficulty defaults to3 for older clients. Malformed/out-of-range values fail with code3 before creating a match; authentication is required. The chosen difficulty is retained in match state and the public opponent name `AI · Level N`. Creates an `ai_duel` match; response `{"success":true,"message":"Match created","data":{"match_id":"<id>.nakama1"}}`; failure is a gRPC error from `MatchCreate`. See [[matchmaking]].
 
 ### `decline_match`
 - `server:modules/match/normal_match/init.go:31-53`. Client: `client:Application/ArcaneDuel/Normal/MatchManager.cs:158-159`.

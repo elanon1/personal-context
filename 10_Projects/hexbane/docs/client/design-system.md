@@ -187,3 +187,7 @@ Highlighted news retain the accented border but no external diamond marker. At c
 Ranked was removed from mode selection, dashboard character subtitle, detail header/study/journey and result metrics/unlock announcements. Only vs Player and vs AI are available. No asset names or compatible protocol fields were renamed solely because they contain ranked.
 
 Rendered offline checks:1360×612 and960×540; actual pointer tap on avatar opens CharacterDetail. `MobileLayoutVerification` skips Auth by default to prevent a saved-session restoration from navigating away mid-test; opt in with `MOBILE_INCLUDE_AUTH=1` when intentionally testing login. `MOBILE_CHECK_AVATAR=1` verifies navigation. Fake news is scoped to the verification scene.
+
+## AI difficulty selection (HEX-21, 2026-09-15)
+
+vs AI opens a compact five-button difficulty selector with Back. Each choice starts the selected level through the shared match manager. Lobby, arena placeholders and results use AI instead of Bot; the server name includes the chosen level. Rendered selector fits960×540.

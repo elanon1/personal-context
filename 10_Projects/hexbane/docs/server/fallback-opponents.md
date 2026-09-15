@@ -5,7 +5,7 @@ area: server
 status: deployed
 created: 2026-09-12
 updated: 2026-09-15
-verified: 2026-09-12
+verified: 2026-09-15
 tags: [hexbane, matchmaking, fallback, ai]
 ---
 # Fallback opponents
@@ -19,7 +19,7 @@ Implemented on backend branch `feat/natural-fallback-player`, published as `b2e7
 
 Normal queue uses authenticated `queue_config`, `queue_join`, `queue_status`, `queue_cancel`, `queue_accept`, `queue_decline`. Ranked is disabled for new tickets/cohorts as of HEX-20 (2026-09-15); see [[matchmaking]]. Training retains explicit `ai_duel`.
 
-Each search gets a server-time triangular fallback deadline: minimum 15 s, mode 22.5 s, maximum 30 s. Compatible humans take priority before a synthetic allocation is reserved. Status polling (normally 1 s), database latency and match creation add to the visible wait; 30 s is not an unconditional UI deadline under failures/exhaustion. Queue pool is server region + mode + protocol. Queue RPCs, not per-search goroutines, drive progress.
+Each search gets a server-time triangular fallback deadline: minimum 10 s, mode 15 s, maximum 20 s. Compatible humans take priority before a synthetic allocation is reserved. Status polling (normally 1 s), database latency and match creation add to the visible wait; 20 s is not an unconditional UI deadline under failures/exhaustion. Queue pool is server region + mode + protocol. Queue RPCs, not per-search goroutines, drive progress.
 
 PostgreSQL serializes reservation per pool. Creation runs outside the transaction; allocation generation and match ID fence publication and first admission. Only accepted, assigned humans may first join; synthetic UUIDs cannot join over a socket. Existing human reconnects restore their presence without re-accepting an expired offer. Cancellation/decline/timeout clean up reservations; request IDs and generation checks reject stale cancellation and late async responses. A counterpart can be returned to search with a higher generation of the same queue ID.
 
@@ -62,3 +62,7 @@ Turning fallback off keeps human custom matching available. Turning custom queue
 - server: `modules/match/engine/phase/{connecting,lobby,game,gameover}`, `modules/match/engine/core/bot_setup.go`
 - server: `db/migrations/000006*`, `000007*`, `000008*`, `.env.dist`, `cmd/duel-sim`, `scripts/test_combat_runtime.mjs`
 - client: `Application/ArcaneDuel/Normal/{MatchManager,QueueClient}.cs`, `Core/Match/QueueAssignment.cs`, `Tests/Matchmaking`, `Game/ScenesV3/Dashboard/ModeOverlay.cs`
+
+## HEX-21 local changes (2026-09-15)
+
+The current source uses a10–20s triangular fallback delay (mode15s). This section updates the implementation; deployment statements above still describe the older live release. Explicit vs AI now has difficulty1–5 and fast draft picks; its match-local training profile is separate from the persona profile described above.

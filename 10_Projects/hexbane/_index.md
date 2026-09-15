@@ -128,6 +128,8 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 
 ## Audyty (`docs/audits/`)
 
+- [[2026-09-15-platform-complexity]] — szacunek kodu technicznego i UI dla platform, warianty rezygnacji i redukcji złożoności.
+
 - [[2026-09-12-fallback-verification]] — testy SQL/race/build/live oraz produkcyjny rollout i ograniczenia.
 - [[2026-09-12-fallback-ai-calibration.json]] —3000 walk,1000 seedów, metryki i bramki strojenia.
 

@@ -24,9 +24,9 @@ Both handlers run the shared engine at 10 ticks/s. Current normal fallback contr
 
 Built-in tickets accept `queue=normal` (omitted means normal), forced 2-player counts and server query `+properties.queue:normal`. Ranked requests fail with `queue unavailable` (code9), including stale matched cohorts. Unknown/mixed queues fail. Custom-enabled servers reject normal built-in tickets, including stale matched cohorts. Existing match invitation/join guards remain for already-created matches; no new ranked queue is exposed (HEX-20). Normal match initialization reads its invitation allowlist; socket admission rejects outsiders and synthetic IDs.
 
-The new queue selects a fallback deadline in 15–30 s, gives compatible humans priority before reservation, and presents one common match-found/accept flow. Details of reservation, leases and reconnect are in [[fallback-opponents]] and RPC shapes in [[rpcs]]. Ordinary human setup loads the current character, stats-derived combat profile, owned collection and race-specific slots; no fixed 200HP/100mana override.
+The new queue selects a fallback deadline in 10–20 s, gives compatible humans priority before reservation, and presents one common match-found/accept flow. Details of reservation, leases and reconnect are in [[fallback-opponents]] and RPC shapes in [[rpcs]]. Ordinary human setup loads the current character, stats-derived combat profile, owned collection and race-specific slots; no fixed 200HP/100mana override.
 
-Explicit `ai_duel` still uses `0000` / `Bot` and its distinct training route. It starts with standard spells only and drafts optional owned spells during the lobby; it no longer starts with a prefilled optional deck and appends a second copy. Its legacy slot copying is not used by fallback personas.
+Explicit `ai_duel` uses synthetic ID `0000`, visible name `AI · Level N` and difficulty1–5 selected through `create_ai_arcane_duel`. Its draft waits0.3–0.6s per pick (up to0.7s including scheduling), independently of combat difficulty. It starts with standard spells only and drafts optional owned spells during the lobby; it no longer starts with a prefilled optional deck and appends a second copy. Its legacy slot copying is not used by fallback personas.
 
 Reconnect replaces the old presence; a late leave from the old session cannot evict the new one. Normal precombat leave cancels with opcode9/opponent_left; combat disconnect does not itself end the match. Empty-match reaper: 30 s before first human, 5 s after all humans disappear. Settlement pending prevents premature termination. Normal assignment/persona leases are released on loop completion/termination; PvP never heartbeats a nonexistent persona lease.
 
@@ -40,4 +40,10 @@ Client queue polling follows the current socket and account. Accept retries hand
 
 ## Character already in a match (2026-09-12)
 
-Both handlers run a read-only availability check before admitting a new player. `character_in_match` rejects a new match without removing the old lease or marking the queued player joined. The final atomic acquisition still guards races; its busy failure is opcode 9 with the same reason. Same-match reconnect remains allowed. See [[op_09_match_canceled]] for the client wait message. Fallback remains enabled at 15–30 seconds.
+Both handlers run a read-only availability check before admitting a new player. `character_in_match` rejects a new match without removing the old lease or marking the queued player joined. The final atomic acquisition still guards races; its busy failure is opcode 9 with the same reason. Same-match reconnect remains allowed. See [[op_09_match_canceled]] for the client wait message. Fallback remains enabled at 10–20 seconds.
+
+## Explicit AI difficulty (HEX-21, 2026-09-15)
+
+Training uses `bot_ai.TrainingProfile` selected only for `MatchModeAI`; natural fallback profiles remain separate. Levels1–5 are Beginner, Easy, Normal, Hard, Expert. Reaction/decision latency, choice temperature, planned-queue probability and mistake chance vary; no hidden enemy state or stat/damage multiplier is granted. Level1 reacts in1.5–2.5s plus0.8–1.5s decision delay, makes frequent mistakes and does not queue during recovery. Level5 reacts in0.1–0.2s plus0–0.1s decision delay, frequently plans ahead and uses the existing visible-cast/impact/defense scorer. A response with zero configured latency still submits on a later engine tick.
+
+Client mode selection opens five explicit difficulty buttons. Chosen integer is serialized through the generated JSON context. Invalid RPC choices fail without creating a match. Existing AI build/stat/slot rules remain; difficulty changes decision behavior.
