@@ -98,3 +98,13 @@ Verification: `Game/ScenesV3/Dev/TutorialRoutingVerification.tscn` runs offline 
 ## Resource organization (2026-09-15)
 
 See [[assets-pipeline]] for the current asset tree and [[2026-09-15-resources-organization]] for the migration. Spell icons now use canonical ids in `Resources/Spells/Icons/<id>.png`; old icon ids and old full spell paths are accepted by `Spell.GetIconPath`. Editable material and race tools live under `.gdignore`d `ArtSource/`. Duplicate character-creation portraits resolve to the identical `Resources/Races/<race>/avatar.png`. The two unreferenced old arena scenes (`GameHud/Main.tscn`, `GameHud/ArcaneDuel/Main.tscn`) and their exclusive resources were deleted. Historical sections above describe earlier states; they do not imply those removed files remain.
+
+## Action-first lessons (HEX-24, 2026-09-15)
+
+Arrow, Mirror, Meditation, Cleanse, Barrier and Finale instruction cards have no Continue button. The correct spell tap or upward swipe starts the associated practice immediately; unrelated actions cannot dismiss the instruction. Intro/practice enum values remain for presentation and model compatibility. The clock stays paused while reading. Impact completion still advances the lesson and leaves one second of unobscured feedback.
+
+The mentor starts Firebolt only after the learner casts Mirror Reflection or Barrier. Its release is scheduled after the defense cast and strictly before that defense expires (even a one-tick effect). Repeated taps cannot reschedule an already pending attack. Timing is scripted locally; live combat catalog rules are unchanged. Mirror text explains this sequence without a hardcoded duration.
+
+Meditation has no HUD button or keyboard binding, including restored legacy settings. Both input policies teach upward swipe. The real duel keeps the same authoritative meditation command; the touch gesture is the only HUD entry point.
+
+Validation: Core regressions failed before action-card and repeated-tap fixes, then pass; client build 0 errors / 11 existing warnings; real Godot touch inputs completed all exercises through Summary against the catalog from isolated Nakama. Rendered 1360x612 mobile profile shows step 4 Magic Arrow directly tappable with no Continue and gesture guidance. CombatControlsVerification passes Space rejection, removed binding/button, live upward swipe, and existing input/persistence plus 30 layout combinations. Review found no outstanding defect. No physical phone or production deployment test.

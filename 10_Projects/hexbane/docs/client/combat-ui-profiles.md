@@ -4,8 +4,8 @@ project: Hexbane
 area: client
 status: active
 created: 2026-09-09
-updated: 2026-09-10
-verified: 2026-09-10
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, ui, desktop, mobile, keyboard]
 sources: ["client:Game/ScenesV3/ReferenceDuel/ReferenceHud.Layout.cs", "client:Game/ScenesV3/Settings/CombatControls.cs"]
 ---
@@ -31,7 +31,7 @@ Open **Settings → Interface → Keyboard & combat HUD…**, or **Esc / Control
 | Draft slot 7 (Human) | F |
 | Magic Arrow | Q |
 | Mirror Reflection | E |
-| Meditate | Space |
+| Meditate | Upward swipe only |
 | Clear queue | X |
 
 These are positional draft bindings, not spell IDs. Lobby slot ordering determines the spell in each position. Primary actions remain Q/E across Human/non-Human capacity changes. Absent slot 7 does nothing for non-Human characters. Old fixed 1–9/Space/M mappings in ReferenceHud are superseded.
@@ -117,3 +117,7 @@ Spell slots redraw on changes to availability, cast progress, queue and tutorial
 - client:Game/ScenesV3/Dev/CombatControlsVerification.cs
 - client:Game/ScenesV3/Dev/DesktopCombatPreview.tscn
 - client:Game/ScenesV3/Dev/MobileCombatPreview.tscn
+
+## Mobile meditation change (HEX-24, 2026-09-15)
+
+The active HUD no longer creates a Meditate button in either profile. `CombatControls` has no meditation action, so old saved Space/rebound meditation entries are ignored and cannot be edited or matched. Swipe up still reaches the existing guarded meditation command. Other existing keyboard spell bindings/layout preferences remain available. Tutorial cards teach the same gesture on both profiles. Offline control acceptance verified no button, no Space effect, rejection of restoring a meditation binding, and successful upward-swipe meditation; all 30 layout/scale combinations also pass. See [[client-tutorial]] for rendered mobile lesson acceptance.

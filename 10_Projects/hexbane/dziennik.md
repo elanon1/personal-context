@@ -795,3 +795,17 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Przegląd kodu platformowego, Android/iOS/PC, serializacji AOT, adaptacji menu, HUD i wejścia; osobno eksperymentalny checkout web. Baza pomiaru około 31,8 tys. linii C#, szacunki usuwalnych fragmentów zależne od scenariusza.
 - Raport: `docs/audits/2026-09-15-platform-complexity.md`, dodany do `_index.md`. Wskazano nieaktywną integrację Play Games oraz wspólne zachowania, których nie należy usuwać przy rezygnacji z pojedynczej platformy.
 - Bez zmian kodu, eksportów i testów runtime. Szacunek statyczny, nie zatwierdzony plan usuwania; zachowano zastane zmiany równoległe.
+
+## 2026-09-15 — HEX-21: pięć poziomów AI
+
+- Klient: wybór poziomu 1–5 przed meczem, typowany request zgodny z Native AOT, nazwa AI w lobby/HUD/wyniku. Serwer: walidacja RPC, profile decyzji, szybki draft oddzielony od fallbacku, losowanie fallbacku 10–20 s.
+- Naprawiono odkryty podczas rzeczywistego testu błąd: wybór czarów zatrzymywał się przy ostatnim Consume Venom bez Poison. Preferencje kombinacji nie blokują już legalnego wyboru.
+- Walidacja: pełne Go tests, build klienta i pluginu, 174 JSON/AOT checks, 240 symulacji, wszystkie 5 poziomów przez RPC/draft/combat na izolowanej Nakama, GPU UI 960x540 i 960x432. Review bez wykrytych defektów; najmniejszy ekran sprawdzony po review.
+- Dokumenty: rpcs, matchmaking, fallback-opponents, design-system. Bez deploymentu i testu telefonu. HEX-23 oraz HEX-24 pozostają w pracy; tymczasowa Nakama służy dalszym testom.
+
+## 2026-09-15 — HEX-24: samouczek reaguje na działanie
+
+- Karty Arrow/Mirror/Meditation/Cleanse/Barrier/Finale uruchamiają ćwiczenie rzeczywistym dotknięciem czaru lub gestem, bez Continue. Mentor planuje Firebolt po użyciu ochrony i przed jej wygaśnięciem; powtarzane dotknięcia nie opóźniają ataku.
+- Usunięto przycisk i skrót medytacji (także zapisane stare przypisania); pozostał gest w górę. Zmiany: TrainingBattle, TutorialScreen/Overlay/Controls, ReferenceHud, CombatControls i odpowiadające weryfikatory.
+- Walidacja: regresje Core (w tym okno ochrony 0.1 s i spam kliknięć), build, kontrolki Godot/30 układów, pełne ćwiczenia do Summary przez rzeczywisty input touch przy 1360x612 z mobilnym HUD i katalogiem izolowanej Nakama; oględziny renderów. Review bez otwartych uwag. Bez testu telefonu.
+- Dokumentacja: client-tutorial, combat-ui-profiles. Do zakończenia backlogu pozostaje HEX-23, przygotowanie monetyzacji. Nie wykonano commit/push/deploymentu.
