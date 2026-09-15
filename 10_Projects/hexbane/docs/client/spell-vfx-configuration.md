@@ -5,34 +5,34 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-13
-verified: 2026-09-13
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, client, spells, vfx, sfx, icons]
-sources: ["client:CLAUDE.md", "client:Resources/SpellVisuals/README.md", "client:docs/opcodes/spell-visual-key.md", "client:docs/opcodes/duel-v2-verification.md"]
+sources: ["client:CLAUDE.md", "client:Resources/Spells/CastPresets/README.md", "client:docs/opcodes/spell-visual-key.md", "client:docs/opcodes/duel-v2-verification.md"]
 ---
 
 # Spell visuals: which of the 14 server spells have client assets
 
 Current catalog: `magic_arrow, mirror_reflection, firebolt, heavy_bolt, delayed_hex, poison, paralysis, cleanse, mend, greater_heal, regeneration, barrier, dispel, consume_venom`.
 
-| Server id | Retained icon folder | Spell VFX | SFX |
+| Server id | Icon filename (under Spells/Icons) | Spell VFX | SFX |
 |---|---|---|---|
-| magic_arrow | magic_arrow | MagicArrow.tscn | ElevenLabs, see [[spell-audio]] |
-| mirror_reflection | mirror_ward | MirrorWard.tscn | ElevenLabs formation/rupture, see [[spell-audio]] |
-| firebolt | fireball | Firebolt.tscn | ElevenLabs, see [[spell-audio]] |
-| heavy_bolt | flamestrike | HeavyBolt.tscn | ElevenLabs, see [[spell-audio]] |
-| delayed_hex | explosion | DelayedHex.tscn | ElevenLabs, see [[spell-audio]] |
-| poison | poison_dart | Poison.tscn | ElevenLabs, see [[spell-audio]] |
-| paralysis | paralyze | Paralysis.tscn | ElevenLabs, see [[spell-audio]] |
-| cleanse | cure | Cleanse.tscn | ElevenLabs, see [[spell-audio]] |
-| mend | heal | Mend.tscn | ElevenLabs, see [[spell-audio]] |
-| greater_heal | great_heal | GreaterHeal.tscn | ElevenLabs, see [[spell-audio]] |
-| regeneration | regeneration | Regeneration.tscn | ElevenLabs, see [[spell-audio]] |
-| barrier | arcane_shield | Barrier.tscn | ElevenLabs, see [[spell-audio]] |
-| dispel | gust | Dispel.tscn | ElevenLabs, see [[spell-audio]] |
-| consume_venom | venom_shot | ConsumeVenom.tscn | ElevenLabs, see [[spell-audio]] |
+| magic_arrow | magic_arrow.png | MagicArrow.tscn | ElevenLabs, see [[spell-audio]] |
+| mirror_reflection | mirror_reflection.png | MirrorWard.tscn | ElevenLabs formation/rupture, see [[spell-audio]] |
+| firebolt | firebolt.png | Firebolt.tscn | ElevenLabs, see [[spell-audio]] |
+| heavy_bolt | heavy_bolt.png | HeavyBolt.tscn | ElevenLabs, see [[spell-audio]] |
+| delayed_hex | delayed_hex.png | DelayedHex.tscn | ElevenLabs, see [[spell-audio]] |
+| poison | poison.png | Poison.tscn | ElevenLabs, see [[spell-audio]] |
+| paralysis | paralysis.png | Paralysis.tscn | ElevenLabs, see [[spell-audio]] |
+| cleanse | cleanse.png | Cleanse.tscn | ElevenLabs, see [[spell-audio]] |
+| mend | mend.png | Mend.tscn | ElevenLabs, see [[spell-audio]] |
+| greater_heal | greater_heal.png | GreaterHeal.tscn | ElevenLabs, see [[spell-audio]] |
+| regeneration | regeneration.png | Regeneration.tscn | ElevenLabs, see [[spell-audio]] |
+| barrier | barrier.png | Barrier.tscn | ElevenLabs, see [[spell-audio]] |
+| dispel | dispel.png | Dispel.tscn | ElevenLabs, see [[spell-audio]] |
+| consume_venom | consume_venom.png | ConsumeVenom.tscn | ElevenLabs, see [[spell-audio]] |
 
-Each icon folder contains only `<folder>.png` and its Godot import metadata. Generator leftovers, other old icon folders and old spell sounds were removed; Mirror Reflection formation/shatter audio was subsequently restored. `Spell.GetIconPath` retains the aliases needed by current UI.
+`Resources/Spells/Icons` contains fourteen canonical `<id>.png` files and their Godot import metadata. Generator leftovers, other old icon folders and old spell sounds were removed; Mirror Reflection formation/shatter audio was subsequently restored. `Spell.GetIconPath` retains the aliases needed by current UI.
 
 ## Spell icon redesign (2026-09-13)
 
@@ -47,7 +47,7 @@ All fourteen canonical catalog spells are registered and implemented; `mirror_re
 Independent of the table above, the caster's animation and hand effect are chosen per spell:
 
 1. **`visual_key`** on the `Spell` object (`Core/Spells/Spell.cs:71`), a self-contained 43-char `vfx1_…` string authored in `Dev/ArenaMaps/ArenaMapsDev.tscn` ("Kopiuj klucz"), decoded by `Game/ScenesV3/Components/SpellVisualKey.cs`. Wire format (28 bytes, big-endian binary32 floats): animation id 0–10, effect profile 0–10, flags (tint, trails), ground ring, intensity 0–3, scale 0.5–2, RGBA. Backend storage of this field is **not implemented**; the client only reads it.
-2. **Local preset** `Resources/SpellVisuals/<spell_id>.tres` (`SpellVisualPreset`: `Animation`, `Effect` 0=auto/1–11, `OverrideColor`, `Tint`, `Intensity`, `EffectScale`, `Trails`, `GroundRing`; directory constant at `SpellVisualPreset.cs:19`). Present today: a preset for every canonical server spell, plus `magic_reflection` and `_template.tres`. `fireball` resolves to the single `firebolt.tres` preset; the former alias file was replaced. `magic_reflection` still matches nothing.
+2. **Local preset** `Resources/Spells/CastPresets/<spell_id>.tres` (`SpellVisualPreset`: `Animation`, `Effect` 0=auto/1–11, `OverrideColor`, `Tint`, `Intensity`, `EffectScale`, `Trails`, `GroundRing`; directory constant at `SpellVisualPreset.cs:19`). Present today: a preset for every canonical server spell, plus `_template.tres`. `fireball` resolves to the single `firebolt.tres` preset; the former alias file was replaced. The unreferenced `magic_reflection.tres` preset was deleted on 2026-09-15.
 3. **Defaults**: `CastAnimationResolver.Resolve` (`spell.animation` from the server if the race has the clip → `attack_1h_01` → `spell_throw`), and the gesture effect assigned to that clip.
 
 Priority is key → preset → default; malformed keys fall back silently. Presets and keys change only the cast look, never timing, damage, projectile or barrier.
@@ -88,6 +88,11 @@ New spell VFX need a new implementation and deliberate integration into the duel
 - client:Game/ScenesV3/Components/SpellVisualKey.cs
 - client:Game/FX/MirrorWard.cs
 - client:Resources/Spells/
-- client:Resources/SpellVisuals/
+- client:Resources/Spells/CastPresets/
 
 Cleanse casting correction (2026-09-08): `cleanse.tres` selects `cast_2h` instead of `area_2h_02`, retaining the vitality Pressure wave profile and palette. This avoids the 3–4-frame wind-up in most race area clips. See [[client-tutorial]] for local tutorial playback fixes.
+
+
+## Resource organization (2026-09-15)
+
+See [[assets-pipeline]] for the current asset tree and [[2026-09-15-resources-organization]] for the migration. Spell icons now use canonical ids in `Resources/Spells/Icons/<id>.png`; old icon ids and old full spell paths are accepted by `Spell.GetIconPath`. Editable material and race tools live under `.gdignore`d `ArtSource/`. Duplicate character-creation portraits resolve to the identical `Resources/Races/<race>/avatar.png`. The two unreferenced old arena scenes (`GameHud/Main.tscn`, `GameHud/ArcaneDuel/Main.tscn`) and their exclusive resources were deleted. Historical sections above describe earlier states; they do not imply those removed files remain.

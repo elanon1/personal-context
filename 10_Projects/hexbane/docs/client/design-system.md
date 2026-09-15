@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-13
-verified: 2026-09-13
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, client, ui, design-system, themes]
 sources: ["client:docs/DESIGN_SYSTEM.md"]
 ---
@@ -36,7 +36,7 @@ The old doc claimed `SubheadLabel`, `SideTitle`, `StepName` and `TabButton` were
 
 ## Background
 
-Every ScenesV3 screen and GameOver use `Resources/Images/Backgrounds/ui_background.png` (9 scene/script references) under a dark `BgOverlay` panel. The duel scene has its own arena stage ([[vfx-and-race-animation]]). Do not generate per-screen backgrounds. Auth-only assets: `Resources/Images/Auth/` (ornament, sigil, icons, `button_bg.png` 9-patch).
+Every ScenesV3 screen and GameOver use `Resources/UI/Shared/Backgrounds/ui_background.png` (9 scene/script references) under a dark `BgOverlay` panel. The duel scene has its own arena stage ([[vfx-and-race-animation]]). Do not generate per-screen backgrounds. Auth-only assets: `Resources/UI/Auth/` (ornament, sigil, icons, `button_bg.png` 9-patch).
 
 ## Palette (warm-toned: R > G > B in every dark, never grey or blue-black)
 
@@ -159,3 +159,13 @@ Results now use native warm-toned cards with outcome/XP/level-up as the primary 
 ## Spell icons
 
 Use [[spell-icon-art-direction]] for the luminous dark-fantasy icon family, school palettes, silhouette rules, reference pair and generation prompts. Keep frames in the UI; the square bitmap contains only the spell on a nearly black background.
+
+
+## Resource organization (2026-09-15)
+
+See [[assets-pipeline]] for the current asset tree and [[2026-09-15-resources-organization]] for the migration. Spell icons now use canonical ids in `Resources/Spells/Icons/<id>.png`; old icon ids and old full spell paths are accepted by `Spell.GetIconPath`. Editable material and race tools live under `.gdignore`d `ArtSource/`. Duplicate character-creation portraits resolve to the identical `Resources/Races/<race>/avatar.png`. The two unreferenced old arena scenes (`GameHud/Main.tscn`, `GameHud/ArcaneDuel/Main.tscn`) and their exclusive resources were deleted. Historical sections above describe earlier states; they do not imply those removed files remain.
+
+
+### Final legacy removal — 2026-09-15
+
+User explicitly requested deletion of remaining legacy assets. UI/LegacyHud, Arenas/Legacy, UI/Avatars, obsolete bar PSDs and their exclusive HUD/preview/component consumers have now been deleted. Earlier statements about retaining these resources are superseded. DuelV2Preview uses only the current ReferenceDuel scene. Shared procedural helpers used by the current HUD remain. See [[assets-pipeline]] and the legacy removal manifest.

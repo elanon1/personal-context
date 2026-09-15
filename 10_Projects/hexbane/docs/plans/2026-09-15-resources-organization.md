@@ -2,7 +2,7 @@
 type: project
 project: Hexbane
 area: infra
-status: active
+status: complete
 created: 2026-09-15
 updated: 2026-09-15
 verified: 2026-09-15
@@ -20,12 +20,12 @@ verified: 2026-09-15
 - Documentation belongs in this vault only.
 
 ## Tasks
-- [ ] Inventory static and dynamic consumers; record baseline missing paths and moved/deleted file hashes.
-- [ ] Move UI by screen/shared role, arena art and branding to named directories; group music with audio and spell presets/icons together. Consolidate identical race portraits.
-- [ ] Move models, tools, T-pose sources, PSDs and music sources to ArtSource; remove unused artwork, old ward sounds, waveform caches, rebuildable raw sprite frames and obsolete preset. Move existing in-repo art notes to vault.
-- [ ] Update scene/C#/shader/import/config/tool paths, generator-relative roots and editor favorites; preserve UIDs and export filters.
-- [ ] Build C#, import in Godot, load all retained resource dependencies and exercise offline presentation. Compare against baseline; record limitations.
-- [ ] Update assets-pipeline, affected contracts, index, decision log and session log.
+- [x] Inventory static and dynamic consumers; record baseline missing paths and moved/deleted file hashes.
+- [x] Move UI by screen/shared role, arena art and branding to named directories; group music with audio and spell presets/icons together. Consolidate identical race portraits.
+- [x] Move models, tools, T-pose sources, PSDs and music sources to ArtSource; remove unused artwork, old ward sounds, waveform caches, rebuildable raw sprite frames and obsolete preset. Move existing in-repo art notes to vault.
+- [x] Update scene/C#/shader/import/config/tool paths, generator-relative roots and editor favorites; preserve UIDs and export filters.
+- [x] Build C#, import in Godot, load all retained resource dependencies and exercise offline presentation. Compare against baseline; record limitations.
+- [x] Update assets-pipeline, affected contracts, index, decision log and session log.
 
 ## Source of truth in code
 - client:Resources/

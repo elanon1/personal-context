@@ -3,8 +3,8 @@ type: project
 project: Hexbane
 area: client
 created: 2026-09-12
-updated: 2026-09-12
-verified: 2026-09-12
+updated: 2026-09-15
+verified: 2026-09-15
 status: active
 ---
 # Spell audio
@@ -19,7 +19,7 @@ status: active
 
 `SpellField` starts a per-style cue, pulses only when its existing pulse callback fires (actual damage/heal/absorption in authoritative play), and plays delayed-hex rupture in Detonate only once. Removed persistent fields fade their starting voice, and never emit an expiration explosion. Transient heal/cleanse/strike tails are allowed to finish after the visual. Existing event/snapshot deduplication is reused.
 
-`MirrorWard` loads new ElevenLabs formation/rupture assets through SpellAudio, preserving exported AudioStream overrides. WardAudio retains its compatibility group and routes through the shared voice budget. Old `Resources/Spells/mirror_reflection/sfx` files remain available but are no longer default runtime streams.
+`MirrorWard` loads new ElevenLabs formation/rupture assets through SpellAudio, preserving exported AudioStream overrides. WardAudio retains its compatibility group and routes through the shared voice budget. The obsolete `Resources/Spells/mirror_reflection/sfx` recordings were deleted on 2026-09-15 after confirming no exported scene override references them.
 
 ## Mix and asset preparation
 
@@ -51,3 +51,8 @@ Additional ElevenLabs `meditation/loop.wav` (7.75 seconds after 250 ms overlap p
 Verification: `MeditationAudioTest.tscn` failed before integration (no meditation voice), then passed 8/8 using actual CoreAudio: start, deduplication, continued playback past sample duration, cast interruption, resumption, rapid restart, stop and actor disposal. Spell audio regression passed 40/40; build 0 errors / 9 existing warnings. `-- --record` saves `verification/spell-audio/meditation-demo.wav` with actual bus processing. Boundary discontinuity .000916 full scale, below the largest interior sample step .00851; source peak -11.7 dBFS. Human listening and physical mobile remain unverified.
 
 Try `Game/ScenesV3/Dev/MeditationVfxPreview.tscn` (M meditate, X stop), or meditation in the duel. It uses the same MeditationVfx lifecycle.
+
+
+## Resource organization (2026-09-15)
+
+See [[assets-pipeline]] for the current asset tree and [[2026-09-15-resources-organization]] for the migration. Spell icons now use canonical ids in `Resources/Spells/Icons/<id>.png`; old icon ids and old full spell paths are accepted by `Spell.GetIconPath`. Editable material and race tools live under `.gdignore`d `ArtSource/`. Duplicate character-creation portraits resolve to the identical `Resources/Races/<race>/avatar.png`. The two unreferenced old arena scenes (`GameHud/Main.tscn`, `GameHud/ArcaneDuel/Main.tscn`) and their exclusive resources were deleted. Historical sections above describe earlier states; they do not imply those removed files remain.

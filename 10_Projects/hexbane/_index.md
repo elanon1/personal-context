@@ -99,7 +99,8 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 
 - [[infra-and-deploy]] — lokalny stack, obraz, CI, Helm/Argo; wdrożono 2026-09-09, publiczne HTTPS zweryfikowane
 - [[android-asset-cleanup]] — rozmiar paczek Androida, usunięte assety, wykluczenia eksportu i weryfikacja.
-- [[assets-pipeline]] — jak powstaje sztuka (rasy Tripo→Mixamo→Blender→sheety, areny, ikony)
+- [[assets-pipeline]] — aktualne drzewo Resources/ArtSource i pipeline grafiki, animacji oraz audio.
+- [[2026-09-15-resources-organization]] — porządki w zasobach, migracja ścieżek i weryfikacja Godot.
 - [[repos-and-branches]] — snapshot repo 2026-09-07
 
 ## Plany (`docs/plans/`)

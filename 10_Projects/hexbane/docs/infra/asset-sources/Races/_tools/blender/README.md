@@ -11,19 +11,19 @@ without retargeting. Blender is at `/Applications/Blender.app/Contents/MacOS/Ble
 
 | What | Where | Notes |
 |---|---|---|
-| Rigged character FBX | `Resources/Races/3d/<race>/tripo_convert_<id>.fbx` | Tripo model converted to the Mixamo rig. Keep its `<same name>.fbm/` folder next to it: it holds the 4K texture; without it the model renders magenta. Tripo's download has an *unrigged* FBX at the root and the rigged one inside `Magic Spell Pack/` — take the latter. |
-| Animation FBXs | `Resources/Races/3d/Magic Spell Pack/*.fbx` | Mixamo downloads "without skin", 30 fps, shared by every race. Filenames are the Mixamo clip names. A race that ships its own clips (`~/3D/<race>/Magic Spell Pack/standing idle.fbx` present) uses those instead — a re-rigged model comes with a pack built for its rig, and mixing rigs bends joints the wrong way. |
+| Rigged character FBX | `ArtSource/Races/Models/<race>/tripo_convert_<id>.fbx` | Tripo model converted to the Mixamo rig. Keep its `<same name>.fbm/` folder next to it: it holds the 4K texture; without it the model renders magenta. Tripo's download has an *unrigged* FBX at the root and the rigged one inside `Magic Spell Pack/` — take the latter. |
+| Animation FBXs | `ArtSource/Races/Models/Magic Spell Pack/*.fbx` | Mixamo downloads "without skin", 30 fps, shared by every race. Filenames are the Mixamo clip names. A race that ships its own clips (`~/3D/<race>/Magic Spell Pack/standing idle.fbx` present) uses those instead — a re-rigged model comes with a pack built for its rig, and mixing rigs bends joints the wrong way. |
 
 All six races (`human`, `elf`, `dark_elf`, `shadow`, `gnome`, `orc`) are converted; their source
 downloads sit in `~/3D/<race>/`. For a new race: upload its Tripo GLB to Mixamo (or use Tripo's
 Mixamo conversion), download the rigged FBX **with skin** plus its texture, drop the folder into
-`~/3D/`, and add the race to the `RACES` map in `Resources/Races/_tools/build_races.sh`.
+`~/3D/`, and add the race to the `RACES` map in `ArtSource/Races/Tools/build_races.sh`.
 
 ## Shortcut: build every race in one go
 
 ```bash
-Resources/Races/_tools/build_races.sh            # all races, ~4 min each
-Resources/Races/_tools/build_races.sh orc gnome  # just these
+ArtSource/Races/Tools/build_races.sh            # all races, ~4 min each
+ArtSource/Races/Tools/build_races.sh orc gnome  # just these
 ```
 
 It runs steps 1, 3 and 4 below for the 13 clips of the Magic Spell Pack and writes each race's
@@ -33,8 +33,8 @@ It runs steps 1, 3 and 4 below for the 13 clips of the Magic Spell Pack and writ
 
 ```bash
 B=/Applications/Blender.app/Contents/MacOS/Blender
-T=Resources/Races/_tools/blender
-P="Resources/Races/3d/Magic Spell Pack"
+T=ArtSource/Races/Tools/blender
+P="ArtSource/Races/Models/Magic Spell Pack"
 $B -b -P $T/assemble_mixamo.py -- \
   --character "$P/tripo_convert_23c7e892-2944-488b-80de-a1d6b33319cf.fbx" \
   --anim "idle=$P/standing idle.fbx" \
@@ -90,7 +90,7 @@ $B -b ~/hexbane-archive/Models-2026-09-03/blend/human_mixamo.blend -P $T/render_
 ## Step 4 – pack into frames.tres
 
 ```bash
-python3 Resources/Races/_tools/build_frames_from_renders.py human --fps 15 --height 512 --cols 8 \
+python3 ArtSource/Races/Tools/build_frames_from_renders.py human --fps 15 --height 512 --cols 8 \
   --anims idle,spell_throw
 ```
 
@@ -104,8 +104,8 @@ The renders are packed twice, so a desktop build can keep the crisp sheets while
 a quarter of the bytes:
 
 ```bash
-python3 Resources/Races/_tools/build_frames_from_renders.py human --fps 15 --height 512 --cols 8 --anims …
-python3 Resources/Races/_tools/build_frames_from_renders.py human --fps 15 --height 320 --cols 8 --anims … --variant sd
+python3 ArtSource/Races/Tools/build_frames_from_renders.py human --fps 15 --height 512 --cols 8 --anims …
+python3 ArtSource/Races/Tools/build_frames_from_renders.py human --fps 15 --height 320 --cols 8 --anims … --variant sd
 ```
 
 `--variant sd` writes `<anim>_sheet_sd.png` + `frames_sd.tres` next to the full-size set;
@@ -137,7 +137,7 @@ seals use the bone positions in `meditation_tracks.tres`, exported with
 `export_meditation_tracks.py` (included in `build_races.sh`).
 
 Editable, texture-packed sources live in
-`Resources/Races/3d/<race>/meditation/<race>_meditation.blend`. These folders have
+`ArtSource/Races/Models/<race>/meditation/<race>_meditation.blend`. These folders have
 `.gdignore` so Blender sources are excluded from game exports. The timeline shows the
 loop; switch Actions to edit the entrance or exit. All 65 bones have keyframes.
 
@@ -145,8 +145,8 @@ To regenerate from the original assembled race (also run by `build_races.sh`):
 
 ```bash
 /Applications/Blender.app/Contents/MacOS/Blender -b ~/hexbane-archive/Models-2026-09-03/blend/shadow_mixamo.blend \
-  -P Resources/Races/_tools/blender/create_meditation.py -- --race shadow --render
-python3 Resources/Races/_tools/pack_meditation.py shadow
+  -P ArtSource/Races/Tools/blender/create_meditation.py -- --race shadow --render
+python3 ArtSource/Races/Tools/pack_meditation.py shadow
 ```
 
 The generator derives hand placement and palm orientation from the race's arm and

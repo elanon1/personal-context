@@ -4,8 +4,8 @@ project: Hexbane
 area: client
 status: active
 created: 2026-09-13
-updated: 2026-09-13
-verified: 2026-09-13
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, android, assets, export, audit]
 ---
 
@@ -35,8 +35,8 @@ Every export preset used `all_resources` with only a few exclusions. Godot there
 - Removed **4589 files**, including matching import metadata and obsolete pack sidecars, totaling **233.97 MiB** from the working tree. This is source-file size, not the exact packaged saving.
 - Unused UI asset packs, old environment concepts, unused font variants, obsolete frame/logo/concept art, unused menu music/stems and the unused root `unnamed.jpg` were moved out of the project.
 - Recoverable archive: `/Users/elanon/hexbane-archive/unused-assets-2026-09-13`. `verification/asset-cleanup/removed.json` records every path, byte count and SHA-256. No broad git cleanup/revert/staging was performed; earlier worktree changes were preserved.
-- `Resources/Races/3d`, `_tools` and `_tpose` are still authoring inputs; they remain in place with `.gdignore` and export exclusions. Do not delete them as though they were unused runtime art.
-- All presets exclude verification output, reference art, docs, MCP server, scripts, tests, the exported `apk.app` tree, authoring inputs, dev scenes and old arena scenes. `Resources/Backgrounds` remains for legacy/dev previews but is excluded from runtime exports. The VfxTest route remains available.
+- `ArtSource/Races/Models`, `_tools` and `_tpose` are still authoring inputs; they remain in place with `.gdignore` and export exclusions. Do not delete them as though they were unused runtime art.
+- All presets exclude verification output, reference art, docs, MCP server, scripts, tests, the exported `apk.app` tree, authoring inputs, dev scenes and old arena scenes. `Resources/Arenas/Legacy` remains for legacy/dev previews but is excluded from runtime exports. The VfxTest route remains available.
 - `verification/.gdignore` prevents future generated screenshots/audio artifacts from becoming imported/exported resources.
 - All fourteen spell textures use Godot `process/size_limit=512`; the full-resolution source PNGs are preserved. The two reference icons remain byte-for-byte unchanged. See [[spell-icon-art-direction]].
 - Mobile SD/desktop HD selection remains intact. No used race animation was removed or recompressed.
@@ -77,9 +77,9 @@ The remainder is active UI, arenas, portraits, fonts, spell sound effects and pa
 
 - client:export_presets.cfg
 - client:hexbane.csproj
-- client:Resources/Races/3d/.gdignore
-- client:Resources/Races/_tools/.gdignore
-- client:Resources/Races/_tpose/.gdignore
+- client:ArtSource/Races/Models/.gdignore
+- client:ArtSource/Races/Tools/.gdignore
+- client:ArtSource/Races/TPose/.gdignore
 - client:verification/.gdignore
 - client:Resources/Spells/*/*.png.import
 - client:verification/asset-cleanup/summary.json
@@ -87,3 +87,8 @@ The remainder is active UI, arenas, portraits, fonts, spell sound effects and pa
 - client:verification/asset-cleanup/check_packages.py
 - client:verification/asset-cleanup/reference-check.json
 - client:verification/spell-icons/manifest.json
+
+
+## Resource organization (2026-09-15)
+
+See [[assets-pipeline]] for the current asset tree and [[2026-09-15-resources-organization]] for the migration. Spell icons now use canonical ids in `Resources/Spells/Icons/<id>.png`; old icon ids and old full spell paths are accepted by `Spell.GetIconPath`. Editable material and race tools live under `.gdignore`d `ArtSource/`. Duplicate character-creation portraits resolve to the identical `Resources/Races/<race>/avatar.png`. The two unreferenced old arena scenes (`GameHud/Main.tscn`, `GameHud/ArcaneDuel/Main.tscn`) and their exclusive resources were deleted. Historical sections above describe earlier states; they do not imply those removed files remain.

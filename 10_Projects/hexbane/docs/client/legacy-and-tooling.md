@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-08
-verified: 2026-09-08
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, client, tooling, legacy, gotchas]
 sources: ["vault:10_Projects/hexbane/architektura-klienta.md (2026-08-31)", "vault:10_Projects/hexbane/assety-i-pipeline.md (2026-08-31)", "vault:10_Projects/hexbane/protokol-klient-serwer.md (2026-08-31)"]
 ---
@@ -82,3 +82,13 @@ The skill covers nature/palette research, visual intent, shared catalog/factory/
 - `client:project.godot` — autoload list, `[hexbane]` settings
 - `client:Application/Nakama/NakamaClientManager.cs` — server presets and host resolution
 - `client:Core/Spells/Spell.cs`, `client:Core/Spells/StandardSpells.cs` — legacy id aliases
+
+
+## Resource organization (2026-09-15)
+
+See [[assets-pipeline]] for the current asset tree and [[2026-09-15-resources-organization]] for the migration. Spell icons now use canonical ids in `Resources/Spells/Icons/<id>.png`; old icon ids and old full spell paths are accepted by `Spell.GetIconPath`. Editable material and race tools live under `.gdignore`d `ArtSource/`. Duplicate character-creation portraits resolve to the identical `Resources/Races/<race>/avatar.png`. The two unreferenced old arena scenes (`GameHud/Main.tscn`, `GameHud/ArcaneDuel/Main.tscn`) and their exclusive resources were deleted. Historical sections above describe earlier states; they do not imply those removed files remain.
+
+
+### Final legacy removal — 2026-09-15
+
+User explicitly requested deletion of remaining legacy assets. UI/LegacyHud, Arenas/Legacy, UI/Avatars, obsolete bar PSDs and their exclusive HUD/preview/component consumers have now been deleted. Earlier statements about retaining these resources are superseded. DuelV2Preview uses only the current ReferenceDuel scene. Shared procedural helpers used by the current HUD remain. See [[assets-pipeline]] and the legacy removal manifest.

@@ -1,7 +1,7 @@
 # T-pose reference sheets (for Tripo image-to-3D)
 
 One square PNG per race, generated 2026-09-03 in ChatGPT (gpt-image) from the race portrait
-in `Resources/Images/CharCreate/Portraits/<race_id>.png`:
+in `Resources/UI/CharacterCreation/Portraits/<race_id>.png`:
 
 - full body, strict T-pose, facing the camera, neutral expression
 - flat light-grey studio background, even frontal light, no glow / rune circle / particles / props

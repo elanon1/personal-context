@@ -5,19 +5,19 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-13
-verified: 2026-09-13
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, client, races, animation, vfx, arena]
-sources: ["client:Resources/Races/_tools/blender/README.md", "client:docs/client/arena-maps/README.md", "client:docs/client/cast-charge/README.md", "client:docs/client/gesture-occlusion/README.md", "client:docs/client/gesture-vfx/README.md", "client:docs/client/meditation/README.md", "client:docs/client/mirror-reflection/README.md", "client:docs/client/reference-duel/README.md", "client:Resources/SpellVisuals/README.md", "client:CLAUDE.md"]
+sources: ["client:ArtSource/Races/Tools/blender/README.md", "client:docs/client/arena-maps/README.md", "client:docs/client/cast-charge/README.md", "client:docs/client/gesture-occlusion/README.md", "client:docs/client/gesture-vfx/README.md", "client:docs/client/meditation/README.md", "client:docs/client/mirror-reflection/README.md", "client:docs/client/reference-duel/README.md", "client:Resources/Spells/CastPresets/README.md", "client:CLAUDE.md"]
 ---
 
 # Race sprites, gesture VFX and the living arena
 
 Six races: `human, elf, dark_elf, shadow, gnome, orc` (`Resources/Races/<race>/`, `Core/Characters/RaceCatalog.cs`). Spell FX and icons are covered in [[spell-vfx-configuration]]; the HUD in [[duel-v2-client]].
 
-## Sprite pipeline (`Resources/Races/_tools/`)
+## Sprite pipeline (`ArtSource/Races/Tools/`)
 
-`build_races.sh [race …]` runs the whole chain per race: Mixamo-rigged Tripo FBX + "Magic Spell Pack" clips → `blender/assemble_mixamo.py` (.blend) → `blender/render_sprites.py` (PNG frames, 20° camera, 15 fps) → `build_frames_from_renders.py` (sheets + `frames.tres`), twice: `--height 512` (HD) and `--height 320 --variant sd` (`frames_sd.tres`, `*_sheet_sd.png`). Blender at `/Applications/Blender.app`, models under `~/3D`, archived blends in `~/hexbane-archive/Models-2026-09-03/blend`. The raw render folders and `Resources/Races/3d/` carry `.gdignore`. Full step-by-step: `client:Resources/Races/_tools/blender/README.md`.
+`build_races.sh [race …]` runs the whole chain per race: Mixamo-rigged Tripo FBX + "Magic Spell Pack" clips → `blender/assemble_mixamo.py` (.blend) → `blender/render_sprites.py` (PNG frames, 20° camera, 15 fps) → `build_frames_from_renders.py` (sheets + `frames.tres`), twice: `--height 512` (HD) and `--height 320 --variant sd` (`frames_sd.tres`, `*_sheet_sd.png`). Blender at `/Applications/Blender.app`, models under `~/3D`, archived blends in `~/hexbane-archive/Models-2026-09-03/blend`. The raw render folders and `ArtSource/Races/Models/` carry `.gdignore`. Full step-by-step: `client:ArtSource/Races/Tools/blender/README.md`.
 
 Clips per race (identical for all six, `Resources/Races/<race>/animation/*/`, names inside `frames.tres`):
 
@@ -52,10 +52,10 @@ Maps (`ArenaCatalog.cs:13-16`):
 
 | Id | Name | Art |
 |---|---|---|
-| `storm` | Burzowa Cytadela | `Resources/Images/ReferenceDuel/arena.png` |
-| `emerald` | Szmaragdowe Sanktuarium | `Resources/Images/Arenas/emerald.png` |
-| `glacier` | Lodowa Katedra | `Resources/Images/Arenas/glacier.png` |
-| `forge` | Obsydianowa Kuźnia | `Resources/Images/Arenas/forge.png` |
+| `storm` | Burzowa Cytadela | `Resources/Arenas/Storm/background.png` |
+| `emerald` | Szmaragdowe Sanktuarium | `Resources/Arenas/Emerald/background.png` |
+| `glacier` | Lodowa Katedra | `Resources/Arenas/Glacier/background.png` |
+| `forge` | Obsydianowa Kuźnia | `Resources/Arenas/Forge/background.png` |
 
 Selection: `ArenaMatch._EnterTree` (`ArenaMatch.cs:11-17`) calls `ArenaCatalog.ForMatch(matchId)` = SHA-256 of `"hexbane-arena-v1:" + matchId`, first byte mod 4 (`ArenaCatalog.cs:25`). Both peers and reconnects get the same map with no protocol message; do not reorder the catalog without versioning the prefix. Without a match id (F6) the map is chosen locally. All maps share the platform band (60–68 % of source height, foot baseline 62.5 %); atmosphere shaders never move source geometry. Prompts for the generated art: `Resources/Images/Arenas/PROMPTS.md`.
 
@@ -66,7 +66,7 @@ Mobile layout: players are positioned from the HUD safe-area transform with feet
 | Scene | Purpose |
 |---|---|
 | `GameplaySandbox.tscn` | unified offline spell/icon/audio workbench, both sides/races/maps, projectile hit/reflection/dodge, meditation, interruption, held statuses, pulse/detonation/shatter/reset; see [[gameplay-sandbox]]. |
-| `ArenaMaps/ArenaMapsDev.tscn` | offline playground: map selector, **Losuj / Pauza / Ograniczony ruch**, per-side race + gesture + effect + tempo (0.25–1.5×), **Animacja + VFX gracza/przeciwnika**, loop toggle, **Bariera 3 s** / **Trafienie w barierę**, preset save/load (`Resources/SpellVisuals/<id>.tres`), **Kopiuj/Wczytaj klucz** (`visual_key`), **Rzuć zapisany czar**. Both Cast buttons and saved-spell casts use shared `SpellPresentation` for full spell VFX (default Magic Arrow); the animation/VFX profile controls remain gesture-only. Never sends match commands. |
+| `ArenaMaps/ArenaMapsDev.tscn` | offline playground: map selector, **Losuj / Pauza / Ograniczony ruch**, per-side race + gesture + effect + tempo (0.25–1.5×), **Animacja + VFX gracza/przeciwnika**, loop toggle, **Bariera 3 s** / **Trafienie w barierę**, preset save/load (`Resources/Spells/CastPresets/<id>.tres`), **Kopiuj/Wczytaj klucz** (`visual_key`), **Rzuć zapisany czar**. Both Cast buttons and saved-spell casts use shared `SpellPresentation` for full spell VFX (default Magic Arrow); the animation/VFX profile controls remain gesture-only. Never sends match commands. |
 | `RaceAnimTest.tscn` | pick race and clip |
 | `MeditationTest.tscn` | headless: `Godot --headless --fixed-fps 60 --path . Game/ScenesV3/Dev/MeditationTest.tscn`, 12 race/resolution combos + Player snapshot wiring |
 | `MeditationVfxPreview.tscn` | all six races; **M** meditate, **X** stop; `-- --capture` writes `docs/client/meditation/energy-preview.png` |
@@ -93,7 +93,7 @@ Last recorded results (README claims, Godot 4.5.2 Compatibility on macOS, not re
 Visible VFX retain per-frame pose/depth updates; interned uniform/animation names and reusable trail buffers reduce allocation, while idle occlusion and hidden charge/trails skip updates. The shared field shader now uses defined even-power and smoothstep arithmetic, including Cleanse. See [[2026-09-10-performance]] for measured costs, GPU checks and Android verification limits.
 
 ## Source of truth in code
-- `client:Resources/Races/_tools/build_races.sh`, `build_frames_from_renders.py`, `pack_meditation.py`, `export_hand_tracks.py`, `blender/*.py` — asset pipeline
+- `client:ArtSource/Races/Tools/build_races.sh`, `build_frames_from_renders.py`, `pack_meditation.py`, `export_hand_tracks.py`, `blender/*.py` — asset pipeline
 - `client:Resources/Races/<race>/animation/` — `frames.tres`, `frames_sd.tres`, track and depth resources
 - `client:Game/ScenesV3/Components/RaceAnimationPreview.cs` — HD/SD selection
 - `client:Game/ScenesV3/Components/RaceSpriteAnimator.cs`, `CastCharge.cs`, `GestureVfx.cs`, `MeditationVfx.cs`, `PoseOcclusion.cs`, `CastAnimationResolver.cs`, `HandTrackData.cs` — runtime animation and effects
@@ -116,3 +116,13 @@ All six races now include a 25-frame non-looping skeletal `death` clip in HD and
 ## Health event reactions (2026-09-13)
 
 `RaceSpriteAnimator.Hit.cs` overlays procedural, feet-pivoted recoil and a brief `GestureLighting` silhouette flash for positive damage; healing uses a softer green flash. The base cast/idle/meditation clip is preserved. Death or race reload clears transforms and tint. Live `Player` routes each accepted damage/heal event to its recipient on the scene thread; numbers and arena camera impulse follow the same authoritative stream. See [[duel-v2-client]] for timing, layout, verification and device/live-test boundaries.
+
+
+## Resource organization (2026-09-15)
+
+See [[assets-pipeline]] for the current asset tree and [[2026-09-15-resources-organization]] for the migration. Spell icons now use canonical ids in `Resources/Spells/Icons/<id>.png`; old icon ids and old full spell paths are accepted by `Spell.GetIconPath`. Editable material and race tools live under `.gdignore`d `ArtSource/`. Duplicate character-creation portraits resolve to the identical `Resources/Races/<race>/avatar.png`. The two unreferenced old arena scenes (`GameHud/Main.tscn`, `GameHud/ArcaneDuel/Main.tscn`) and their exclusive resources were deleted. Historical sections above describe earlier states; they do not imply those removed files remain.
+
+
+### Final legacy removal — 2026-09-15
+
+User explicitly requested deletion of remaining legacy assets. UI/LegacyHud, Arenas/Legacy, UI/Avatars, obsolete bar PSDs and their exclusive HUD/preview/component consumers have now been deleted. Earlier statements about retaining these resources are superseded. DuelV2Preview uses only the current ReferenceDuel scene. Shared procedural helpers used by the current HUD remain. See [[assets-pipeline]] and the legacy removal manifest.

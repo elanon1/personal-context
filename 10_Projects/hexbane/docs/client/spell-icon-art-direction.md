@@ -4,8 +4,8 @@ project: Hexbane
 area: client
 status: active
 created: 2026-09-13
-updated: 2026-09-13
-verified: 2026-09-13
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, spells, icons, art-direction]
 ---
 
@@ -65,8 +65,8 @@ Mend and Regeneration now have separate images. Canonical spell id should take p
 
 Use built-in ImageGen, one call per icon. Supply these two local PNGs as **style references only**, not edit targets:
 
-- client:Resources/Spells/magic_arrow/magic_arrow.png
-- client:Resources/Spells/mirror_ward/mirror_ward.png
+- client:Resources/Spells/Icons/magic_arrow.png
+- client:Resources/Spells/Icons/mirror_reflection.png
 
 The exact shared production prompt used in this redesign:
 
@@ -145,3 +145,8 @@ For a new spell, describe its mechanical meaning as a single visual metaphor, ch
 - client:Game/ScenesV3/Lobby/LobbyScreen.cs
 - client:verification/spell-icons/manifest.json
 
+
+
+## Resource organization (2026-09-15)
+
+See [[assets-pipeline]] for the current asset tree and [[2026-09-15-resources-organization]] for the migration. Spell icons now use canonical ids in `Resources/Spells/Icons/<id>.png`; old icon ids and old full spell paths are accepted by `Spell.GetIconPath`. Editable material and race tools live under `.gdignore`d `ArtSource/`. Duplicate character-creation portraits resolve to the identical `Resources/Races/<race>/avatar.png`. The two unreferenced old arena scenes (`GameHud/Main.tscn`, `GameHud/ArcaneDuel/Main.tscn`) and their exclusive resources were deleted. Historical sections above describe earlier states; they do not imply those removed files remain.

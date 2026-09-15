@@ -4,8 +4,8 @@ project: Hexbane
 area: client
 status: active
 created: 2026-09-12
-updated: 2026-09-12
-verified: 2026-09-12
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, duel, animation, results, music]
 ---
 
@@ -23,7 +23,7 @@ The authoritative result still updates match status and rewards immediately. On 
 
 All six races (`human`, `elf`, `dark_elf`, `shadow`, `gnome`, `orc`) have actual skeletal fall actions: recoil, buckling knees, body impact and settling limbs. They are rendered through the existing camera and lights. HD and SD atlases are appended to each race's existing `frames.tres` / `frames_sd.tres`; a wider, symmetrically padded crop keeps the original actor scale and support plane while allowing the horizontal pose. Atlases are 5 by 5 and below 4096 pixels on either axis in HD.
 
-`Resources/Races/_tools/blender/create_death.py` takes the assembled `<race>_mixamo.blend`, authors an editable `death` action, saves a packed source under `Resources/Races/3d/<race>/death/` and renders frames under `animation/death/render/`. `pack_death.py <race>` appends/rebuilds the atlases with atomic PNG replacement (avoids the editor importing a partial file). Source blends and raw renders are excluded from Godot via `.gdignore`; runtime only uses the packed atlases.
+`ArtSource/Races/Tools/blender/create_death.py` takes the assembled `<race>_mixamo.blend`, authors an editable `death` action, saves a packed source under `ArtSource/Races/Models/<race>/death/` and renders frames under `animation/death/render/`. `pack_death.py <race>` appends/rebuilds the atlases with atomic PNG replacement (avoids the editor importing a partial file). Source blends and raw renders are excluded from Godot via `.gdignore`; runtime only uses the packed atlases.
 
 ## Results hierarchy
 
@@ -33,7 +33,7 @@ Below 1000 logical pixels the cards stack in a scroll view; Continue stays outsi
 
 ## ElevenLabs music
 
-`Resources/Music/results/victory.mp3` and `defeat.mp3` are original instrumental cues generated through ElevenLabs Music v1 using `force_instrumental=true` and 12000 ms prompts. Victory uses a rising orchestral/bright magical palette; defeat a descending cello/piano chamber palette. Both MP3 files are 12.069 seconds including codec padding, 44.1 kHz stereo, about 193 KB each. Prompts, provider, model, song id (when returned), hashes and request options live in `manifest.json`.
+`Resources/Audio/Music/Results/victory.mp3` and `defeat.mp3` are original instrumental cues generated through ElevenLabs Music v1 using `force_instrumental=true` and 12000 ms prompts. Victory uses a rising orchestral/bright magical palette; defeat a descending cello/piano chamber palette. Both MP3 files are 12.069 seconds including codec padding, 44.1 kHz stereo, about 193 KB each. Prompts, provider, model, song id (when returned), hashes and request options live in `manifest.json`.
 
 Regeneration: `python3 Scripts/Audio/generate_result_music.py`, token only from `ELEVENLABS_API_TOKEN`. Existing files are skipped; no automatic paid retries. Official endpoint reference: https://elevenlabs.io/docs/api-reference/music/compose
 
@@ -55,6 +55,11 @@ These are offline fixtures with actual Godot rendering/audio; a live Nakama matc
 - `client:Game/ScenesV3/ReferenceDuel/{ArenaMatch,DuelConclusion}.cs`
 - `client:Game/Autoloads/{SceneManager,MenuPlayer}.cs`
 - `client:Game/ScenesV3/GameOver/GameOverScreen.cs`, `GameOverScreen.Layout.cs`
-- `client:Resources/Races/_tools/blender/create_death.py`, `Resources/Races/_tools/pack_death.py`
-- `client:Scripts/Audio/generate_result_music.py`, `Resources/Music/results/manifest.json`
+- `client:ArtSource/Races/Tools/blender/create_death.py`, `ArtSource/Races/Tools/pack_death.py`
+- `client:Scripts/Audio/generate_result_music.py`, `Resources/Audio/Music/Results/manifest.json`
 - `client:Game/ScenesV3/Dev/{DeathVerification,DuelEndingVerification,ResultMusicVerification}.cs`
+
+
+## Resource organization (2026-09-15)
+
+See [[assets-pipeline]] for the current asset tree and [[2026-09-15-resources-organization]] for the migration. Spell icons now use canonical ids in `Resources/Spells/Icons/<id>.png`; old icon ids and old full spell paths are accepted by `Spell.GetIconPath`. Editable material and race tools live under `.gdignore`d `ArtSource/`. Duplicate character-creation portraits resolve to the identical `Resources/Races/<race>/avatar.png`. The two unreferenced old arena scenes (`GameHud/Main.tscn`, `GameHud/ArcaneDuel/Main.tscn`) and their exclusive resources were deleted. Historical sections above describe earlier states; they do not imply those removed files remain.

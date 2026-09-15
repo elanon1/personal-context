@@ -6,8 +6,8 @@ status: active
 state: active
 repo: https://github.com/elanon1/hexbane
 created: 2026-08-31
-updated: 2026-09-14
-verified: 2026-09-14
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, gamedev, godot, csharp, nakama, go, kubernetes, ai-art]
 aliases: [hexbane, hexbane-server]
 ---
@@ -57,6 +57,20 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 **Content:** 13 zachowanych ikon pokrywa 14 obecnych zaklęć; VFX obejmuje wszystkie 14 zaklęć: Mirror Reflection z przywróconymi dźwiękami, Magic Arrow i Firebolt/Fireball ze wspólnym cyklem życia pocisku oraz 11 różnorodnych efektów na postaci z warstwami przed/za sylwetką. Nowe animacje castingu i presety zachowane. Stare VFX/SFX i assety generatora usunięte 2026-09-08. → [[spell-vfx-configuration]]
 
 ## Decisions log
+
+### 2026-09-15 — Delete remaining legacy asset consumers
+
+- Decision: Remove the old HUD assets, previews, exclusive components, color avatars and PSD bar sources. Keep shared procedural HUD helpers and actors still used in ReferenceDuel; DuelV2Preview now tests only that current scene.
+- **Why:** The user's follow-up explicitly requests deletion of legacy resources, superseding the earlier decision to retain old preview artwork. Old color avatar values use the race portrait fallback.
+- Validation: [[assets-pipeline]], docs/audits/2026-09-15-legacy-resource-removal.json.
+
+
+### 2026-09-15 — Separate runtime resources from editable art inputs
+
+- Decision: Resources is organized by use (Arenas, Audio, Branding, Fonts, Races, Spells, UI); ArtSource holds models, PSDs, stem archives and race tools behind .gdignore. Spell icon names match canonical spell ids, with legacy lookup compatibility.
+- **Why:** The user needs to find assets directly from the folder tree. Source material is needed to keep editing the game but should not clutter Godot's runtime asset browser or exports. Delete only proven unused assets, duplicates and regenerable cache, including orphan old arenas; preserve maintained dev previews.
+- Evidence and limits: [[assets-pipeline]] and [[2026-09-15-resources-organization]].
+
 
 ### 2026-09-14 — Isolated 2dog browser experiment
 - **Decision:** Keep the first playable browser build on `codex/web-build` in `~/RiderProjects/hexbane-web` using 2dog/.NET 10. See [[deploy-web]].

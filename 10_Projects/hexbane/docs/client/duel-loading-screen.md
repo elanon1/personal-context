@@ -4,8 +4,8 @@ project: Hexbane
 area: client
 status: active
 created: 2026-09-10
-updated: 2026-09-10
-verified: 2026-09-10
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, loading, ui, mobile]
 sources: ["client:Game/Autoloads/SceneManager.DuelLoading.cs", "client:Game/ScenesV3/Loading/DuelLoadingScreen.cs"]
 ---
@@ -16,7 +16,7 @@ The arrangement → arena handoff uses a persistent `DuelLoadingScreen` CanvasLa
 
 ## Presentation
 
-- Generated drowned crystal sanctuary in navy, cyan and emerald: `Resources/Images/Loading/emerald_sanctuary.png` (1672×941, about 2.3 MiB). No text is baked into the bitmap.
+- Generated drowned crystal sanctuary in navy, cyan and emerald: `Resources/UI/Loading/emerald_sanctuary.png` (1672×941, about 2.3 MiB). No text is baked into the bitmap.
 - Native UI: HEXBANE title, Entering the arena, current loading stage, mint progress bar, breathing diamond and one randomly selected gameplay tip. Seven short tips cover queuing, poison/meditation, standards, opponent casts, arrangement, barriers and mana reserves. The selected tip remains fixed for the entire load and viewport resize.
 - Background uses cover aspect ratio. Content width is capped at 820 logical units and shrinks within side margins; wrapped titles/tips and spacing adapt to viewport height. Minimum tip/status text is 16 logical units. Mobile display safe-area insets constrain content, not the background. Retry has a 48-unit touch target.
 - No percentage text: the bar is a weighted completion indicator, not bytes downloaded or elapsed time. The first 85% aggregates Godot resource-loading progress; scene initialization is 90%, first rendered arena is 100%. A warm-cache load keeps the screen for a minimum 0.9 s to avoid a flash, followed by a 0.3 s reveal. The server still waits for presentation readiness, so this does not consume countdown time.
@@ -50,5 +50,10 @@ Final prompt:
 
 - `client:Game/Autoloads/SceneManager.cs`, `SceneManager.DuelLoading.cs` — route, threaded loading and persistent overlay lifecycle.
 - `client:Game/ScenesV3/Loading/DuelLoadingScreen.cs`, `DuelLoadingPreview.tscn` — responsive screen, progress and tip pool.
-- `client:Resources/Images/Loading/emerald_sanctuary.png` — shipped generated illustration.
+- `client:Resources/UI/Loading/emerald_sanctuary.png` — shipped generated illustration.
 - `client:Game/ScenesV3/Dev/{DuelLaunchVerification,LoadingScreenVerification,LoadingLifecycleVerification}.{cs,tscn}` — verification.
+
+
+## Resource organization (2026-09-15)
+
+See [[assets-pipeline]] for the current asset tree and [[2026-09-15-resources-organization]] for the migration. Spell icons now use canonical ids in `Resources/Spells/Icons/<id>.png`; old icon ids and old full spell paths are accepted by `Spell.GetIconPath`. Editable material and race tools live under `.gdignore`d `ArtSource/`. Duplicate character-creation portraits resolve to the identical `Resources/Races/<race>/avatar.png`. The two unreferenced old arena scenes (`GameHud/Main.tscn`, `GameHud/ArcaneDuel/Main.tscn`) and their exclusive resources were deleted. Historical sections above describe earlier states; they do not imply those removed files remain.

@@ -1,7 +1,7 @@
 # Additional arena backgrounds
 
 Generated with the built-in ImageGen tool, September 2026. Each call used
-`Resources/Images/ReferenceDuel/arena.png` as a strict composition reference.
+`Resources/Arenas/Storm/background.png` as a strict composition reference.
 Original outputs are retained in Codex generated_images; project copies are here.
 All images are 1672×941 (the emerald image is 1671×941, matching the original reference).
 No post-generation image editing was used. Atmosphere is rendered in Godot shaders/C#.

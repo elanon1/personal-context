@@ -716,3 +716,26 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Baseline read-only review found the former note insufficient if the worktree disappears. Skill validator passed; recipe helper passed temporary-fixture checks for renderer, secret omission, valid Nakama root, repeat execution and failure before writing when the Android preset is missing.
 - No game source changes or new full browser build in this documentation session. The last browser gameplay evidence remains 2026-09-14. Updated [[_index]]; existing uncommitted web build remains in its original checkout.
 - Independent read-only forward test reconstructed the missing-worktree procedure from the skill and note, and correctly excluded promotional website work. No blocking omission found for the pinned case; a fresh full build remains untested in this session.
+
+
+## 2026-09-15 — Resources organization and Godot repair
+
+- Organized runtime assets into Arenas, Audio, Branding, Fonts, Races, Spells and UI; moved editable models, T-pose sources, PSDs, stem archives and tools into .gdignore'd ArtSource.
+- Canonical spell icon filenames, compatible legacy id/full-path resolution, shared race portraits, corrected scene/shader/import/generator paths. Preserved the existing export_presets.cfg edit byte-for-byte.
+- Removed 4122 files (~2017.2 MiB): mostly rebuildable raw frames/cache plus proven unused artwork, duplicate portraits, superseded ward sounds, unused preset and two obsolete arena scenes with their exclusive assets. Preserved binary contents and UIDs of moved assets.
+- Restored the already missing tutorial swipe SVG; repaired missing default icon references in retained legacy components. Old arena TileSet errors disappeared after removing the orphan scenes.
+- Validation: .NET build 0 errors/11 existing warnings; Godot import and running-editor rescan; 639 resource/scene loads successful; GPU gameplay sandbox passed fourteen spell icons/casts, reflection/dodge, cancellation and meditation/audio. Screenshot inspected. Diff whitespace passed. Audit process reports residual ObjectDB/resource shutdown warning; no resource-load/atlas error.
+- Notes: [[assets-pipeline]], [[2026-09-15-resources-organization]], affected UI/VFX/audio/legacy contracts, asset-source notes, [[_index]], [[_state]]. Full manifest: docs/audits/2026-09-15-resource-migration.json.
+- Not run: platform exports, device/live PvP, full Blender regeneration. No commit/push. Raw frames must be regenerated before repacking animations or recalculating source-based tracks.
+
+- Final checks: 196 moved binaries byte-identical; 155 import UIDs preserved; 77 compiled canonical/alias/persisted-path assertions passed; all 12 relocated Blender files opened with zero missing external image dependencies. Running Godot editor shows the seven new Resources folders. Evidence: client verification/resource-organization/.
+
+
+## 2026-09-15 — Remove remaining legacy resources
+
+- Explicit follow-up request fulfilled: 112 files / 45.09 MiB removed, including LegacyHud, old sky, color avatars, bar PSDs and dependent obsolete HUD/scenes/components.
+- Preserved shared active actor/controller/procedural HUD helpers. Removed legacy painted-plate loader; DuelV2Preview now exercises the current HUD only. Race portrait fallbacks repaired in dashboard/lobby/creation; status icons use canonical spell artwork.
+- Build 0 errors / 11 existing warnings. Current duel HUD smoke passed all 14 icons, slots/layout, effects, queue/ticks and reconnect. Offline notification initialization and shutdown warnings remain in the test harness; no platform export or live match tested.
+- Notes: [[assets-pipeline]], legacy/design/animation notes; docs/audits/2026-09-15-legacy-resource-removal.json. No commit or push. Preserved unrelated export preset edit and prior resource migration.
+
+- Final follow-up verification: all 598 retained resources/scenes loaded; no remaining references to deleted files, no broken scene/resource dependencies and no Legacy directories under Resources. Rendered GameplaySandboxVerification passed all fourteen casts/icons plus reflection/dodge, cancellation and meditation/audio; screenshot reviewed. Godot editor filesystem refreshed; git diff --check passed.

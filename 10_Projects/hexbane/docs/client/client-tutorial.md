@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-12
-verified: 2026-09-12
+updated: 2026-09-15
+verified: 2026-09-15
 tags: [hexbane, client, tutorial, onboarding]
 sources: ["client:docs/superpowers/specs/2026-09-06-tutorial-design.md", "client:docs/superpowers/plans/2026-09-06-local-tutorial.md", "client:docs/client/tutorial-verification.md"]
 ---
@@ -93,3 +93,8 @@ Both result-screen exits call `SceneManager.GoToPostMatchMenu`, which opens `Tut
 `Load` now keeps guidance hidden when routing completed accounts. `StartArena` shows it only after preparing the actual lesson. Status failures still show retry guidance; progression eligibility and explicit replay remain unchanged.
 
 Verification: `Game/ScenesV3/Dev/TutorialRoutingVerification.tscn` runs offline with a controlled status response and suspended navigation. The regression failed before the fix and passed afterward: pending status hidden, repeated completed-account responses hidden, error retry visible. Run with `HEXBANE_IGNORE_ENV_FILE=1 DEV_AUTO_LOGIN=false /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --scene res://Game/ScenesV3/Dev/TutorialRoutingVerification.tscn`. Core tutorial tests passed; build succeeded with 9 existing warnings and no errors. Shutdown reports ObjectDB/resource leaks, also present before the fix. Full live-match return and physical-device rendering were not tested.
+
+
+## Resource organization (2026-09-15)
+
+See [[assets-pipeline]] for the current asset tree and [[2026-09-15-resources-organization]] for the migration. Spell icons now use canonical ids in `Resources/Spells/Icons/<id>.png`; old icon ids and old full spell paths are accepted by `Spell.GetIconPath`. Editable material and race tools live under `.gdignore`d `ArtSource/`. Duplicate character-creation portraits resolve to the identical `Resources/Races/<race>/avatar.png`. The two unreferenced old arena scenes (`GameHud/Main.tscn`, `GameHud/ArcaneDuel/Main.tscn`) and their exclusive resources were deleted. Historical sections above describe earlier states; they do not imply those removed files remain.
