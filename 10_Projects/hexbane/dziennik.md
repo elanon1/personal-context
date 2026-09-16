@@ -867,3 +867,5 @@ Nowa scena CharacterDevelopmentVerification sprawdza regresję, ponowny wybór p
 Dokumentacja: docs/client/client-tutorial.md, docs/client/design-system.md, docs/protocol/character-details.md.
 
 Końcowo: MobileLayoutVerification 960×432 — 0 przepełnień; git diff --check poprawny. HEX-26 i HEX-27 ustawione i potwierdzone jako Done w Linear. _state.md uzupełniony o decyzję.
+
+- Dalsza estymacja hostingu: sprawdzono zasoby całego węzła i aktualne oferty Hetzner; rekomendacja pozostania na obecnej maszynie do playtestów oraz warunkowy cel 100–300 meczów na osobnej VM 2 dedicated vCPU/8 GB. Założenia i brak testu pojemności zapisano w audycie; konfiguracji nie zmieniano.

@@ -31,3 +31,16 @@ No production matches were generated. Full per-match server cost remains unmeasu
 - server:modules/match/engine/phase/game/phase.go
 - server:modules/match/engine/state/state.go
 - server:helm/hexbane/values.yaml
+
+
+## Hosting planning estimate (same-session follow-up)
+
+Live node sample: 10 vCPU, 16324156 KiB capacity, 453m CPU usage, 7981 MiB working memory. Existing node has headroom at the observation instant; other workloads and CPU sharing remain unknown. Recommend using it for initial playtests, then a separate x86-64 VM for isolation when needed: 2 dedicated vCPU / 8 GB RAM, or 4 shared vCPU / 8 GB. One Nakama instance plus PostgreSQL and TLS ingress, external database backups. No automatic infrastructure changes made.
+
+Unvalidated planning envelope for a VM reserved for the game: 100–300 simultaneous PvP matches on 2 dedicated vCPU / 8 GB, initial launch target 100 after load-test validation. This is an engineering assumption, not measured capacity. A sensitivity allowance of 30–100 times local plugin execution implies roughly 0.108–0.361 CPU cores for 100 matches and 0.325–1.084 cores for 300 matches, before separately budgeted service baseline and headroom. The multiplier is hypothetical and does not establish an upper bound, especially for AI and database bursts. Validate 25/50/100/200/300 matches, including lobby, results and AI, with tick scheduling delay, CPU throttling, RAM and SQL latency. Target p99 match-loop execution below 20 ms within 100 ms ticks, no sustained tick lag, CPU below 60–70%, RAM below 70–75%.
+
+Budget network at an assumed 20–30 KiB/s per match including transport allowance: 100 matches approximately 16–25 Mbps and 5.3–8.0 TB per 30 days if continuously occupied. Real spell mix may differ. Downloadable game assets should be served separately.
+
+Hetzner official June 2026 rate card for Germany/Finland lists CCX13 EUR42.99/month, CX33 EUR8.49/month, excluding VAT/IPv4. CX33 product page showed unavailable; purchase availability requires console verification. CCX13 candidate specs: 2 dedicated vCPU, 8 GB RAM. Cost-optimized CX33: 4 shared vCPU, 8 GB, 80 GB NVMe. Prices exclude backup budget.
+
+Sources checked: https://docs.hetzner.com/general/infrastructure-and-availability/price-adjustment/ ; https://www.hetzner.com/cloud/cost-optimized/ ; https://docs.hetzner.com/cloud/servers/faq/
