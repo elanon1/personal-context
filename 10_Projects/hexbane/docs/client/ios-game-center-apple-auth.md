@@ -135,6 +135,18 @@ retry button available and must not delete a valid cached Nakama session.
 - iOS current fallback: Google browser flow.
 - Account linking between providers: not implemented.
 
+### Verification on 2026-09-16
+
+- App Store Connect app `HexbaneDev` (iOS app record 6812841408) shows the Game Center group
+  attached, with the app listed under Test Attached Apps. No leaderboards or achievements were
+  created because the client does not implement those features yet.
+- The simulator workflow exported and built the iOS Xcode project successfully, installed
+  `com.dev.hexbane` on iPhone 17 Pro (iOS 26.5), and launched it. This was a debug simulator build;
+  it still displays the debug test accounts and Local server selector.
+- The running simulator build did not open Game Center. This is expected until the native
+  `GKLocalPlayer.authenticateHandler` bridge and signed entitlements are added; App Store Connect
+  configuration alone cannot initiate platform login.
+
 ## Source of truth in code
 
 - `client:Game/DI/ServiceBootstrapper.cs` — provider selection

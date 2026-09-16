@@ -937,6 +937,10 @@ Na prośbę użytkownika release LoginPanel ukrywa e-mail/hasło, rejestrację i
 
 Dodano vault note `docs/client/ios-game-center-apple-auth.md` oraz wpis do `_index.md`: konfiguracja Apple Developer/App Store Connect/Xcode, natywny przepływ Game Center, Sign in with Apple, sekrety serwera, fallback i testy. Stan bieżący: iOS pomija Game Center i używa Google fallback; serwer ma hooki Apple/Game Center, ale klient nie ma jeszcze bridge/providerów.
 
+## 2026-09-16 — App Store Connect Game Center i symulator iOS
+
+W App Store Connect dla `HexbaneDev` (iOS app 6812841408) potwierdzono dołączoną grupę Game Center i aplikację w `Test Attached Apps`; nie tworzono jeszcze leaderboardów ani achievements. `deploy-ios-simulator.sh` zakończył się sukcesem: eksport Xcode, `xcodebuild` i instalacja `com.dev.hexbane` na iPhone 17 Pro (iOS 26.5), a następnie launch przez `simctl`. Zrzut pokazał debugowy ekran logowania z kontami testowymi/Local; Game Center nie uruchomił się, zgodnie z obecnym stanem kodu bez natywnego `GKLocalPlayer` bridge i signed entitlements. Pozostaje implementacja klienta GameKit oraz Sign in with Apple; nie utworzono żadnego klucza `.p8`.
+
 ## 2026-09-16 — Splash startowy: logo Hexbane zamiast logo Godota
 
 Usunięto logo Godota z ekranu startowego i zastąpiono je logo gry (wariant "logo na jednolitym tle"). Nowy plik `Resources/Branding/boot_splash_logo.png` (768x310, pomniejszona kopia `logo_fire.png`). W `project.godot`: `boot_splash/image` na ten plik, `boot_splash/fullsize=false`, `boot_splash/bg_color` i `rendering/.../default_clear_color` na `#140803` (tło ikony aplikacji), żeby nie było mignięcia między splashem a pierwszą klatką. W `export_presets.cfg` oba presety Android: `disable_godot_boot_splash=true`, `splash_screen/icon` na `adaptive_foreground_432x432.png`, `screen/background_color` i `splash_screen/background_color` na ten sam `#140803`, więc systemowy splash Androida 12+ i splash Godota przechodzą w siebie płynnie. Edytowano przy zamkniętym edytorze; uruchomienie desktop `--quit-after 3` bez błędów ładowania. Nie weryfikowano wizualnie na telefonie.
