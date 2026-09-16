@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-15
-verified: 2026-09-15
+updated: 2026-09-16
+verified: 2026-09-16
 tags: [hexbane, client, ui, design-system, themes]
 sources: ["client:docs/DESIGN_SYSTEM.md"]
 ---
@@ -188,9 +188,9 @@ Ranked was removed from mode selection, dashboard character subtitle, detail hea
 
 Rendered offline checks:1360×612 and960×540; actual pointer tap on avatar opens CharacterDetail. `MobileLayoutVerification` skips Auth by default to prevent a saved-session restoration from navigating away mid-test; opt in with `MOBILE_INCLUDE_AUTH=1` when intentionally testing login. `MOBILE_CHECK_AVATAR=1` verifies navigation. Fake news is scoped to the verification scene.
 
-## AI difficulty selection (HEX-21, 2026-09-15)
+## Automatic AI difficulty (HEX-21, 2026-09-16)
 
-vs AI opens a compact five-button difficulty selector with Back. Each choice starts the selected level through the shared match manager. Lobby, arena placeholders and results use AI instead of Bot; the server name includes the chosen level. Rendered selector fits960×540.
+vs AI starts a match directly at moderate difficulty (3, the existing Normal profile). `BotMatchManager` always sends difficulty 3, including requeue. There is no difficulty selector or level text in the client; lobby, arena and results display AI. The server retains its five supported profiles. Validation: client build passed; headless layout check at 960×540 reported zero overflows (shutdown resource-leak warning remains). Live match and rendered/device verification were not repeated for this change.
 
 ## Collection (HEX-23, 2026-09-15)
 

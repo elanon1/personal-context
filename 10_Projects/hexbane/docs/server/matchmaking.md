@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-15
-verified: 2026-09-15
+updated: 2026-09-16
+verified: 2026-09-16
 tags: [hexbane, server, matchmaking, nakama]
 sources: ["server:docs/match/matchmaking.md", "server:docs/match/api-reference.md", "server:docs/API-REFERENCE-v2.md"]
 ---
@@ -26,7 +26,7 @@ Built-in tickets accept `queue=normal` (omitted means normal), forced 2-player c
 
 The new queue selects a fallback deadline in 10–20 s, gives compatible humans priority before reservation, and presents one common match-found/accept flow. Details of reservation, leases and reconnect are in [[fallback-opponents]] and RPC shapes in [[rpcs]]. Ordinary human setup loads the current character, stats-derived combat profile, owned collection and race-specific slots; no fixed 200HP/100mana override.
 
-Explicit `ai_duel` uses synthetic ID `0000`, visible name `AI · Level N` and difficulty1–5 selected through `create_ai_arcane_duel`. Its draft waits0.3–0.6s per pick (up to0.7s including scheduling), independently of combat difficulty. It starts with standard spells only and drafts optional owned spells during the lobby; it no longer starts with a prefilled optional deck and appends a second copy. Its legacy slot copying is not used by fallback personas.
+Explicit `ai_duel` uses synthetic ID `0000`, wire name `AI · Level N` (the client displays `AI`) and difficulty1–5 selected through `create_ai_arcane_duel`. Its draft waits0.3–0.6s per pick (up to0.7s including scheduling), independently of combat difficulty. It starts with standard spells only and drafts optional owned spells during the lobby; it no longer starts with a prefilled optional deck and appends a second copy. Its legacy slot copying is not used by fallback personas.
 
 Reconnect replaces the old presence; a late leave from the old session cannot evict the new one. Normal precombat leave cancels with opcode9/opponent_left; combat disconnect does not itself end the match. Empty-match reaper: 30 s before first human, 5 s after all humans disappear. Settlement pending prevents premature termination. Normal assignment/persona leases are released on loop completion/termination; PvP never heartbeats a nonexistent persona lease.
 
@@ -46,7 +46,7 @@ Both handlers run a read-only availability check before admitting a new player. 
 
 Training uses `bot_ai.TrainingProfile` selected only for `MatchModeAI`; natural fallback profiles remain separate. Levels1–5 are Beginner, Easy, Normal, Hard, Expert. Reaction/decision latency, choice temperature, planned-queue probability and mistake chance vary; no hidden enemy state or stat/damage multiplier is granted. Level1 reacts in1.5–2.5s plus0.8–1.5s decision delay, makes frequent mistakes and does not queue during recovery. Level5 reacts in0.1–0.2s plus0–0.1s decision delay, frequently plans ahead and uses the existing visible-cast/impact/defense scorer. A response with zero configured latency still submits on a later engine tick.
 
-Client mode selection opens five explicit difficulty buttons. Chosen integer is serialized through the generated JSON context. Invalid RPC choices fail without creating a match. Existing AI build/stat/slot rules remain; difficulty changes decision behavior.
+As of 2026-09-16, client vs AI starts directly with moderate difficulty 3 (Normal), serialized through the generated JSON context. No difficulty selector or level label is displayed. The server still supports all five profiles. Invalid RPC choices fail without creating a match. Existing AI build/stat/slot rules remain; difficulty changes decision behavior.
 
 ### HEX-21 verification (2026-09-15)
 

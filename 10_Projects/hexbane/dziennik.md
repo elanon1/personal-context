@@ -840,3 +840,19 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Prześledzono wszystkie pola 14 plików `data/spells` przez loader, RPC, primary i wykonanie efektów; dodatkowo sprawdzono odbiorniki lore w C#.
 - Wskazano nadpisywane parametry obu primary, metadane lore bez wpływu na walkę oraz wartości efektów bez znaczenia mechanicznego. `travel_time` ma działającą obsługę mimo samych zer w katalogu.
 - Zaktualizowano `docs/server/spell-system.md` (sekcja audytu i doprecyzowanie type/icon) oraz ten dziennik. Bez zmian kodu i YAML; analiza statyczna, bez testu live i bez uruchamiania testów.
+
+
+## 2026-09-16 — Automatyczny moderate bez wyboru poziomu AI
+
+Usunięto selektor trudności w ModeOverlay; vs AI uruchamia od razu mecz. BotMatchManager zawsze wysyła difficulty=3 (obecny Normal/moderate), również przy ponownym wyszukaniu. LobbyScreen, ReferenceHud i GameOverScreen pokazują AI bez poziomu. MobileLayoutVerification nie uruchamia już usuniętego selektora ani żądania sieciowego. Zaktualizowano docs/client/design-system.md, docs/server/matchmaking.md i _state.md.
+
+Walidacja: dotnet build --no-restore — 0 błędów, 11 ostrzeżeń; headless MobileLayoutVerification 960×540 — 0 przepełnień, kod wyjścia 0; przy zamykaniu Godot zgłosił 3 pozostałe instancje ObjectDB i 1 zasób w użyciu. git diff --check poprawny. Nie powtarzano meczu online ani testu na urządzeniu; bez wdrożenia.
+
+
+## 2026-09-16 — Arkusz do edycji i balansu zaklęć
+
+- Przygotowano lokalny skoroszyt `Hexbane-balans-czarow.xlsx` w `/Users/elanon/Documents/Codex/outputs/hexbane-spell-balancer-20260916-01/`, przeznaczony do importu jako Google Sheets.
+- 8 zakładek: Start, Czary, Efekty, Balans, Primary, YAML, Oryginal, Slowniki. Katalog14, miejsce na60czarów/180efektów, maks.6efektów/czar, walidacja, scenariusz statystyk, porównanie z bazą, wykres i generator YAML.
+- Uwzględniono primary nadpisujące YAML, stałe1DMG Arrow oraz pięć impulsów poison/regeneration. Model pełnego efektu nie symuluje walki, uniku, odbicia, zdejmowania statusów, nadleczenia ani premii żywiołów i odporności rasowych.
+- Walidacja: testy przeliczeń po edycji wartości, interwału, zerowego kosztu, nadpisania primary, nowego czaru z2efektami i błędnych danych; render każdej zakładki; brak błędów formuł w zapisanym XLSX; wszystkie14wyeksportowane YAML semantycznie identyczne ze źródłami.
+- Bez zmian kodu i danych gry. Google Drive nie jest zainstalowany/połączony w tej sesji; zasugerowano integrację. Natywny arkusz Google i jego weryfikacja po imporcie pozostają do wykonania po połączeniu.

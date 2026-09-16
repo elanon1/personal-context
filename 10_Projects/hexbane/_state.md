@@ -6,8 +6,8 @@ status: active
 state: active
 repo: https://github.com/elanon1/hexbane
 created: 2026-08-31
-updated: 2026-09-15
-verified: 2026-09-15
+updated: 2026-09-16
+verified: 2026-09-16
 tags: [hexbane, gamedev, godot, csharp, nakama, go, kubernetes, ai-art]
 aliases: [hexbane, hexbane-server]
 ---
@@ -57,6 +57,8 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 **Content:** 13 zachowanych ikon pokrywa 14 obecnych zaklęć; VFX obejmuje wszystkie 14 zaklęć: Mirror Reflection z przywróconymi dźwiękami, Magic Arrow i Firebolt/Fireball ze wspólnym cyklem życia pocisku oraz 11 różnorodnych efektów na postaci z warstwami przed/za sylwetką. Nowe animacje castingu i presety zachowane. Stare VFX/SFX i assety generatora usunięte 2026-09-08. → [[spell-vfx-configuration]]
 
 ## Decisions log
+
+- **2026-09-16 — Fixed moderate AI for now.** Client starts explicit AI at difficulty 3 (Normal), with no selector or level labels. Backend profiles remain available. **Why:** user requested automatic moderate difficulty and removal of the level from UI.
 
 - **2026-09-15 — HEX-23 server-owned cosmetics and bounded acceleration.** Catalog/equip/ownership are authoritative; both player views carry a match-frozen presentation loadout. Future payment verification calls internal idempotent Grant; no client grant or purchase endpoint is exposed. XP bonus fills only the gap to the existing level cap, preserving normal study and skill gains. **Why:** opponents must see the same purchased look, client edits must not grant items, and acceleration must not introduce a higher combat-power ceiling. Payment-provider integration remains a separate release step.
 
