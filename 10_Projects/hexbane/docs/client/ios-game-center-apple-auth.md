@@ -130,10 +130,25 @@ retry button available and must not delete a valid cached Nakama session.
 ## Current Hexbane status
 
 - Android Play Games server authentication is live and uses `GOOGLE_CREDENTIALS_JSON` in Kubernetes.
-- iOS Game Center client integration: not implemented; server hooks exist.
+- iOS Game Center client integration: implemented in `GameCenterSignIn` with a native GameKit
+  framework bridge; the provider attempts silent authentication at startup and falls back after
+  timeout/error.
 - iOS Sign in with Apple client integration: not implemented; server hooks exist.
-- iOS current fallback: Google browser flow.
+- iOS current fallback: Google browser flow after Game Center failure.
 - Account linking between providers: not implemented.
+
+### Game Center bridge implementation (2026-09-16)
+
+- `addons/GodotPlayGameServices/export_plugin.gd` embeds the GameKit bridge framework and adds the
+  iOS Game Center export dependency.
+- `Application/Authentication/Social/GameCenterSignIn.cs` polls the native authentication state,
+  obtains the identity verification signature, and passes the complete credential to Nakama.
+- `GoogleAuthGateway` calls Nakama `AuthenticateGameCenterAsync` for this provider; Google and Play
+  Games continue using their existing endpoint.
+- The simulator build was ad-hoc signed with the Game Center entitlement and launched. GameKit
+  attempted authentication and returned the simulator's server/account errors; after 30 seconds
+  the login screen returned to the Game Center button. A real signed device or Apple sandbox
+  account is still required for successful credential verification.
 
 ### Verification on 2026-09-16
 
