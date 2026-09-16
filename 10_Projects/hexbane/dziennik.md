@@ -896,3 +896,16 @@ Dokumentacja: docs/server/spell-system.md, docs/server/progression.md, docs/prot
 ## 2026-09-16 — Grafiki ikony i Google Play
 
 Przygotowano przez imagegen wariant ikony 512×512 na podstawie main_192x192.png oraz oryginalny baner Hexbane: ognista runa, tytuł i pojedynek magów ognia/niebieskiej magii. Pliki: Resources/Branding/AppIcon/main_512x512.png oraz Resources/Branding/GooglePlay/feature_graphic_1024x500.jpg. Oryginał ikony zachowany. Zweryfikowano rozmiary i render: baner JPEG RGB 1024×500, 305548 bajtów (poniżej 1 MB). Grafiki są key artem promocyjnym. Bez publikacji w Google Play i bez zmiany ustawień eksportu.
+
+
+## 2026-09-16 — Włączenie PGS w Android Play
+
+- Włączono addon/autoload GodotPlayGameServices, game ID497120553759 i wersję15 dla com.dev.hexbane. Inicjalizacja i sprawdzenie platformowego uwierzytelnienia są niezależne od konta Nakama; bez zmiany Google/email, postaci i sesji. Lokalny preset z pustym game ID pomija bibliotekę natywną i metadane PGS.
+- Zmienione pliki klienta: project.godot, export_presets.cfg, addons/GodotPlayGameServices/export_plugin.gd oraz scripts/autoloads/godot_play_game_services.gd. Pozostałe brudne zmiany zachowano.
+- Podany Game server OAuth ID okazał się klientem Desktop (lokalny JSON typu installed, zgodny z obecnym browser OAuth), więc nie ustawiono go jako klienta serwerowego. Sekret Web nie był potrzebny.
+- Kontrola AAB wykryła dołączony pobrany JSON klienta Desktop; wykluczono client_secret_*.json i keystore z eksportów, przebudowano i potwierdzono ich brak w końcowym AAB. Lokalnych poświadczeń nie usuwano i nie drukowano ich wartości. Wcześniejszy lokalny android/hexbane_play.aab również zawiera ten Desktop JSON; nie stwierdzono na tej podstawie ujawnienia sekretu Web.
+- Dokumentacja: docs/client/social-sign-in.md, deploy-android.md, google-play-first-release.md, docs/server/google-auth.md, _state.md, dziennik.md.
+
+Validation (2026-09-16): `dotnet build hexbane.csproj --no-restore` passed (0 errors, 0 warnings in this incremental run); Auth project built and all 32 checks passed. Godot Android Play release export exited 0. Final `/Users/elanon/export/android/hexbane-v15-play-games.aab` is 400.5 MiB; bundletool validation passed, manifest confirms com.dev.hexbane/versionCode15/PGS APP_ID, resource resolves to497120553759, and DEX contains PlayGamesSdk plus the native Godot bridge. jarsigner verified the upload signature with expected self-signed certificate/timestamp warnings. No downloaded OAuth JSON or keystore files occur in the final archive. Export logs include an existing missing GameHudPreview.cs dev-resource error and editor-shutdown errors; Auth tests have ObjectDB/RID cleanup warnings. No physical Android device was connected, no Play upload was performed, and no real PGS login or remote Console credential association was verified. The AAB uses the current checkout, including unrelated in-progress gameplay changes.
+
+- Następnie: upload AAB na testy wewnętrzne i weryfikacja PGS na instalacji z Play; bez commita/push/deploy.

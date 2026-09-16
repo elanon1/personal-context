@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-14
-verified: 2026-09-13
+updated: 2026-09-16
+verified: 2026-09-16
 tags: [hexbane, client, auth, google, android]
 sources: ["client:docs/client/social-sign-in.md", "client:CLAUDE.md"]
 ---
@@ -27,7 +27,7 @@ Server contract: hexbane-server `docs/client/google-auth.md` (see [[rpcs]] for t
 | Screen | `Game/ScenesV3/Auth/LoginPanel.cs` (+ `RegisterPanel`) |
 | Android manifest | `addons/hexbane_android/export_plugin.gd` |
 
-Play Games is not used. `PlayGamesSignIn.cs`, `icon_play_games.png` and the disabled `addons/GodotPlayGameServices` remain only so it can be switched back on (`AuthConfig.GoogleServerClientId`, `AuthConfig.cs:62-66`, is the setting it would need).
+Play Games Services is enabled for platform authentication in the Android Play export (see the section below). The primary Nakama account still uses Google browser sign-in or email. `PlayGamesSignIn.cs` remains unused as a Nakama sign-in provider; activating the platform SDK does not switch account identity.
 
 ## Configuration
 
@@ -119,3 +119,20 @@ Source files: `client:Application/Nakama/NakamaClientManager.cs`, `client:Game/A
 - `client:project.godot` — `[hexbane] auth/*`, `quit_on_go_back`
 
 - `client:Tests/Auth/` — isolated Godot regression and local Nakama integration checks
+
+## Play Games platform integration (2026-09-16)
+
+- Android Play: package `com.dev.hexbane`, PGS project `497120553759`, version code 15. The developer supplied the Play app-signing SHA-1 `C5:91:73:84:53:7F:4A:43:D7:F8:6E:BF:47:B8:E9:A1:95:2D:A5:FB`; this is console registration information, not a value embedded in the SDK configuration. Console association has not been independently inspected.
+- The supplied “Game server” OAuth ID `497120553759-e29fal5ljc84jmai05pht8sthiasbqr8.apps.googleusercontent.com` is actually the current Desktop browser client: the local downloaded JSON has an `installed` root and the ID matches `auth/google_client_id`. It was therefore NOT stored as `google_server_client_id`. Server-side PGS API access will require an actual Web application credential; this phase does not request auth codes, exchange tokens, or require a server secret.
+- Enabled the bundled GodotPlayGameServices 3.4.0 addon and its autoload. The export hook includes the AAR, `play-services-games-v2:21.0.0`, and APP_ID metadata only when the preset has a game ID. Local Android (`pl.elanon.hexbane`) retains an empty ID and excludes the native plugin/dependencies/metadata.
+- Export generates a dedicated `res/values/play_games_services.xml` within the Gradle build directory rather than overwriting strings.xml.
+- On Android with the native plugin, the autoload initializes the SDK, checks authentication, and exposes `platform_authenticated` plus `platform_authentication_changed`. Other platforms and the editor skip initialization. Repeated initialization returns OK without reinitializing. PGS result never blocks or changes Nakama authentication, session storage, character or inventory.
+- Achievements, leaderboards, Recall, backend linking and native replacement of browser Google sign-in are not implemented by this change.
+
+References: https://developer.android.com/games/pgs/android/android-signin and https://developer.android.com/games/pgs/platform-authentication
+
+Source of truth: `client:project.godot`, `client:export_presets.cfg`, `client:addons/GodotPlayGameServices/export_plugin.gd`, `client:addons/GodotPlayGameServices/scripts/autoloads/godot_play_game_services.gd`.
+
+Export hygiene: all presets now exclude downloaded `client_secret_*.json` files and root keystores. The initial candidate AAB and the previous local android/hexbane_play.aab included the Desktop OAuth JSON (not a Web/server credential). The final candidate is rebuilt without that file; the existing Desktop ID/secret settings used by the browser flow are intentionally retained. No credential values were printed.
+
+Validation (2026-09-16): `dotnet build hexbane.csproj --no-restore` passed (0 errors, 0 warnings in this incremental run); Auth project built and all 32 checks passed. Godot Android Play release export exited 0. Final `/Users/elanon/export/android/hexbane-v15-play-games.aab` is 400.5 MiB; bundletool validation passed, manifest confirms com.dev.hexbane/versionCode15/PGS APP_ID, resource resolves to497120553759, and DEX contains PlayGamesSdk plus the native Godot bridge. jarsigner verified the upload signature with expected self-signed certificate/timestamp warnings. No downloaded OAuth JSON or keystore files occur in the final archive. Export logs include an existing missing GameHudPreview.cs dev-resource error and editor-shutdown errors; Auth tests have ObjectDB/RID cleanup warnings. No physical Android device was connected, no Play upload was performed, and no real PGS login or remote Console credential association was verified. The AAB uses the current checkout, including unrelated in-progress gameplay changes.

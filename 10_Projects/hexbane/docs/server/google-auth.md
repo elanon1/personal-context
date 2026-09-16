@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-09
-verified: 2026-09-09
+updated: 2026-09-16
+verified: 2026-09-16
 tags: [hexbane, server, auth, google, nakama]
 sources: ["server:docs/client/google-auth.md", "server:docs/superpowers/specs/2026-09-04-google-auth-design.md", "client:CLAUDE.md"]
 ---
@@ -21,7 +21,7 @@ adds logging hooks. What is implemented today:
 | Email / password | `AuthenticateEmailAsync(email, pw, null, create)` (`client:Application/Authentication/LoginService.cs:68`, `RegisterService.cs:51`) | `Before/AfterAuthenticateEmail` log only (`server:modules/auth/email_hooks.go`) | live |
 | Device id | `AuthenticateDeviceAsync(OS.GetUniqueId(), null, true)` (`LoginService.cs:114`) | none | dev / test harness only (`TutorialVerification`) |
 | Google account (ID token) | `AuthenticateGoogleAsync(idToken)` (`client:Application/Authentication/Gateways/GoogleAuthGateway.cs:36`) | `Before/AfterAuthenticateGoogle` log the credential kind (`server:modules/auth/social_hooks.go:47-59`) | live on desktop and Android |
-| Play Games (auth code) | `PlayGamesSignIn.cs` kept but never constructed; addon disabled | same Google hook; needs `GOOGLE_CREDENTIALS_JSON` | **not used** |
+| Play Games (auth code) | `PlayGamesSignIn.cs` kept but never constructed; addon enabled for independent platform authentication | same Google hook; needs `GOOGLE_CREDENTIALS_JSON` | **not used** |
 | Sign in with Apple | none | `Before/AfterAuthenticateApple` (log), needs `APPLE_BUNDLE_ID` | server hooks only, no client |
 | Game Center | none | `Before/AfterAuthenticateGameCenter` (log) | server hooks only, no client |
 

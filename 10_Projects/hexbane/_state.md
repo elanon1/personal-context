@@ -58,6 +58,11 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+### 2026-09-16 — PGS platform authentication alongside the existing account
+
+Enable Play Games SDK only for the configured Android Play package; retain Google/email Nakama authentication as the primary account. **Why:** current Google guidance separates platform identity from in-game identity; replacing the existing provider with the legacy PlayGamesSignIn flow could break account continuity. The supplied server OAuth ID proved to be the existing Desktop client, so it was not configured as a server credential; server API access and a real Web client remain deferred until a backend PGS feature needs them.
+
+
 - **2026-09-16 — Primary tree and optional-spell acquisition tiers (HEX-25/28/29).** Primary spells have an explicit YAML identity and a dedicated tree/detail UI; optional learning unlocks at levels1/5/10/16. Existing owned spells remain usable. **Why:** preserve the six viable starter choices, reveal stronger support/burst/control options during levelling, and separate permanent-primary development from purchases. Authority stays in the server transaction; changing request level or price cannot bypass requirements. Reference artwork guides composition, not new combat effects or currencies.
 
 - **2026-09-16 — Progression tutorial and compact Summary explanations (HEX-26/27).** Onboarding confirms only a full allocation; normal partial allocation remains available. The spellbook stays interactive until purchase starts. Skills display percentages; one inline explanation opens at a time. **Why:** the user requested deliberate point/spell choices and readable explanations on mobile without stacked tooltips.

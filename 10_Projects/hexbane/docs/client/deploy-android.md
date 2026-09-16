@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-13
-verified: 2026-09-13
+updated: 2026-09-16
+verified: 2026-09-16
 tags: [hexbane, client, android, deploy]
 sources: ["client:CLAUDE.md", "client:AGENTS.md", "client:deploy.sh", "client:export_presets.cfg"]
 ---
@@ -139,3 +139,9 @@ key for device validation; it is not signed by Google Play. No Play upload is pe
 - `client:project.godot` — `[hexbane]` settings, `quit_on_go_back`, transparency, enabled plugins
 - `client:Application/Nakama/NakamaClientManager.cs` — `LocalHost()` fallback
 - `client:addons/hexbane_android/export_plugin.gd` — Android manifest intent filter
+
+## PGS-enabled Android Play build (2026-09-16)
+
+See [[social-sign-in]] for platform/account separation and credential-type findings.
+
+Validation (2026-09-16): `dotnet build hexbane.csproj --no-restore` passed (0 errors, 0 warnings in this incremental run); Auth project built and all 32 checks passed. Godot Android Play release export exited 0. Final `/Users/elanon/export/android/hexbane-v15-play-games.aab` is 400.5 MiB; bundletool validation passed, manifest confirms com.dev.hexbane/versionCode15/PGS APP_ID, resource resolves to497120553759, and DEX contains PlayGamesSdk plus the native Godot bridge. jarsigner verified the upload signature with expected self-signed certificate/timestamp warnings. No downloaded OAuth JSON or keystore files occur in the final archive. Export logs include an existing missing GameHudPreview.cs dev-resource error and editor-shutdown errors; Auth tests have ObjectDB/RID cleanup warnings. No physical Android device was connected, no Play upload was performed, and no real PGS login or remote Console credential association was verified. The AAB uses the current checkout, including unrelated in-progress gameplay changes.

@@ -12,7 +12,7 @@ sources: ["client:export_presets.cfg", "client:deploy.sh", "client:Application/A
 
 # First Google Play internal release and Play Games configuration
 
-This is guidance, not a record of completed console setup. No keys were generated, no application was created or uploaded. Existing persistent Nakama login works independently of Play Games. Native PGS remains disabled; integration and identity handling must be implemented and tested separately. Current Google guidance separates PGS platform identity from the primary in-game account; retain Nakama/Google Sign-In identity for progress.
+This is guidance, not a record of completed console setup. No keys were generated, no application was created or uploaded. Existing persistent Nakama login works independently of Play Games. Native PGS platform authentication is now integrated in Android Play (2026-09-16); see [[social-sign-in]]. Physical-device authentication and Play-installed verification remain pending. Current Google guidance separates PGS platform identity from the primary in-game account; retain Nakama/Google Sign-In identity for progress.
 
 ## 1. Account and app
 
@@ -50,7 +50,7 @@ Grow users > Play Games Services > Setup and management > Configuration. Select 
 
 For server-side PGS access add Game server credential backed by a Web application OAuth client. Keep its client ID and downloaded client-secret JSON; the secret belongs only on the backend. Authorization codes are generated at runtime, never copied from the console. Add your device account under PGS Testers (separate from internal-distribution testers).
 
-Later integration requires game ID in godot_play_game_services/game_id, server client ID in hexbane/auth/google_server_client_id, enabling/wiring the Android plugin and configuring server credentials. Do not simply replace existing Google identities with PGS identities; account continuity needs verification.
+Android Play now has the game ID in godot_play_game_services/game_id and the plugin is enabled for platform authentication. Future server-side API access requires a genuine Web application client ID in hexbane/auth/google_server_client_id and backend credentials. Do not simply replace existing Google identities with PGS identities; account continuity needs verification.
 
 The first uploaded build can establish app signing before PGS is enabled. Upload a subsequent build with integration enabled and a higher version code for PGS testing. External testers need a reachable game server; the local LAN default in Hexbane is insufficient outside the LAN.
 
@@ -79,3 +79,5 @@ Enable PGS test access under Setup and management > Testers, either per account 
 - client:Application/Authentication/AuthConfig.cs — OAuth configuration names
 - client:Game/DI/ServiceBootstrapper.cs — current Google browser flow
 - client:addons/GodotPlayGameServices/export_plugin.gd — game ID and manifest injection
+
+2026-09-16 implementation: see [[social-sign-in]] and [[deploy-android]]. Signed version15 AAB is prepared locally; Play upload and physical-device sign-in are pending. The supplied server client ID was verified as the existing Desktop OAuth client, so it was not used as a server credential.
