@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-08
-verified: 2026-09-08
+updated: 2026-09-16
+verified: 2026-09-16
 tags: [hexbane, server, spells, effects, balance]
 sources: ["server:docs/spell_system/GUIDE-v2.md", "server:docs/spell_system/spells.md", "server:docs/spell_system/balance-v2.md", "server:docs/spell_system/balance-v2.json", "server:docs/spell_system/verification-v2.md", "server:docs/superpowers/specs/2026-09-05-spell-system-redesign.md", "server:docs/superpowers/plans/2026-09-05-spell-system-redesign.md", "client:docs/Plans/2026-09-04-standard-spells-6-slot-draft.md"]
 ---
@@ -49,8 +49,21 @@ Catalog baseline below; primary definitions reverified against YAML and graph co
 
 - Two **standard** spells are carried by every player in every match, never drafted, never learned, never charged MP (`server:modules/spell_system/spell.go:18-22`, `server:modules/spellbook/rpc.go:156-162`, `server:modules/match/engine/state/player_state.go:421-431`).
 - Six **starter** spells form the creation pool: a new character picks 3 (Human 4) distinct starters; only those become ownership rows. Unchosen starters cost 5 MP later like every other selectable spell (`server:modules/character/validate.go:106-129`, `server:modules/character/db.go:49-75`).
-- `type` (`attack`/`defense`/`support`) and `icon` are presentation metadata and are not validated beyond being present in the YAML.
+- `type` (`attack`/`defense`/`support`) and `icon` are presentation metadata; neither is required by the loader. Combat also checks `type` and `school` for recognized damage types, but current `attack`/`defense`/`support` and `neutral` values match none.
 - `nature` and `incantation` are lore metadata, see [[spell-lore]].
+
+## Field usage audit (2026-09-16)
+
+Static trace of all 14 current YAML files through loader, RPC projections and combat; not a live-server test. All authored keys map to the schema and are serialized by full-catalog RPCs. This does not mean every authored value controls combat.
+
+- `id`, costs, level requirement, standard/starter flags, effects and timings have runtime consumers. `travel_time` schedules impact even though every current value is zero. `school` supports RPC filtering, sorting, elemental bonuses and damage-type selection; every current spell is neutral. `nature` does not select combat elements/resistances.
+- `name`, `description` and `icon` are presentation data. `nature` and `incantation` are validated lore and serialized in full spell responses; no current C# consumer of these two fields or `get_spell_lore` was found. The lore RPC itself returns the vocabulary and nature definitions, not individual spell phrases.
+- For both primary spells, combat mana, cast and recovery use `primary.Resolve`/player primary configuration rather than YAML baselines. Effective views also replace their descriptions. Mirror effect duration and value are replaced at scheduling by primary window/return fraction.
+- Magic Arrow damage is fixed to 1 in `EffectContext.DealDamage` for a positive input; its YAML value cannot tune damage magnitude, but zero still exits before the fixed-damage branch. Effective spell views report primary fixed damage.
+- `effects[].value` has no mechanical purpose for cure/dispel; paralysis reads it only for the match log. Duration controls shield/paralysis and periodic statuses (mirror uses the primary override). Interval controls poison/regeneration pulses; delay controls delayed hex and is supported by the generic scheduler. Required zero timings for other shapes are validated, not unknown/ignored fields.
+- Optional schema fields `flavor` and `assets` do not occur in any current spell YAML.
+
+Evidence: `server:modules/match/engine/state/combat.go`, `server:modules/primary/graph.go`, `server:modules/spell_system/spell_effects/engine.go`, `events.go`, `effect_handlers/`, `server:modules/match/engine/phase/game/phase.go`, `server:modules/spell_system/registry.go`, `identity.go`, `rpc.go`, `db.go`, `server:modules/spellbook/rpc.go`, `client:Core/Spells/Spell.cs`.
 
 ## Primary graphs (version 1)
 

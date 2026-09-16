@@ -833,3 +833,10 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Potwierdzono powtarzające się od 2026-09-06 błędy odświeżania dla `obsidian`: `refresh_reason="expiry"`, `OAuth tokens for server obsidian cannot be refreshed; authorization required`.
 - Serwer odpowiada i deklaruje grant `refresh_token`; samo to nie potwierdza poprawnej realizacji odświeżania. Nie ustalono, czy brakuje refresh tokenu, czy jest odrzucany.
 - Nie zmieniano konfiguracji ani poświadczeń. Do dalszej diagnozy potrzebne są kod lub logi serwera MCP; poproszono o jego lokalizację. Zmieniono wyłącznie ten dziennik.
+
+
+## 2026-09-16 — Audyt pól YAML zaklęć
+
+- Prześledzono wszystkie pola 14 plików `data/spells` przez loader, RPC, primary i wykonanie efektów; dodatkowo sprawdzono odbiorniki lore w C#.
+- Wskazano nadpisywane parametry obu primary, metadane lore bez wpływu na walkę oraz wartości efektów bez znaczenia mechanicznego. `travel_time` ma działającą obsługę mimo samych zer w katalogu.
+- Zaktualizowano `docs/server/spell-system.md` (sekcja audytu i doprecyzowanie type/icon) oraz ten dziennik. Bez zmian kodu i YAML; analiza statyczna, bez testu live i bez uruchamiania testów.
