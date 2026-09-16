@@ -129,6 +129,8 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 
 ## Audyty (`docs/audits/`)
 
+- [[2026-09-16-match-resource-cost]] — bieżące benchmarki CPU/heap, payloady walki i odczyt zasobów produkcji.
+
 - [[2026-09-15-platform-complexity]] — szacunek kodu technicznego i UI dla platform, warianty rezygnacji i redukcji złożoności.
 
 - [[2026-09-12-fallback-verification]] — testy SQL/race/build/live oraz produkcyjny rollout i ograniczenia.

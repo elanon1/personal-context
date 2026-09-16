@@ -817,3 +817,19 @@ Notatki: docs/client/gameplay-sandbox.md (nowa), vfx-and-race-animation.md, _ind
 - Test dwóch kont wykrył brak opcode10 przy reconnectcie; naprawiono replay widoków przed snapshotem32. Review wykrył reset animacji trwającego czaru; test z tym samym action ID odtworzył błąd i przeszedł po naprawie.
 - Walidacja: Go full suite z rzeczywistym PostgreSQL w izolowanych schematach; build klienta0errors/11warn;179AOT; pluginLinux; realne RPC/grant/equip/draft/combat/reconnect dwóch kont na izolowanej Nakama; GPU kolekcji960x432 i areny1360x612 z przechwyconym payloadem przeciwnika; review po poprawkach.
 - Dokumenty: nowa commerce i plan; index, database, progression, rpcs, opcode10, design-system, spell-effect-system, state. Płatności sklepów pozostają do podłączenia do zaufanego Grant; niczego nie kupiono ani nie przyznano na produkcji. Testowe kontenery usunięto; bez commit/push/deploymentu/testu fizycznego telefonu. Wszystkie9zadań początkowego backlogu zrealizowane.
+
+
+## 2026-09-16 — Koszt zasobów pojedynczego meczu
+
+- Uruchomiono istniejące benchmarki walki (3 powtórzenia, PASS) i tymczasowy pomiar payloadów 180-sekundowej walki przez Go overlay (PASS); bez zmian w kodzie repo.
+- Odczytano produkcyjne zużycie CPU/RAM i limity Kubernetes. Oddzielono koszt całych usług od kosztu logiki pojedynczej walki.
+- Wyniki, metodologia i ograniczenia: [[2026-09-16-match-resource-cost]]. Zmienione notatki: ten dziennik, nowy audyt oraz `_index.md`.
+- Pozostaje kontrolowany pomiar pełnego meczu na serwerze z transportem, SQL i wariantami AI; lokalne wyniki nie dowodzą pojemności produkcji.
+
+
+## 2026-09-16 — Diagnostyka ponownej autoryzacji Obsidian MCP
+
+- Sprawdzono lokalną konfigurację Codex, logi SQLite i aplikacji oraz publiczne metadane OAuth serwera `https://mcp.elanon.pl/mcp`.
+- Potwierdzono powtarzające się od 2026-09-06 błędy odświeżania dla `obsidian`: `refresh_reason="expiry"`, `OAuth tokens for server obsidian cannot be refreshed; authorization required`.
+- Serwer odpowiada i deklaruje grant `refresh_token`; samo to nie potwierdza poprawnej realizacji odświeżania. Nie ustalono, czy brakuje refresh tokenu, czy jest odrzucany.
+- Nie zmieniano konfiguracji ani poświadczeń. Do dalszej diagnozy potrzebne są kod lub logi serwera MCP; poproszono o jego lokalizację. Zmieniono wyłącznie ten dziennik.
