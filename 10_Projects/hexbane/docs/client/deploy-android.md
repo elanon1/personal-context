@@ -155,3 +155,9 @@ After the user closed Godot, restored Game ID `497120553759` in Android Play, in
 
 
 Verified v16 artifact: `/Users/elanon/export/android/hexbane-v16-play-games.aab` (400.5 MiB). Export and bundletool validation exited 0; manifest confirms com.dev.hexbane/versionCode16/PGS metadata, `dump resources --values` resolves Game ID to497120553759, DEX contains PlayGamesSdk and the native Godot bridge, jarsigner verifies the signature, and no downloaded OAuth JSON or keystore occurs in archive paths. Preset retains ID/version after export. Export logs still contain an EditorSettings shutdown error. No physical-device PGS login or Play upload was performed. The artifact includes current unrelated client work, as did the previous export. Platform authentication does not yet replace Hexbane account login.
+
+### Automatic Play Games sign-in wiring (2026-09-16)
+
+The Android Play build now selects `PlayGamesSignIn` when the native PGS singleton and the server Web OAuth client ID are present. LoginPanel already performs a silent attempt on entry; if it fails, its visible social button is the manual retry (`CONTINUE WITH PLAY GAMES`). Release builds expose only the `Prod` server entry; `Local` remains available in debug builds. The server Web client ID is stored in project settings as a public identifier; its secret remains in the Kubernetes Secret `hexbane-google-credentials`.
+
+Validation: C# build passed with 0 errors (11 pre-existing warnings). A new `/Users/elanon/export/android/hexbane-v17-play-games.aab` was exported after these changes; bundle validation and physical-device sign-in remain pending. The server currently has the credential loaded, but no end-to-end PGS login has yet been observed on a device.
