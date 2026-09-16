@@ -58,6 +58,8 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+- **2026-09-16 — Progression tutorial and compact Summary explanations (HEX-26/27).** Onboarding confirms only a full allocation; normal partial allocation remains available. The spellbook stays interactive until purchase starts. Skills display percentages; one inline explanation opens at a time. **Why:** the user requested deliberate point/spell choices and readable explanations on mobile without stacked tooltips.
+
 - **2026-09-16 — Fixed moderate AI for now.** Client starts explicit AI at difficulty 3 (Normal), with no selector or level labels. Backend profiles remain available. **Why:** user requested automatic moderate difficulty and removal of the level from UI.
 
 - **2026-09-15 — HEX-23 server-owned cosmetics and bounded acceleration.** Catalog/equip/ownership are authoritative; both player views carry a match-frozen presentation loadout. Future payment verification calls internal idempotent Grant; no client grant or purchase endpoint is exposed. XP bonus fills only the gap to the existing level cap, preserving normal study and skill gains. **Why:** opponents must see the same purchased look, client edits must not grant items, and acceleration must not introduce a higher combat-power ceiling. Payment-provider integration remains a separate release step.

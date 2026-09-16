@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-15
-verified: 2026-09-15
+updated: 2026-09-16
+verified: 2026-09-16
 tags: [hexbane, protocol, character-details, menu]
 sources: ["server:docs/API-REFERENCE-v2.md", "server:docs/progression/client/menu-rpc-requirements.md", "client:docs/Server/rpc_get_character_details.md", "client:docs/Server/progression/menu-rpc-requirements.md"]
 ---
@@ -121,3 +121,12 @@ The compact character/stat card, Attributes and Modifiers form the left column; 
 ## Header cleanup and unavailable ranked (2026-09-15)
 
 HEX-19: the summary header shows name and race only; race tagline and trait-summary prose are omitted. Structured combat modifiers remain in the appropriate summary section. HEX-20: no ranked eligibility or unlock copy appears in the header, study bar, journey or level30 milestone. The compatibility `ranked_eligible` DTO remains mapped but is not presented as an available mode.
+
+
+## Summary explanations (HEX-27, 2026-09-16)
+
+Skill rows show the server skill value as a percentage and a slim 0–100 progress bar. The legacy wire `tier` remains accepted for compatibility but is not displayed as a skill level.
+
+Tapping a skill, attribute or modifier opens a small inline explanation; tapping it again collapses it, and opening another closes the previous explanation across all three sections. Rows support keyboard activation and distinguish taps from scroll drags. Explanations use the current stat/skill values and verified combat formulas from [[combat-stat-rules]], including soft stats, caps, racial coefficients and training conditions. Racial traits explicitly explain when the value is fixed rather than trainable. Unknown server modifier IDs show their reported source without inventing a formula. Display values remain server authoritative; no response shape changed.
+
+`CharacterDetailScreen.SummaryHelp.cs` owns presentation/explanations. The offline fallback now labels active meditation as additional mana/s using the same coefficient as the combat profile, rather than calling the skill contribution “Meditation Speed”. See [[client-tutorial]] for the matching onboarding and verification boundaries.

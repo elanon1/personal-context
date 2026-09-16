@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-15
-verified: 2026-09-15
+updated: 2026-09-16
+verified: 2026-09-16
 tags: [hexbane, client, tutorial, onboarding]
 sources: ["client:docs/superpowers/specs/2026-09-06-tutorial-design.md", "client:docs/superpowers/plans/2026-09-06-local-tutorial.md", "client:docs/client/tutorial-verification.md"]
 ---
@@ -108,3 +108,14 @@ The mentor starts Firebolt only after the learner casts Mirror Reflection or Bar
 Meditation has no HUD button or keyboard binding, including restored legacy settings. Both input policies teach upward swipe. The real duel keeps the same authoritative meditation command; the touch gesture is the only HUD entry point.
 
 Validation: Core regressions failed before action-card and repeated-tap fixes, then pass; client build 0 errors / 11 existing warnings; real Godot touch inputs completed all exercises through Summary against the catalog from isolated Nakama. Rendered 1360x612 mobile profile shows step 4 Magic Arrow directly tappable with no Continue and gesture guidance. CombatControlsVerification passes Space rejection, removed binding/button, live upward swipe, and existing input/persistence plus 30 layout combinations. Review found no outstanding defect. No physical phone or production deployment test.
+
+
+## Development lesson revision (HEX-26, 2026-09-16)
+
+The Stats lesson stays on allocation until every available point has been assigned. Confirm is disabled and guarded while any points remain. Removing an assigned point returns to allocation; the player can still change the split before saving. Normal allocation outside onboarding retains partial spending. In-flight saves reject repeated confirmation and allocation edits.
+
+The spell lesson leaves the scrollable spellbook and description undimmed and interactive, including after choosing an affordable spell. The player can compare and change selection until Learn starts; the selection is held during the request so the response applies to the purchased spell. Unaffordable/owned/standard selections return to browsing and cannot accidentally advance or navigate to Primary. RPC success/reconciliation still controls progression.
+
+Summary now has an explicit skills step (Meditation through meditation, Magery through effective spell damage, Spell Resistance through receiving it) followed by the final attributes/modifiers step. These scroll into view and remain explorable via the HEX-27 inline explanations. A compact docked guidance banner reserves its own space; the unused XP/back header is hidden during the lesson. No RPC or server tutorial-state contract changed. Replay remains isolated from the real character.
+
+Validation: CharacterDevelopmentVerification initially failed on advancing after one point; it now passes full allocation/undo/confirmation, real mouse and synthetic touch spell reselection, reachable undimmed descriptions, percentage skills, one-open accordion across all sections, final summary and replay isolation. Rendered checks: 960×540 and 960×432; the latest compact-banner render was inspected at 960×432. Core Tutorial tests pass. Live RPC latency and physical-device gestures were not verified.

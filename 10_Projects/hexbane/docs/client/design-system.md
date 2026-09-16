@@ -195,3 +195,10 @@ vs AI starts a match directly at moderate difficulty (3, the existing Normal pro
 ## Collection (HEX-23, 2026-09-15)
 
 Dashboard Shop opens the scrollable collection. Titles, ownership, equipped state and expiry come from Nakama. Owned supported cosmetics can be equipped; default items restore the original appearance. Locked items have no purchase action yet. The client whitelist maps stable presentation keys to Ashen skin tint, Arcane portrait frame, Cinzel name font and a restrained casting-rune ornament. Unknown keys fall back to originals and cannot be newly equipped from an outdated client. Cosmetic identity is shown for both duelists from server player views. See [[commerce]].
+
+
+## Character Summary and progression guidance (HEX-26/27, 2026-09-16)
+
+Summary skills use percentages with thin progress bars, without artificial skill levels. Skill, modifier and attribute rows have a +/− affordance and a 15px wrapping inline explanation with a short fade; one explanation can be open across the entire Summary. Pointer drags retain scroll behavior.
+
+Progression guidance uses a compact banner with reserved space above the tabs. XP/back controls are hidden for this lesson to preserve vertical room on landscape phones. Spellbook browsing and descriptions remain undimmed; skills and the final attributes/modifiers overview receive separate steps. The combat tutorial keeps its existing floating overlay mode. Contracts and acceptance checks: [[client-tutorial]], [[character-details]].

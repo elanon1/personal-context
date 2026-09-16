@@ -856,3 +856,14 @@ Walidacja: dotnet build --no-restore — 0 błędów, 11 ostrzeżeń; headless M
 - Uwzględniono primary nadpisujące YAML, stałe1DMG Arrow oraz pięć impulsów poison/regeneration. Model pełnego efektu nie symuluje walki, uniku, odbicia, zdejmowania statusów, nadleczenia ani premii żywiołów i odporności rasowych.
 - Walidacja: testy przeliczeń po edycji wartości, interwału, zerowego kosztu, nadpisania primary, nowego czaru z2efektami i błędnych danych; render każdej zakładki; brak błędów formuł w zapisanym XLSX; wszystkie14wyeksportowane YAML semantycznie identyczne ze źródłami.
 - Bez zmian kodu i danych gry. Google Drive nie jest zainstalowany/połączony w tej sesji; zasugerowano integrację. Natywny arkusz Google i jego weryfikacja po imporcie pozostają do wykonania po połączeniu.
+
+
+## 2026-09-16 — HEX-26 / HEX-27: tutorial rozwoju i Summary
+
+Zmieniono CharacterDetailScreen.Tutorial.cs: pełny budżet statów przed Confirm, ponowny wybór zaklęcia i czytelny opis, kroki skilli oraz atrybutów/modyfikatorów. TutorialOverlay ma opcjonalny dokowany baner i osobny obszar wejścia; zwykły tutorial walki zachowuje dotychczasowy tryb. CharacterDetailScreen.cs oraz nowy SummaryHelp.cs dodają procenty/paski skilli i małe objaśnienia otwierane pojedynczo. W czasie zapisu blokowane są zmiany alokacji i wyboru kupowanego zaklęcia.
+
+Nowa scena CharacterDevelopmentVerification sprawdza regresję, ponowny wybór przez wejście myszy/dotyku, accordion pomiędzy sekcjami i izolację replay. Pierwszy test wykazał stary błąd przejścia po jednym punkcie; po naprawie przechodzi. Build: 0 błędów / 11 istniejących ostrzeżeń. Core Tutorial: PASS. Obejrzano render desktopowego okna w rozmiarze mobilnym 960×540 i 960×432. Przegląd niezależnego agenta nie wykazał problemów. Godot nadal zgłasza zasoby pozostające przy zamykaniu testu. Nie testowano fizycznego telefonu ani opóźnionych odpowiedzi prawdziwego RPC. Bez commita, push i deploy.
+
+Dokumentacja: docs/client/client-tutorial.md, docs/client/design-system.md, docs/protocol/character-details.md.
+
+Końcowo: MobileLayoutVerification 960×432 — 0 przepełnień; git diff --check poprawny. HEX-26 i HEX-27 ustawione i potwierdzone jako Done w Linear. _state.md uzupełniony o decyzję.
