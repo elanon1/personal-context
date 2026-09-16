@@ -891,3 +891,8 @@ Walidacja: build klienta 0 błędów / 11 istniejących ostrzeżeń; JSON/AOT 18
 Serwer: go test ./... PASS; go test -race dla character/spellbook/bot_persona/match-engine-core/spell_system PASS. Testy PostgreSQL character/spellbook uruchomione w izolowanych schematach: progi 5/10/16, fałszywy/stary poziom, brak modyfikacji przy odmowie, cena, duplikaty, primaries, listy RPC, stare ownership i współbieżne wydawanie MP. Inne pakiety mogą mieć odrębne pominięte testy zależne od konfiguracji DB. Bez przebudowy Linux pluginu, restartu Nakama, HTTP/socket akceptacji i fizycznego telefonu. Brak commita/push/deploy.
 
 Dokumentacja: docs/server/spell-system.md, docs/server/progression.md, docs/protocol/rpcs.md, docs/protocol/character-details.md, docs/client/design-system.md, docs/client/client-tutorial.md, _state.md.
+
+
+## 2026-09-16 — Grafiki ikony i Google Play
+
+Przygotowano przez imagegen wariant ikony 512×512 na podstawie main_192x192.png oraz oryginalny baner Hexbane: ognista runa, tytuł i pojedynek magów ognia/niebieskiej magii. Pliki: Resources/Branding/AppIcon/main_512x512.png oraz Resources/Branding/GooglePlay/feature_graphic_1024x500.jpg. Oryginał ikony zachowany. Zweryfikowano rozmiary i render: baner JPEG RGB 1024×500, 305548 bajtów (poniżej 1 MB). Grafiki są key artem promocyjnym. Bez publikacji w Google Play i bez zmiany ustawień eksportu.
