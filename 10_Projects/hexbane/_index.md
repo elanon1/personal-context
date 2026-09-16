@@ -93,6 +93,7 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 - [[client-tutorial]] — lokalny tutorial
 - [[deploy-web]] — 2dog/.NET 10 browser build, from-scratch reconstruction, local verification and `$hexbane-web-build` skill.
 - [[deploy-ios]] — eksport iOS, symulator, reguły Native AOT (generowany JSON, bez `dynamic`), logi z symulatora, provisioning urządzenia
+- [[ios-game-center-apple-auth]] — konfiguracja Game Center i Sign in with Apple oraz plan fallbacku logowania
 - [[deploy-android]] — `deploy.sh`, ADB, LAN host, presety eksportu
 - [[google-play-first-release]] — od zera: Play Console, klucz upload, AAB, podpis Google, testy wewnętrzne i konfiguracja PGS.
 - [[legacy-and-tooling]] — martwe trasy/kod, `.env`, stary pipeline n8n, archiwa sztuki, addony

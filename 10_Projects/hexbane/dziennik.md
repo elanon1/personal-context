@@ -933,6 +933,10 @@ Po pierwszym kliknięciu PGS klient zgłaszał `Play Games sign-in is not config
 
 Na prośbę użytkownika release LoginPanel ukrywa e-mail/hasło, rejestrację i wybór serwera; zostaje platformowe logowanie oraz statusy automatycznej próby. Android używa Play Games i ręcznego retry. iOS tymczasowo pomija Game Center i od razu pokazuje fallback Google; Game Center/Apple pozostają kolejnym etapem. Build C# PASS: 0 błędów, 11 istniejących ostrzeżeń. Bez nowego eksportu AAB i bez commita/pusha klienta.
 
-## 2026-09-16 — Wyłączony splash Godota przy starcie
+## 2026-09-16 — Runbook iOS Game Center / Sign in with Apple
 
-Usunięto logo Godota z ekranu startowego. W `project.godot` dodano `boot_splash/show_image=false` i `boot_splash/bg_color` czarny (splash silnika na wszystkich platformach); w `export_presets.cfg` oba presety Android (`Android`, `Android Play`) mają `splash_screen/disable_godot_boot_splash=true`. Edytowano pliki przy zamkniętym edytorze. Nie weryfikowano na urządzeniu; następny build Android/desktop pokaże czarny ekran zamiast logo.
+Dodano vault note `docs/client/ios-game-center-apple-auth.md` oraz wpis do `_index.md`: konfiguracja Apple Developer/App Store Connect/Xcode, natywny przepływ Game Center, Sign in with Apple, sekrety serwera, fallback i testy. Stan bieżący: iOS pomija Game Center i używa Google fallback; serwer ma hooki Apple/Game Center, ale klient nie ma jeszcze bridge/providerów.
+
+## 2026-09-16 — Splash startowy: logo Hexbane zamiast logo Godota
+
+Usunięto logo Godota z ekranu startowego i zastąpiono je logo gry (wariant "logo na jednolitym tle"). Nowy plik `Resources/Branding/boot_splash_logo.png` (768x310, pomniejszona kopia `logo_fire.png`). W `project.godot`: `boot_splash/image` na ten plik, `boot_splash/fullsize=false`, `boot_splash/bg_color` i `rendering/.../default_clear_color` na `#140803` (tło ikony aplikacji), żeby nie było mignięcia między splashem a pierwszą klatką. W `export_presets.cfg` oba presety Android: `disable_godot_boot_splash=true`, `splash_screen/icon` na `adaptive_foreground_432x432.png`, `screen/background_color` i `splash_screen/background_color` na ten sam `#140803`, więc systemowy splash Androida 12+ i splash Godota przechodzą w siebie płynnie. Edytowano przy zamkniętym edytorze; uruchomienie desktop `--quit-after 3` bez błędów ładowania. Nie weryfikowano wizualnie na telefonie.
