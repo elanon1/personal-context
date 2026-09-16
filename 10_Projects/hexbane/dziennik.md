@@ -924,3 +924,7 @@ Po potwierdzonym zamknięciu Godota przywrócono Game ID497120553759 w Android P
 ## 2026-09-16 — Automatyczne PGS i tylko produkcja w release
 
 Podłączono `PlayGamesSignIn` do DI dla Androida z natywnym singletonem PGS i skonfigurowanym Web Client ID. Cichy start korzysta z istniejącego przepływu LoginPanel; ten sam przycisk społecznościowy pozostaje ręcznym ponowieniem po nieudanej próbie. W release usunięto wybór `Local`, debug zachowuje oba serwery. Dodano `hexbane/auth/google_server_client_id` do projektu. Build C# zakończył się 0 błędów, a AAB v17 został wyeksportowany do `/Users/elanon/export/android/hexbane-v17-play-games.aab`. Do sprawdzenia: bundletool/podpis oraz test PGS na urządzeniu z instalacją z Play; nie deklarowano jeszcze pełnego E2E.
+
+## 2026-09-16 — Aktywacja credentialu PGS w Nakama
+
+Po pierwszym kliknięciu PGS klient zgłaszał `Play Games sign-in is not configured on the server`. Deployment miał Secret, ale brakowało flagi startowej Nakamy; dodano ją do Helm template i GitOps, wypchnięto server `8947b77` oraz GitOps `cf90304`. Pierwszy restart ujawnił drugi problem: Web OAuth JSON bez `redirect_uris`. Zaktualizowano tylko kopię w Kubernetes, dodając `web.redirect_uris: [""]`; Nakama wystartowała, log `Startup done`, pod ready/0 restartów, Argo Synced/Healthy, publiczny healthcheck HTTP 200. Do wykonania: ponowić logowanie PGS w v17 i potwierdzić pełny auth flow na telefonie.
