@@ -5,8 +5,8 @@ area: infra
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-12
-verified: 2026-09-12
+updated: 2026-09-16
+verified: 2026-09-16
 tags: [hexbane, infra, deploy, docker, helm, argocd, ci]
 sources: ["vault:10_Projects/hexbane/infra-i-deploy.md", "server:Makefile", "server:docker-compose.yml", "server:docker-compose.debug.yml", "server:docker-compose.prod.yml", "server:Dockerfile", "server:Dockerfile.debug", "server:local.yml", "server:.github/workflows/docker-publish.yml", "server:helm/hexbane/**", "server:deploy/argocd/*", "server:docs/spell_system/database-v2.md", "client:deploy.sh", "client:CLAUDE.md", "client:export_presets.cfg"]
 ---
@@ -158,3 +158,12 @@ Added Compose passthrough for the three HEXBANE queue env variables (defaults fa
 Backend `f05eabd58c1a45c4ac913312f321dded852cd0b8`, image `ghcr.io/elanon1/hexbane-server:sha-f05eabd`. GitHub Actions run 34707922252 succeeded. GitOps commit `ccee602` pins the new image; Application applied and explicitly synced. Verified rollout complete, Argo `Synced / Healthy / Succeeded`, pod `hexbane-67f49bfc95-j97t4` Ready with zero restarts. Both `HEXBANE_ENABLE_CUSTOM_QUEUE` and `HEXBANE_ENABLE_FALLBACK` remain true (15–30 s). No new migration or production lease deletion. Before rollout, the read-only count of unexpired character leases was zero.
 
 Local PostgreSQL regression and actual WebSocket joins verified busy rejection in normal and AI modes while preserving the existing lease; the Godot overlay test verified the wait message and no automatic requeue. Production verification covered rollout/readiness/configuration; this follow-up did not repeat a full production duel or device test. Client message changes require a rebuilt client.
+
+
+## Progression, training AI, news and cosmetics release (2026-09-16)
+
+Server main `e2b1d9ca1eccb1f39ca06b31642908561629f8e9` was published with CI run `35081639436` successful. GitOps main `ae08be17dfd1d17b8bc678642b7640891f7bbce5` pins `ghcr.io/elanon1/hexbane-server:sha-e2b1d9c`. Applied the Application and explicitly synced it. Verified rollout complete, Argo Synced/Healthy/Succeeded, pod `hexbane-74669d889d-k4fw4` ready with zero restarts. Image index digest: `sha256:ed8845cc14681a8775bc2c7d70b91a5dc3bfec0783f703b62c7142a22a9155cb`.
+
+Before deployment, created mode-600 backup `/Users/elanon/.codex/backups/hexbane/2026-09-16-before-server-release.dump` (110539 bytes, SHA256 `39ec5de70f30be56db1386fcdb527977775cbc29fb95c589ce7ca276072cf6a4`). Restored it into disposable PostgreSQL and successfully rehearsed migrations 9–11. Production migrated from version 8 to 11 (not dirty), preserving 13 users and 7 characters; new tables contain 1 news item and 9 commerce catalog entries.
+
+Verification: Go suite with match-result DB tests, focused race tests and vet passed; production startup completed without error/fatal/panic entries. Public HTTPS healthcheck and RPC healthcheck returned 200; get_entry_spells returned success and catalog duel_v2.5. No production duel or physical client test was performed. Explicitly retained Primary and level-1 guards in character starter validation as requested; working server checkout is main and clean.
