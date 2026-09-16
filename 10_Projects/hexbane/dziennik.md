@@ -928,3 +928,11 @@ Podłączono `PlayGamesSignIn` do DI dla Androida z natywnym singletonem PGS i s
 ## 2026-09-16 — Aktywacja credentialu PGS w Nakama
 
 Po pierwszym kliknięciu PGS klient zgłaszał `Play Games sign-in is not configured on the server`. Deployment miał Secret, ale brakowało flagi startowej Nakamy; dodano ją do Helm template i GitOps, wypchnięto server `8947b77` oraz GitOps `cf90304`. Pierwszy restart ujawnił drugi problem: Web OAuth JSON bez `redirect_uris`. Zaktualizowano tylko kopię w Kubernetes, dodając `web.redirect_uris: [""]`; Nakama wystartowała, log `Startup done`, pod ready/0 restartów, Argo Synced/Healthy, publiczny healthcheck HTTP 200. Do wykonania: ponowić logowanie PGS w v17 i potwierdzić pełny auth flow na telefonie.
+
+## 2026-09-16 — Uproszczenie ekranu logowania
+
+Na prośbę użytkownika release LoginPanel ukrywa e-mail/hasło, rejestrację i wybór serwera; zostaje platformowe logowanie oraz statusy automatycznej próby. Android używa Play Games i ręcznego retry. iOS tymczasowo pomija Game Center i od razu pokazuje fallback Google; Game Center/Apple pozostają kolejnym etapem. Build C# PASS: 0 błędów, 11 istniejących ostrzeżeń. Bez nowego eksportu AAB i bez commita/pusha klienta.
+
+## 2026-09-16 — Wyłączony splash Godota przy starcie
+
+Usunięto logo Godota z ekranu startowego. W `project.godot` dodano `boot_splash/show_image=false` i `boot_splash/bg_color` czarny (splash silnika na wszystkich platformach); w `export_presets.cfg` oba presety Android (`Android`, `Android Play`) mają `splash_screen/disable_godot_boot_splash=true`. Edytowano pliki przy zamkniętym edytorze. Nie weryfikowano na urządzeniu; następny build Android/desktop pokaże czarny ekran zamiast logo.
