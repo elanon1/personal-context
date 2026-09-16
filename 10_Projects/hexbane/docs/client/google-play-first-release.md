@@ -4,8 +4,8 @@ project: Hexbane
 area: client
 status: guide
 created: 2026-09-09
-updated: 2026-09-09
-verified: 2026-09-09
+updated: 2026-09-16
+verified: 2026-09-16
 tags: [hexbane, android, google-play, signing, auth]
 sources: ["client:export_presets.cfg", "client:deploy.sh", "client:Application/Authentication/AuthConfig.cs"]
 ---
@@ -16,7 +16,7 @@ This is guidance, not a record of completed console setup. No keys were generate
 
 ## 1. Account and app
 
-Register at https://play.google.com/console (currently USD 25 once), choose the account type matching the actual developer, and complete identity/device verification requested by Google. Create app: Hexbane, Game, desired language and pricing. The existing Android package is pl.elanon.hexbane; the first uploaded artifact fixes it for this Play app.
+Register at https://play.google.com/console (currently USD 25 once), choose the account type matching the actual developer, and complete identity/device verification requested by Google. Create app: Hexbane, Game, desired language and pricing. The current Android Play preset uses com.dev.hexbane; the local Android preset uses pl.elanon.hexbane. Verify the package against the existing Play Console app before creating credentials; the first uploaded artifact fixes it for that Play app.
 
 ## 2. Upload key on this Mac
 
@@ -36,7 +36,7 @@ Play App Signing should generate/manage the distribution signing key. The upload
 
 ## 3. Godot export
 
-Duplicate the existing Android export preset as Android Play. Keep Gradle enabled and package pl.elanon.hexbane. Choose AAB export format, set version name (e.g. 0.1.0) and increase version code for every uploaded build (current code is 2; next may be 3). Set Keystore Release to the absolute upload.jks path, Release User to hexbane-upload, and Release Password to the key password. Export release with Export With Debug unchecked, e.g. ../export/android/hexbane.aab. Existing deploy.sh generates a debug APK for USB, not the Play bundle.
+Use the existing Android Play preset (com.dev.hexbane), after matching it to the Play Console app. Keep Gradle enabled. Choose AAB export format, set version name (e.g. 0.1.0) and increase version code for every uploaded build (current code is 2; next may be 3). Set Keystore Release to the absolute upload.jks path, Release User to hexbane-upload, and Release Password to the key password. Export release with Export With Debug unchecked, e.g. ../export/android/hexbane.aab. Existing deploy.sh generates a debug APK for USB, not the Play bundle.
 
 ## 4. Internal distribution and signing fingerprint
 
@@ -46,13 +46,19 @@ Find App integrity / App signing and copy SHA-1 from App signing key certificate
 
 ## 5. Play Games
 
-Grow users > Play Games Services > Setup and management > Configuration. Select the existing Google Cloud project used by Hexbane when applicable; configure consent and enable Google Play Games Services API. Add Android credential: package pl.elanon.hexbane and the Play app-signing SHA-1. Create/select its Android OAuth client and save the association in Play Console. Copy the numeric Games Project ID displayed under the game name.
+Grow users > Play Games Services > Setup and management > Configuration. Select the existing Google Cloud project used by Hexbane when applicable; configure consent and enable Google Play Games Services API. Add Android credential: the exact Play package (current Android Play preset: com.dev.hexbane) and the Play app-signing SHA-1. For the local pl.elanon.hexbane preset, create a separate credential with its actual signing certificate if needed. Create/select its Android OAuth client and save the association in Play Console. Copy the numeric Games Project ID displayed under the game name.
 
 For server-side PGS access add Game server credential backed by a Web application OAuth client. Keep its client ID and downloaded client-secret JSON; the secret belongs only on the backend. Authorization codes are generated at runtime, never copied from the console. Add your device account under PGS Testers (separate from internal-distribution testers).
 
 Later integration requires game ID in godot_play_game_services/game_id, server client ID in hexbane/auth/google_server_client_id, enabling/wiring the Android plugin and configuring server credentials. Do not simply replace existing Google identities with PGS identities; account continuity needs verification.
 
 The first uploaded build can establish app signing before PGS is enabled. Upload a subsequent build with integration enabled and a higher version code for PGS testing. External testers need a reachable game server; the local LAN default in Hexbane is insufficient outside the LAN.
+
+## Research verification (2026-09-16)
+
+Read-only review of current code and official Google documentation; the actual Play Console account and deployed backend secrets were not inspected. ServiceBootstrapper still selects GoogleOAuthSignIn; project.godot does not enable GodotPlayGameServices. The bundled export plugin declares play-services-games-v2:21.0.0. PlayGamesSignIn is inactive and must not simply replace the primary account: current Google platform-authentication guidance explicitly separates PGS identity from the in-game account. Keep Nakama progress attached to the primary account and implement platform features separately; verify account continuity before rollout. Console setup alone does not activate the integration.
+
+Enable PGS test access under Setup and management > Testers, either per account (including the developer) or by explicitly adding a release track. Distribution-track membership alone is not the PGS access configuration. Publish PGS separately from the application, allowing up to two hours for propagation.
 
 ## Official references
 

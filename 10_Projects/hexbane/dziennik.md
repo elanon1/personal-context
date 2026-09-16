@@ -869,3 +869,25 @@ Dokumentacja: docs/client/client-tutorial.md, docs/client/design-system.md, docs
 Końcowo: MobileLayoutVerification 960×432 — 0 przepełnień; git diff --check poprawny. HEX-26 i HEX-27 ustawione i potwierdzone jako Done w Linear. _state.md uzupełniony o decyzję.
 
 - Dalsza estymacja hostingu: sprawdzono zasoby całego węzła i aktualne oferty Hetzner; rekomendacja pozostania na obecnej maszynie do playtestów oraz warunkowy cel 100–300 meczów na osobnej VM 2 dedicated vCPU/8 GB. Założenia i brak testu pojemności zapisano w audycie; konfiguracji nie zmieniano.
+
+
+## 2026-09-16 — Rozpoznanie Google Play Games Services
+
+- Sprawdzono aktualne oficjalne instrukcje konfiguracji PGS, server-side access, tożsamości platformowej i testów/publikacji oraz kod klienta i lokalną konfigurację serwera. PGS pozostaje wyłączone; Android Play ma pakiet com.dev.hexbane, lokalny Android pl.elanon.hexbane.
+- Poprawiono nieaktualne wskazanie pakietu w docs/client/google-play-first-release.md i dopisano zakres weryfikacji oraz rozdzielenie konta Nakama od PGS.
+- Bez zmian kodu, ustawień Console, sekretów i wdrożeń. Nie sprawdzano zalogowanej konsoli ani prawdziwego logowania na telefonie. Do wykonania: konfiguracja credentials/testerów, integracja i test ciągłości kont na instalacji z Play.
+
+
+## 2026-09-16 — HEX-25/28/29: drzewo primary i odblokowania zaklęć
+
+HEX-25: przebudowano Primary na pionowe drzewo połączeń z serwera, poziomy odblokowań, stan wybranej ścieżki i osobny przewijany panel podglądu. Inspect nie zmienia ścieżki; Choose wybiera lokalnie, Save zapisuje na serwerze. Dodano osiem oryginalnych SVG run ulepszeń. Naprawiono znikanie szkicu drugiego primary przy zapisie oraz równoczesne zapisy. Referencja z Linear służyła kompozycji; efekty i brak kosztu MP pozostają zgodne z rzeczywistą mechaniką.
+
+HEX-28: YAML primary + zgodny legacy standard, usunięcie primary ze zwykłych list i Summary/spellbook; komplet zachowany dla walki/tutoriala. HEX-29: level_requirement 1/5/10/16 w katalogu i UI, blokada nowego uczenia po obu stronach. Transakcja serwera odczytuje poziom i MP z bazy oraz cenę z katalogu. Zachowano istniejące zaklęcia graczy i fallback-person, nowi gracze/boty podlegają progom. Katalog duel_v2.5, klient obsługuje nową wersję.
+
+Główne pliki klienta: CharacterDetailScreen.Primary.cs, nowy PrimaryTree.cs, CharacterDetailScreen.cs/Tutorial.cs, CreateCharacterScreen.cs, DTO spell/details, Core/Spells/Spell.cs, DuelV2.cs, Resources/UI/Primary/*.svg. Testy: PrimaryProgressionVerification.cs/.tscn, Tests/Fixtures/primary-progression.json (eksport prawdziwej odpowiedzi serwera), JsonAotVerification.cs. Agent serwera zmienił katalog YAML, spell_system, spellbook, character/details oraz walidację nowych i zachowanych buildów bot_persona. Zachowano wcześniejsze niezwiązane zmiany.
+
+Walidacja: build klienta 0 błędów / 11 istniejących ostrzeżeń; JSON/AOT 180 passed, 0 failed. Regresja równoczesnego zapisu primary najpierw failed, następnie PASS wraz z zachowaniem drugiego szkicu. Godot synthetic touch i render 960×432 / 960×540 / 1360×612: wybór, blokady, cofanie, detale, wykluczenie primary i progi poziomu przechodzą. CharacterDevelopmentVerification nadal PASS; MobileLayoutVerification 960×432: 0 przepełnień. Przegląd agenta znalazł odstępy węzłów i izolację zapisów — oba poprawione i ponownie sprawdzone. git diff --check obu repo poprawny. Godot nadal zgłasza znane zasoby przy zamknięciu scen testowych.
+
+Serwer: go test ./... PASS; go test -race dla character/spellbook/bot_persona/match-engine-core/spell_system PASS. Testy PostgreSQL character/spellbook uruchomione w izolowanych schematach: progi 5/10/16, fałszywy/stary poziom, brak modyfikacji przy odmowie, cena, duplikaty, primaries, listy RPC, stare ownership i współbieżne wydawanie MP. Inne pakiety mogą mieć odrębne pominięte testy zależne od konfiguracji DB. Bez przebudowy Linux pluginu, restartu Nakama, HTTP/socket akceptacji i fizycznego telefonu. Brak commita/push/deploy.
+
+Dokumentacja: docs/server/spell-system.md, docs/server/progression.md, docs/protocol/rpcs.md, docs/protocol/character-details.md, docs/client/design-system.md, docs/client/client-tutorial.md, _state.md.

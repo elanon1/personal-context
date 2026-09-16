@@ -11,7 +11,7 @@ tags: [hexbane, server, spells, effects, balance]
 sources: ["server:docs/spell_system/GUIDE-v2.md", "server:docs/spell_system/spells.md", "server:docs/spell_system/balance-v2.md", "server:docs/spell_system/balance-v2.json", "server:docs/spell_system/verification-v2.md", "server:docs/superpowers/specs/2026-09-05-spell-system-redesign.md", "server:docs/superpowers/plans/2026-09-05-spell-system-redesign.md", "client:docs/Plans/2026-09-04-standard-spells-6-slot-draft.md"]
 ---
 
-# Spell system (catalog duel_v2.4)
+# Spell system (catalog duel_v2.5)
 
 `data/spells/*.yaml` is the only spell definition source. The whole directory is loaded atomically at plugin start; any invalid file fails startup. PostgreSQL stores ownership and saved loadouts only (see [[database]]). Combat rules that consume these definitions are in [[progression]] (section "Combat rules"); the wire protocol is in [[combat-v2]].
 
@@ -21,14 +21,14 @@ Version constants (`server:modules/spell_system/version.go:3-8`):
 |---|---|
 | `CombatProtocol` | 2 |
 | `RulesetID` | `duel_v2` |
-| `CatalogVersion` | `duel_v2.4` |
+| `CatalogVersion` | `duel_v2.5` |
 | `TickMillis` | 100 |
 
 Every spell RPC response, character details and the tutorial RPC embed `combat_protocol`, `ruleset_id`, `catalog_version` (`server:modules/spell_system/rpc.go:159-167`).
 
 ## Catalog
 
-Catalog baseline below; primary definitions reverified against YAML and graph code on 2026-09-08. Every spell has `school: neutral`, `level_requirement: 1`, `travel_time: 0`. Times are seconds.
+Catalog baseline below; primary definitions reverified against YAML and graph code on 2026-09-08. Every spell has `school: neutral` and `travel_time: 0`; unlock levels are listed below. Times are seconds.
 
 | ID                  | Name              | Nature   | Mana | Cast | Recovery | MP cost | Flags    | Effect (type, value, timing, target)               |
 | ------------------- | ----------------- | -------- | ---: | ---: | -------: | ------: | -------- | -------------------------------------------------- |
@@ -51,6 +51,27 @@ Catalog baseline below; primary definitions reverified against YAML and graph co
 - Six **starter** spells form the creation pool: a new character picks 3 (Human 4) distinct starters; only those become ownership rows. Unchosen starters cost 5 MP later like every other selectable spell (`server:modules/character/validate.go:106-129`, `server:modules/character/db.go:49-75`).
 - `type` (`attack`/`defense`/`support`) and `icon` are presentation metadata; neither is required by the loader. Combat also checks `type` and `school` for recognized damage types, but current `attack`/`defense`/`support` and `neutral` values match none.
 - `nature` and `incantation` are lore metadata, see [[spell-lore]].
+
+## Primary identity and optional unlocks (HEX-28 / HEX-29, 2026-09-16)
+
+Every YAML explicitly supplies `primary`; only Magic Arrow and Mirror Reflection set it true. The existing `standard` flag remains equal to it for compatible combat/equip handling. Primary graph progression and permanent combat entitlement remain independent of spellbook ownership. The normal `get_player_spells`, `get_spellbook`, `get_available_spells`, `get_my_spells` and `get_character_details.spellbook` lists exclude primaries (including legacy primary ownership rows). `GetAll`, individual spell details, tutorial and combat still have the complete catalog.
+
+| Character level required | Optional spells |
+|---|---|
+| 1 | barrier, cleanse, firebolt, heavy_bolt, mend, poison |
+| 5 | regeneration, dispel |
+| 10 | greater_heal, consume_venom |
+| 16 | delayed_hex, paralysis |
+
+The six level-one starters preserve the creation draft. Subsequent pairs introduce sustained support, burst/combo tools, then delayed/control tools. Requirements are authored in YAML; no duplicated tier enum or separate server table exists. All optional purchases still cost 5 MP. These gates govern acquisition, not combat potency: no damage/heal/timing balance values changed.
+
+Player and character-details spell lists include `level_requirement`, `meets_level_requirement` and `can_learn` (unowned + level met + sufficient MP). Available-spell lists expose the same eligibility; `can_afford` remains strictly an MP test. Starter responses include `level_requirement`. Previously owned optional spells remain learned/equippable below their new acquisition gate; no ownership migration or deletion is required.
+
+`Character.LearnSpell` reads the server catalog price and locks the persistent character row before checking database level and MP. Caller-supplied level/cost cannot bypass acquisition. Insert and MP spending remain atomic and duplicate/concurrent purchases cannot overspend. Character creation independently rejects any primary, non-starter or starter above level one, even before persistence.
+
+Fallback persona generation applies current gates. Existing persisted persona ownership is grandfathered by `ValidateOwned` during pool loading/acquisition and match setup; all identity, stat/skill, MP budget and primary-path checks remain active. This prevents the new catalog from invalidating an existing fallback pool at startup.
+
+Verification includes real PostgreSQL handler tests for ordinary/owned lists, rejected forged level/cost learning requests and exact-level learning; transaction tests cover below/at 5/10/16 boundaries, stale in-memory level, rollback, duplicate requests, concurrent overspending and retained ownership. Tests use isolated schemas in a disposable test database; they do not prove an updated plugin has been deployed to Nakama.
 
 ## Field usage audit (2026-09-16)
 
@@ -104,8 +125,9 @@ One spell per file, one YAML document per file, `.yaml` or `.yml`, walked recurs
 | `assets` | object | optional icon/vfx/sound descriptions |
 | `casting_time`, `recovery_time`, `travel_time` | float seconds | 0–180, multiples of 0.1 |
 | `mana_cost`, `magic_point_cost` | int | ≥ 0; explicit, zero is a real cost |
-| `level_requirement` | int | ≥ 1 |
-| `standard` | bool | omitted = false |
+| `level_requirement` | int | 1–30; primary and starter spells must be 1 |
+| `primary` | bool | **must be written explicitly**; identifies the two permanent primary spells |
+| `standard` | bool | compatibility marker; must equal `primary` |
 | `starter` | bool | **must be written explicitly** in every file |
 | `effects[]` | list | `type`, `value`, `duration`, `delay`, `interval`, `target` |
 
@@ -118,7 +140,7 @@ One spell per file, one YAML document per file, `.yaml` or `.yml`, walked recurs
 - Effect kinds must be one of the 11 in the table below.
 - Effect shape: `heal`, `cure`, `regeneration`, `shield`, `reflection` must target `self`; all others must target `enemy`. `poison`/`regeneration`: duration > 0, interval > 0, interval < duration, delay = 0. `paralyze`/`shield`/`reflection`: duration > 0, interval = delay = 0. `delayed_hex`: delay > 0, duration = interval = 0. Instant kinds: duration = interval = 0.
 - Exactly 2 standard spells and they must be `magic_arrow` and `mirror_reflection`; a standard spell cannot be a starter and must have `magic_point_cost: 0`.
-- Exactly 6 starter spells.
+- Exactly 6 starter spells; every starter has `level_requirement: 1`.
 
 ## Loader and registry
 
@@ -126,10 +148,10 @@ Cleanup 2026-09-08 removed unused `LoadFromFile`, `Add`, `GetByLevelRequirement`
 
 - Startup loads `/nakama/spells` (`server:modules/spell_system/init.go:36`). Docker Compose mounts `./data/spells` there (`server:docker-compose.yml:56`); the image copies it (`server:Dockerfile:21`). Replace the whole directory when deploying.
 - `LoadFromDirectory` parses all files, validates the set, and only then swaps the registry (`server:modules/spell_system/registry.go:136-141`).
-- Global registry `spell_system.Spells`. API: `Get`, `Exists`, `GetAll` (sorted by id), `GetStarter`, `GetStandard` (sorted by id, stable bar order), `IsStandard` (`server:modules/spell_system/registry.go:20-59`, `server:modules/spell_system/standard.go`).
+- Global registry `spell_system.Spells`. API: `Get`, `Exists`, `GetAll` (all 14, sorted by id), `GetOptional` (12 ordinary spells), `GetStarter`, `GetStandard` (sorted by id, stable bar order), `IsStandard` (`server:modules/spell_system/registry.go:20-59`, `server:modules/spell_system/standard.go`).
 - Millisecond helpers for client payloads: `CastTimeMillis`, `RecoveryTimeMillis`, `TravelTimeMillis` (`server:modules/spell_system/spell.go:42-52`). Character details report these in ms; the catalog RPCs return seconds.
 
-RPCs registered by the module (`server:modules/spell_system/init.go`): `get_spell_lore`, `get_entry_spells` (returns the six starters), `get_my_spells` (owned + both standards, optional `school`/`limit`), `get_spell`, `get_spell_details_yaml`. Payload shapes are in [[rpcs]].
+RPCs registered by the module (`server:modules/spell_system/init.go`): `get_spell_lore`, `get_entry_spells` (returns the six starters), `get_my_spells` (owned optional spells, optional `school`/`limit`), `get_spell`, `get_spell_details_yaml`. Payload shapes are in [[rpcs]].
 
 ## Effect kinds and handlers
 
@@ -172,7 +194,7 @@ The per-tick order in which the game phase drives the queue is documented in [[p
 
 ## Adding a spell
 
-1. Copy an existing YAML in `data/spells/`, choose a unique stable id, set `starter` explicitly, set `nature` and a unique `incantation` (see [[spell-lore]]).
+1. Copy an existing YAML in `data/spells/`, choose a unique stable id, set `primary` and `starter` explicitly, set `nature` and a unique `incantation` (see [[spell-lore]]).
 2. Keep the invariants: exactly two standards (`magic_arrow`, `mirror_reflection`) and exactly six starters.
 3. A new combination of existing effect kinds needs data and scenario tests. A new effect kind additionally needs a handler, a line in `RegisterAllHandlers`, an entry in `legalEffects`, a shape rule in `validateEffectShape`, and `isStatus` if it is a status.
 4. Bump `CatalogVersion` when balance values change and re-run the balance baseline (below).
@@ -203,7 +225,7 @@ Recorded run (catalog `duel_v2.1`, 2026-09-06, seed 42, 1000 duels, from `balanc
 | Timeouts | 404 |
 | Interrupted casts | 2082 |
 
-All 14 spells were cast. The historical `duel_v2.1` run above is not a balance baseline for current `duel_v2.4`; formulas and race resources now differ. The 40% timeout rate is an open balance concern; bot results do not establish competitive balance. Remaining balance work is tracked in [[2026-09-05-spell-system-redesign]].
+All 14 spells were cast. The historical `duel_v2.1` run above is not a balance baseline for current `duel_v2.5`; formulas and race resources now differ. The 40% timeout rate is an open balance concern; bot results do not establish competitive balance. Remaining balance work is tracked in [[2026-09-05-spell-system-redesign]].
 
 ## Source of truth in code
 

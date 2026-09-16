@@ -5,13 +5,13 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-15
-verified: 2026-09-15
+updated: 2026-09-16
+verified: 2026-09-16
 tags: [hexbane, server, progression, races, stats, skills, combat]
 sources: ["server:docs/progression/overview.md", "server:docs/progression/race.md", "server:docs/progression/stats.md", "server:docs/progression/skills.md", "server:docs/progression/progression.md", "server:docs/progression/combat.md", "server:docs/progression/match-integration.md", "server:docs/progression/modifiers.md", "server:docs/superpowers/specs/2026-09-02-race-system-redesign-design.md", "server:docs/superpowers/plans/2026-09-02-race-system-redesign.md", "client:docs/Server/progression/overview.md", "client:docs/Server/progression/race.md", "client:docs/Server/progression/stats.md", "client:docs/Server/progression/skills.md", "client:docs/Server/progression/progression.md", "client:docs/Server/progression/combat.md", "client:docs/Server/progression/match-integration.md", "client:docs/Server/progression/races_seed.sql"]
 ---
 
-# Character progression — duel_v2.4
+# Character progression — duel_v2.5
 
 User-approved rules implemented on 2026-09-08. This note describes checked-in/workspace code and migrations, not a deployed database. Protocol remains 2. Combat calculations are in [[combat-stat-rules]], primary graphs in [[spell-system]], and requests in [[rpcs]].
 
@@ -60,6 +60,14 @@ Other levels grant no MP. Available MP remains earned minus spent; learning a sp
 At character cap, continued result XP fills `study_xp` (0–499): each 500 grants 5 MP and carries overflow. On the match reaching cap only XP beyond 6177 enters study; the final level's MP still pays. No extra stat points or levels are granted. Multiple study thresholds can pay in one atomic settlement, even when every skill is capped.
 
 Meditation, Spell Resistance and Magery each retain their individual 100 cap. They keep growing after character level 30. Each attained 25/50/75/100 threshold grants 5 MP once (maximum 60 across all three skills). `skill_mp_mask` uses bits 0–3 Meditation, 4–7 Spell Resistance, 8–11 Magery, in ascending threshold order. Reset/respec must not clear the mask. Skill training is bounded per action and at +5 per skill per match; see [[combat-stat-rules]].
+
+## Optional spell acquisition levels (HEX-29, 2026-09-16)
+
+`level_requirement` in the spell YAML is authoritative: level 1 unlocks the six starters (barrier, cleanse, firebolt, heavy_bolt, mend, poison); level 5 regeneration/dispel; level 10 greater_heal/consume_venom; level 16 delayed_hex/paralysis. Every optional spell remains 5 MP. Unlocking a level permits purchase; it grants neither ownership nor extra draft slots automatically.
+
+The learning mutation locks the character row, checks persistent level and MP, derives price from the catalog, then grants and spends in one transaction. UI metadata `meets_level_requirement` and `can_learn` describes the current eligibility, but the server enforces it again. Existing owned optional spells remain available for drafting regardless of the new gate. Creation continues to pick 3/4 of the six level-one starters and cannot submit a gated spell.
+
+Magic Arrow and Mirror Reflection explicitly have `primary: true`, with the legacy `standard` flag retained. Both remain permanently equipped outside optional slots and are developed through primary progression. Ordinary spellbook/player lists exclude them; full combat/tutorial catalogs retain them. See [[spell-system]] for the complete mapping and validation evidence.
 
 ## Draft slots and primary entitlement
 

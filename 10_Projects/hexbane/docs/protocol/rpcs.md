@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-15
-verified: 2026-09-15
+updated: 2026-09-16
+verified: 2026-09-16
 tags: [hexbane, protocol, rpc, nakama]
 sources: ["server:RPCs.md", "server:docs/API-REFERENCE-v2.md", "server:docs/match/api-reference.md", "server:docs/progression/client/menu-rpc-requirements.md", "client:docs/Server/progression/menu-rpc-requirements.md", "server:docs/client/client-implementation-prompt.md"]
 ---
@@ -23,7 +23,7 @@ registered from `server:modules/main.go` via each module's `InitModule`. Unless 
   `learn_spell`). Matchmaking, match actions, result recovery and `tutorial` can return real gRPC errors. The gRPC error-code
   table in the old API-REFERENCE-v2 does not describe any other RPC.
 - **Version stamp**: spell RPCs and `get_character_details`/`tutorial` embed
-  `{"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.4"}`
+  `{"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.5"}`
   (`server:modules/spell_system/version.go:3-19`). The client supports server2.3 and local tutorial2.2; it rejects other values
   (`client:Core/Match/DuelV2.cs:8-12`) in `get_player_spells` and `tutorial` only.
 
@@ -144,9 +144,9 @@ Both mutations (`set_primary_path`, `respec_stats`) lock the character row and r
 
 ### `get_starter_spells`
 - `init.go:33`, handler `rpc.go:375`. Client: `client:Application/Modules/Spell/Queries/GetEntrySpells/GetEntrySpellsQueryHandler.cs:39`.
-- Request ignored. Returns every catalog spell with `starter: true` (6 in `duel_v2.4`: barrier, cleanse, firebolt, heavy_bolt, mend, poison):
+- Request ignored. Returns every catalog spell with `starter: true` (6 in `duel_v2.5`: barrier, cleanse, firebolt, heavy_bolt, mend, poison):
   ```json
-  {"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.4","success":true,
+  {"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.5","success":true,
    "message":"Starter spells retrieved successfully",
    "spells":[{"nature":"ember","incantation":["Tal","Rath"],"id":"firebolt","name":"Firebolt",
               "description":"...","school":"Fire","mana_cost":20,"cast_time":1.5,"icon_path":"firebolt"}]}
@@ -159,7 +159,7 @@ Both mutations (`set_primary_path`, `respec_stats`) lock the character row and r
 - Request: ignored (client sends `character_id`/`category`; server uses the session user).
 - Response:
   ```json
-  {"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.4","success":true,"message":"...",
+  {"combat_protocol":2,"ruleset_id":"duel_v2","catalog_version":"duel_v2.5","success":true,"message":"...",
    "spells":[{"nature","incantation","standard":false,"starter":true,"recovery_time":1.0,"travel_time":0.4,
               "id","name","description","school","mana_cost":20,"cast_time":1.5,"icon_path",
               "is_learned":true,"magic_points_cost":5,"level_requirement":1}],
@@ -176,11 +176,11 @@ Both mutations (`set_primary_path`, `respec_stats`) lock the character row and r
 - `init.go:15`, handler `rpc.go:75`. Client: `LearnSpellCommandHandler.cs:37-44`.
 - Request `{"spell_id":"heavy_bolt"}` (client also sends `character_id`, ignored).
 - Checks in order: spell exists → not already learned → not standard → `level >= level_requirement` → `available_magic_points >= magic_point_cost` → insert + `magic_points_spent += cost` atomically (`db.go:248-293`).
-- Response `{"success":true,"error":"","spell_id":"heavy_bolt","magic_points_remaining":0}`; on failure `"error"` is one of `Invalid request format`, `Authentication required`, `Database error`, `No character found`, `Spell not found`, `Spell already learned`, `Standard spells are already known`, `Level requirement not met`, `Not enough magic points`, `spell already learned`, `not enough magic points`. No slot check: learning is bounded by MP only.
+- Response `{"success":true,"error":"","spell_id":"heavy_bolt","magic_points_remaining":0}`; on failure `"error"` is one of `Invalid request format`, `Authentication required`, `Database error`, `No character found`, `Spell not found`, `Spell already learned`, `Standard spells are already known`, `Level requirement not met`, `Not enough magic points`, `spell already learned`, `not enough magic points`. No slot check: new learning requires both the catalog level and available MP. The persistence operation locks the character row and rechecks the database level and catalog price; caller-provided levels/prices cannot authorize a purchase.
 - Every non-standard spell costs `magic_point_cost: 5` in the catalog; standards cost 0 (`server:data/spells/*.yaml`).
 
 ### `get_available_spells`
-- `init.go:21`, handler `rpc.go:217`. No client caller. Non-standard catalog spells with `{spell_id,name,magic_point_cost,can_afford,already_learned}` under `spells`, plus version stamp.
+- `init.go:21`, handler `rpc.go:217`. No client caller. Non-primary catalog spells with `{spell_id,name,magic_point_cost,level_requirement,meets_level_requirement,can_learn,can_afford,already_learned}` under `spells`, plus version stamp.
 
 ## Spell system module (`server:modules/spell_system/init.go`)
 
@@ -307,3 +307,12 @@ Concurrent retries serialize under a transaction advisory lock. Once committed t
 ## Cosmetic collection (HEX-23, 2026-09-15)
 
 Authenticated `get_collection {}` and `equip_cosmetic {kind,item_id}` return the server-owned catalog, active ownership and equipped presentation keys. The client sends stable item IDs, never ownership claims or resource paths. Empty item/default resets a slot. There is no client-accessible purchase/grant RPC. Full contract and future verified-payment boundary: [[commerce]].
+
+
+## Primary separation and spell unlocks (HEX-28/29, 2026-09-16)
+
+Current catalog is `duel_v2.5` (combat protocol 2/ruleset unchanged). Spell YAML explicitly defines `primary`; `standard` is retained and validated to agree. Ordinary `get_player_spells`, `get_available_spells`, `get_spellbook`, `get_my_spells` and character-details spellbook omit primary spells. `get_spell`, tutorial and match catalogs retain both primaries for combat. Primary development remains `get_primary_progression` / `set_primary_path`.
+
+Player/details spell entries add `primary`, `meets_level_requirement`, `can_learn`; the starter response adds `level_requirement`. Level1: barrier, cleanse, firebolt, heavy_bolt, mend, poison; level5: regeneration, dispel; level10: greater_heal, consume_venom; level16: delayed_hex, paralysis. Optional spells still cost5 MP. Owned spells remain available even if their new acquisition requirement exceeds the owner's current level. Server creation/new bot generation validate eligibility; persisted player/bot ownership is preserved.
+
+Learning locks persistent character level/MP and derives price from the catalog in the same transaction as ownership/grant. Forged/stale request data cannot bypass the gate or price; duplicate/concurrent spending is covered by PostgreSQL tests. No HTTP/socket deployment validation was performed in this task.

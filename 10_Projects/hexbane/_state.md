@@ -58,6 +58,8 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+- **2026-09-16 — Primary tree and optional-spell acquisition tiers (HEX-25/28/29).** Primary spells have an explicit YAML identity and a dedicated tree/detail UI; optional learning unlocks at levels1/5/10/16. Existing owned spells remain usable. **Why:** preserve the six viable starter choices, reveal stronger support/burst/control options during levelling, and separate permanent-primary development from purchases. Authority stays in the server transaction; changing request level or price cannot bypass requirements. Reference artwork guides composition, not new combat effects or currencies.
+
 - **2026-09-16 — Progression tutorial and compact Summary explanations (HEX-26/27).** Onboarding confirms only a full allocation; normal partial allocation remains available. The spellbook stays interactive until purchase starts. Skills display percentages; one inline explanation opens at a time. **Why:** the user requested deliberate point/spell choices and readable explanations on mobile without stacked tooltips.
 
 - **2026-09-16 — Fixed moderate AI for now.** Client starts explicit AI at difficulty 3 (Normal), with no selector or level labels. Backend profiles remain available. **Why:** user requested automatic moderate difficulty and removal of the level from UI.

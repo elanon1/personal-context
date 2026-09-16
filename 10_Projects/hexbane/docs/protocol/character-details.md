@@ -30,7 +30,7 @@ that trio only when this RPC is unreachable (`client:Game/ScenesV3/CharacterDeta
 
 ```json
 {
-  "combat_protocol": 2, "ruleset_id": "duel_v2", "catalog_version": "duel_v2.4",
+  "combat_protocol": 2, "ruleset_id": "duel_v2", "catalog_version": "duel_v2.5",
   "combat_ruleset": "duel_v2",
   "stat_bonuses_active": true,
   "success": true, "message": "",
@@ -74,9 +74,9 @@ Errors come back as `{"success":false,"message":"…","modifiers":[],"racial_tra
 | `attributes` | Derived max HP/mana and passive mana/HP per second, rounded for display; formulas in [[combat-stat-rules]]. |
 | `modifiers` | `cast_speed`, `dodge`, `spell_power` (Magery percent), `stat_spell_power` (INT percent), `healing` (healing/shield percent), skill/kinetic/mind resistance and `meditation_regen`; typed resistance is conditional on spell metadata. |
 | `racial_traits` | Non-neutral slot, cast, school, multiplier, dodge and damage-stat traits plus per-spell resistances, derived from race. |
-| `spellbook.spells` | The whole 14-spell catalogue, sorted by school → level requirement → id (`details.go:325-336`), so locked entries render. |
+| `spellbook.spells` | The 12 optional spells, sorted by school → level requirement → id; primary spells are served through primary progression (`details.go:325-336`), so locked entries render. |
 | `spellbook.spells[].cast_time`, `recovery_time`, `travel_time` | Milliseconds. Cost, cast and recovery are personalized from resolved primary config plus combat profile; travel remains base. Public catalog RPCs expose base values. |
-| `spellbook.spells[].is_learned` | From `character_spells`; **standard spells are forced `true`** (`details.go:344-346`). `is_equipped` mirrors `is_learned`: there is no loadout outside a match. |
+| `spellbook.spells[].is_learned` | From `character_spells`; **primary spells are excluded from this list** (`details.go:344-346`). `is_equipped` mirrors `is_learned`: there is no loadout outside a match. |
 | `spellbook.spells[].magic_points_cost` | `magic_point_cost` from YAML verbatim (`EffectiveMagicPointCost`, `spell.go:36-38`): 5 for every non-standard spell, 0 for standards. The old "5 when unset" fallback no longer exists. |
 | `spellbook.spells[].learned_at_level` | Character level when learned; `0` if not learned. |
 | `spellbook.spells[].standard` | `true` for `magic_arrow`, `mirror_reflection`. |
@@ -130,3 +130,8 @@ Skill rows show the server skill value as a percentage and a slim 0–100 progre
 Tapping a skill, attribute or modifier opens a small inline explanation; tapping it again collapses it, and opening another closes the previous explanation across all three sections. Rows support keyboard activation and distinguish taps from scroll drags. Explanations use the current stat/skill values and verified combat formulas from [[combat-stat-rules]], including soft stats, caps, racial coefficients and training conditions. Racial traits explicitly explain when the value is fixed rather than trainable. Unknown server modifier IDs show their reported source without inventing a formula. Display values remain server authoritative; no response shape changed.
 
 `CharacterDetailScreen.SummaryHelp.cs` owns presentation/explanations. The offline fallback now labels active meditation as additional mana/s using the same coefficient as the combat profile, rather than calling the skill contribution “Meditation Speed”. See [[client-tutorial]] for the matching onboarding and verification boundaries.
+
+
+## Spell list revision (HEX-28/29, 2026-09-16)
+
+`spellbook.spells` excludes both primaries and exposes `primary`, `level_requirement`, `meets_level_requirement`, `can_learn` for ordinary learning. Primary spells appear only in the Primary tab, including when an older response identifies them via `standard` or canonical IDs. Summary's learned list also excludes them. The Spellbook shows level requirements on cards and a disabled Learn button with the unlock level while keeping descriptions readable. Owned high-level spells stay owned/usable; gates apply to new acquisition. The progression tutorial's affordable-choice check also checks level eligibility. Full contract and tier mapping: [[rpcs]].

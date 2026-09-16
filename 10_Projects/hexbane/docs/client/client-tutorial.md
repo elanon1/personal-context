@@ -119,3 +119,8 @@ The spell lesson leaves the scrollable spellbook and description undimmed and in
 Summary now has an explicit skills step (Meditation through meditation, Magery through effective spell damage, Spell Resistance through receiving it) followed by the final attributes/modifiers step. These scroll into view and remain explorable via the HEX-27 inline explanations. A compact docked guidance banner reserves its own space; the unused XP/back header is hidden during the lesson. No RPC or server tutorial-state contract changed. Replay remains isolated from the real character.
 
 Validation: CharacterDevelopmentVerification initially failed on advancing after one point; it now passes full allocation/undo/confirmation, real mouse and synthetic touch spell reselection, reachable undimmed descriptions, percentage skills, one-open accordion across all sections, final summary and replay isolation. Rendered checks: 960×540 and 960×432; the latest compact-banner render was inspected at 960×432. Core Tutorial tests pass. Live RPC latency and physical-device gestures were not verified.
+
+
+### Level-gated optional spells (HEX-28/29, 2026-09-16)
+
+Progression replay and live spell choice now exclude primary spells from the normal spell grid and require the catalog `level_requirement` in addition to MP. If nothing is eligible, guidance lets the player keep MP and proceed to Summary. Combat tutorial retains the complete catalog, including Magic Arrow/Mirror Reflection. Existing HEX-26 allocation, reselection, descriptions and Summary steps remain unchanged.

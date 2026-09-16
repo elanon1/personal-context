@@ -202,3 +202,12 @@ Dashboard Shop opens the scrollable collection. Titles, ownership, equipped stat
 Summary skills use percentages with thin progress bars, without artificial skill levels. Skill, modifier and attribute rows have a +/− affordance and a 15px wrapping inline explanation with a short fade; one explanation can be open across the entire Summary. Pointer drags retain scroll behavior.
 
 Progression guidance uses a compact banner with reserved space above the tabs. XP/back controls are hidden for this lesson to preserve vertical room on landscape phones. Spellbook browsing and descriptions remain undimmed; skills and the final attributes/modifiers overview receive separate steps. The combat tutorial keeps its existing floating overlay mode. Contracts and acceptance checks: [[client-tutorial]], [[character-details]].
+
+
+## Primary mastery tree (HEX-25, 2026-09-16)
+
+The Primary tab replaces the previous horizontal tier buttons and level ladder with one active primary tree and a separate detail panel. A dark, gold-bordered selector switches Magic Arrow/Mirror Reflection. The left tree has six vertical tiers with character-level labels and connections drawn from server `next` edges. Selected path links glow gold; future nodes remain inspectable and show locks. Original SVG rune icons distinguish tempo, economy, power, duration, reflection and capstone effects. Both tree and details scroll independently, with Save/Revert kept below the workspace.
+
+Inspecting a node does not mutate the path. The detail panel shows its actual effect, current saved build, candidate preview and eligibility. Choose explicitly changes a contiguous local path and discards later choices; Save persists it without MP cost. Only one save can be in flight across both primaries, and a response preserves the other primary's unsaved draft. The design follows the HEX-25 image's tree/detail composition without inventing its example mechanics or currencies.
+
+`PrimaryTree` keeps its own canvas extent and at least340px width so the global compact pass cannot clip later tiers or overlap sibling touch targets. Godot acceptance uses a fixture exported from server primaryResponse, checks touch inspection/choice/locks/revert, delayed save isolation, ordinary list filtering and level gates. Rendered at960×432,960×540 and1360×612; physical-device validation remains open.
