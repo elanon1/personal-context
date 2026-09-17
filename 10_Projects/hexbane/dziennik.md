@@ -980,3 +980,7 @@ Dokumentacja: `docs/protocol/rpcs.md`, `docs/server/{social,database,notificatio
 
 Nie zrobione, świadomie: brak commita/pusha w obu repo (praca leży na `feat/duel-v2-client` i `main`), migracje 12–13 nie wdrożone na produkcję, push bez poświadczeń i bez zbudowanego AAR/xcframework, brak renderu ekranu wyboru postaci, dialogu skrzynki i tooltipu na telefonie, brak testu dwóch klientów Godot w jednym lobby po akceptacji. Uwaga: folder `10_Projects/hexbane/` w repo vaulta jest w całości nieśledzony (`??`) — historia notatek nie jest wersjonowana mimo reguły.
 
+
+## 2026-09-17 — Linki społecznościowe przeniesione do karty newsów
+
+Na prośbę Filipa wiersz Discord / Donate (dawniej „Buy me a coffee", ten sam URL) przeniesiony z `Main/Layout` na koniec `NewsContent`, pod `NewsScroll` (lista ma expand-fill, więc wiersz jest przyklejony do dołu karty). `BacklogClientVerification` szuka teraz `NewsContent` przez `FindChild` (tryb kompaktowy przepina węzły) i sprawdza ostatni wiersz, pozycję pod listą i etykiety; PASS w 960×432 / 960×540 / 1360×612. Po renderze (`/tmp/backlog-dashboard-*.png`) etykiety zlewały się, więc odstęp 16 → 48 px i cienki `HSeparator` (alfa 0,35) nad wierszem; ponowny render 1360×612 i 960×432 w porządku. Notatka `docs/client/design-system.md` i komentarz w HEX-33 zaktualizowane. Bez commita.
