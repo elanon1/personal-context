@@ -148,6 +148,18 @@ unavailable" report was a build from an export made before the Game Center code 
 AOT framework's UTF-16 strings are the quickest proof (`python3 -c` with `.encode('utf-16-le')`
 on `hexbane/dylibs/ExportRelease/hexbane_aot.xcframework/ios-arm64/hexbane.framework/hexbane`).
 
+**A long-running editor exports without the Game Center bridge (2026-09-17 evening).** The
+GameKit bridge is added by `IOSExportPlugin` inside `addons/GodotPlayGameServices/export_plugin.gd`,
+and an EditorPlugin is instantiated once when the editor starts. An editor launched before that
+script changed (here: editor up since 2026-09-16 15:52, script edited 19:46) keeps the old instance,
+so *Project → Export* silently produces a project with no `HexbaneGameCenter.xcframework`, zero
+`GameKit` references in `project.pbxproj` and only `hexbane.framework` under the app's `Frameworks/`.
+On the phone `GameCenterSignIn.NativeStart()` then throws `DllNotFoundException`; since 2026-09-17
+that is caught and shown as *Game Center is not included in this build*, before that the sign-in
+screen hung on its spinner with no error and Nakama never saw an authenticate call. Fix: restart the
+editor (or use the headless CLI export below, which always runs the current plugin script), then
+check the export dir for `HexbaneGameCenter.xcframework` before opening Xcode.
+
 Turn off **Export Project Only** and restore Debug Code Sign Identity to blank /
 `Apple Development` when a signed device IPA is wanted.
 
