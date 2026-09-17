@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-16
-updated: 2026-09-16
-verified: 2026-09-16
+updated: 2026-09-17
+verified: 2026-09-17
 tags: [hexbane, client, ios, auth, game-center, apple]
 sources: ["client:export_presets.cfg", "client:hexbane.csproj", "server:modules/auth"]
 ---
@@ -50,13 +50,39 @@ build, open `hexbane.xcodeproj`, select the app target, add **Game Center** unde
 Capabilities**, select the correct team, and let Xcode refresh the profile. Godot's current iOS
 preset/export does not yet add a Game Center client bridge.
 
-The native client work still required is:
+The native client bridge is implemented (2026-09-16/17) and verified on a physical iPhone 15 Pro Max
+(iOS 18.1.1) on 2026-09-17: silent sign-in at launch → Nakama `authenticategamecenter` accepted →
+new account → `TutorialScreen`. Pieces:
 
-- call `GKLocalPlayer.authenticateHandler` at startup;
-- handle the returned view controller on the main thread when Apple asks for user interaction;
-- after authentication, obtain the Game Center player identity and the authentication payload required by Nakama;
-- call Nakama's `AuthenticateGameCenterAsync` with the player ID, bundle ID, timestamp, salt, and signature;
-- cache the Nakama session, not the Game Center private material.
+- `addons/GodotPlayGameServices/ios/HexbaneGameCenter.mm` — Objective-C++ polling bridge
+  (`hexbane_game_center_start/status/...`). Rebuild with `build_game_center.sh` next to it
+  (device + Apple Silicon simulator slices → `HexbaneGameCenter.xcframework`); the
+  `IOSExportPlugin` in `export_plugin.gd` embeds the xcframework and links GameKit.
+- `Application/Authentication/Social/GameCenterSignIn.cs` — `DllImport` of the embedded
+  framework, 30 s poll; `GoogleAuthGateway.AuthenticateGameCenter` calls Nakama's built-in
+  `AuthenticateGameCenterAsync`.
+- The Godot export preset carries the `com.apple.developer.game-center` entitlement; Xcode
+  automatic signing (team `4JC7VY2984`) produced a profile with it.
+
+Three things that had to be exactly right (each cost one device round-trip):
+
+1. **Signature API ↔ player id.** Apple signs `teamPlayerID` in
+   `fetchItemsForIdentityVerificationSignature` (iOS 13.5+). Sending `gamePlayerID` with that
+   signature, or using the deprecated `generateIdentityVerificationSignature` with
+   `gamePlayerID`, fails server-side with `gamecenter check error: signature mismatch:
+   crypto/rsa: verification error` (Nakama log) → client sees 401 *Could not authenticate
+   GameCenter profile*. The client sends `teamPlayerID` (`T:_…`).
+2. **SDK argument order.** `AuthenticateGameCenterAsync(bundleId, playerId, publicKeyUrl, salt,
+   signature, timestamp, username, create, …)` — all strings, so the compiler cannot help. The
+   call uses named arguments. Wrong order surfaced as 400 `invalid value for int64 field
+   timestampSeconds: "https://static.gc.apple.com/public-key/gc-prod-12.cer"`.
+3. **Re-entry.** GameKit calls `authenticateHandler` on state changes only; setting it again
+   for an already authenticated player never fires. The bridge checks `isAuthenticated`
+   first and goes straight to the signature, otherwise the manual button timed out with
+   *Game Center did not respond*.
+
+No username is sent (same as the Google path): Nakama generates one, and a Game Center alias is
+neither unique nor guaranteed to pass Nakama's username rules.
 
 Do not treat `GKLocalPlayer.isAuthenticated` as proof of a Nakama session. It only proves the Apple
 platform identity; the server authentication call still has to succeed.

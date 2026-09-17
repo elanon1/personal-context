@@ -117,6 +117,37 @@ With every JSON path migrated, the bot duel still failed on iOS: **Matchmaking â
 
 ## Development signing (physical devices only)
 
+Working recipe (2026-09-17, Xcode 26.6, iPhone 15 Pro Max / iOS 18.1.1). Keep the preset as it is
+(Export Project Only, debug identity `-`, team id set); Godot's generated project is *Manual*
+signing, so override on the command line instead of editing the pbxproj â€” every re-export
+overwrites it and any team/automatic-signing choice made in the Xcode UI is lost:
+
+```bash
+GODOT=/Applications/Godot_mono47.app/Contents/MacOS/Godot
+$GODOT --headless --path . --export-release iOS ../export/ios/hexbane.xcodeproj
+cd ../export/ios
+xcodebuild -project hexbane.xcodeproj -scheme hexbane -configuration Release -sdk iphoneos \
+  -destination 'generic/platform=iOS' -derivedDataPath DerivedData -allowProvisioningUpdates \
+  CODE_SIGN_STYLE=Automatic DEVELOPMENT_TEAM=4JC7VY2984 CODE_SIGN_IDENTITY="Apple Development" \
+  PROVISIONING_PROFILE_SPECIFIER= build
+xcrun devicectl list devices                      # CoreDevice UUID of the phone
+xcrun devicectl device install app --device <uuid> DerivedData/Build/Products/Release-iphoneos/hexbane.app
+xcrun devicectl device process launch --terminate-existing --device <uuid> com.dev.hexbane
+```
+
+Launch fails with *device was not, or could not be, unlocked* while the phone is locked. The
+scheme's Run/Archive configuration is Release (server = prod, no Local option).
+
+Reading the app's log on the phone without Xcode: `pip install pymobiledevice3` in a venv, then
+`pymobiledevice3 syslog live -m hexbane` over USB (works on iOS 18 without a tunnel). Godot's
+`GD.Print` lines appear as `hexbane{hexbane}[pid] <INFO>`, errors as `<ERROR>`; GameKit's own
+diagnostics are under `GameCenterFoundation`/`GameCenterUICore` in the same process.
+
+**Always check the export is newer than the code.** The 2026-09-17 "Automatic sign-in was
+unavailable" report was a build from an export made before the Game Center code existed; the
+AOT framework's UTF-16 strings are the quickest proof (`python3 -c` with `.encode('utf-16-le')`
+on `hexbane/dylibs/ExportRelease/hexbane_aot.xcframework/ios-arm64/hexbane.framework/hexbane`).
+
 Turn off **Export Project Only** and restore Debug Code Sign Identity to blank /
 `Apple Development` when a signed device IPA is wanted.
 

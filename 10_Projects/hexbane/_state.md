@@ -58,6 +58,8 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 
 ## Decisions log
 
+- **2026-09-17 — Game Center: `teamPlayerID` + `fetchItemsForIdentityVerificationSignature`, bez username.** **Why:** Apple podpisuje `teamPlayerID` tym API, a Nakama weryfikuje podpis nad playerId+bundleId+timestamp+salt — z `gamePlayerID` weryfikacja RSA pada; username pomijamy jak w Google, bo alias GC nie jest unikalny ani zgodny z regułami Nakamy.
+
 ### 2026-09-16 — PGS platform authentication alongside the existing account
 
 Enable Play Games SDK only for the configured Android Play package; retain Google/email Nakama authentication as the primary account. **Why:** current Google guidance separates platform identity from in-game identity; replacing the existing provider with the legacy PlayGamesSignIn flow could break account continuity. The supplied server OAuth ID proved to be the existing Desktop client, so it was not configured as a server credential; server API access and a real Web client remain deferred until a backend PGS feature needs them.
