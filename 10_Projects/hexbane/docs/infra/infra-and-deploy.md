@@ -5,8 +5,8 @@ area: infra
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-16
-verified: 2026-09-16
+updated: 2026-09-17
+verified: 2026-09-17
 tags: [hexbane, infra, deploy, docker, helm, argocd, ci]
 sources: ["vault:10_Projects/hexbane/infra-i-deploy.md", "server:Makefile", "server:docker-compose.yml", "server:docker-compose.debug.yml", "server:docker-compose.prod.yml", "server:Dockerfile", "server:Dockerfile.debug", "server:local.yml", "server:.github/workflows/docker-publish.yml", "server:helm/hexbane/**", "server:deploy/argocd/*", "server:docs/spell_system/database-v2.md", "client:deploy.sh", "client:CLAUDE.md", "client:export_presets.cfg"]
 ---
@@ -38,7 +38,16 @@ Image name: `ghcr.io/elanon1/hexbane-server` (tags `latest` on default branch, b
 
 ## CI (`.github/workflows/docker-publish.yml`)
 
-Triggers: push to `main`, tags `v*` / `release-*`, `workflow_dispatch`. Jobs: `test` (Go 1.24.3: `go test ./...`, `go test -race` on match/spell_system/duel-sim, `go vet`) → `docker` (buildx, `linux/amd64`, GHA cache, push to ghcr with `GITHUB_TOKEN`). Tests gate the push (the 2026-08-31 note said there were none; that is no longer true).
+Triggers: push to `main`, tags `v*` / `release-*`, `workflow_dispatch`. Jobs (since 2026-09-17):
+
+- `test` (Go 1.24.3: `go test ./...`, `go test -race` on match/spell_system/duel-sim, `go vet`).
+- `migrate-check` (parallel to `test`): fresh `postgres:17-alpine` service → `docker run heroiclabs/nakama:3.27.0 migrate up` → golang-migrate `v4.18.3` `up` on `db/migrations` → asserts `migrate version` equals the highest `NNNNNN_*.up.sql` number. Same two steps the prod initContainers run, so a broken SQL file fails the pipeline instead of crashlooping the new pod. `NAKAMA_IMAGE` / `MIGRATE_VERSION` in the workflow `env` must match the `Dockerfile`.
+- `docker` (needs both): buildx, `linux/amd64`, GHA cache, push to ghcr with `GITHUB_TOKEN`; tags `latest`, branch, git tag, `sha-<7>`.
+- `deploy` (needs `docker`, only `push` to `main`): checks out `elanon1/argocd` with the deploy key from secret `ARGOCD_DEPLOY_KEY`, rewrites `image.tag` in `gitops/argo/apps/hexbane.yaml` to `sha-<7>` (perl on the `- name: image.tag` / `value:` pair), commits as `deploy(hexbane): <server commit subject> (sha-…)` from user `hexbane-ci`, pushes with up to 3 rebase retries. No-op (green) when the tag is already pinned. Job-level concurrency group `hexbane-gitops-deploy` serialises pushes.
+
+**Auto-deploy flow:** push to `main` → tests + migration gate → image in GHCR → GitOps commit → Argo CD automated sync (git poll, ~3 min) → new pod runs `migrate-nakama` + `migrate-custom` initContainers → readiness → old pod terminated. Rollback = revert the `deploy(hexbane)` commit in `elanon1/argocd` (Argo re-syncs the previous tag; schema stays migrated, so down-migrations are a manual decision). Manual deploy still works the same way (edit `image.tag`, push). Tags `v*` only build the image.
+
+**Secrets for the deploy job (names only):** GitHub *Deploy key* with write access on `elanon1/argocd` (public half) and repo secret `ARGOCD_DEPLOY_KEY` on `elanon1/hexbane-server` (private half, ed25519, generated 2026-09-17). Without the secret the `deploy` job fails; `test`/`migrate-check`/`docker` are unaffected.
 
 ## Kubernetes: Helm + Argo CD
 
@@ -48,7 +57,7 @@ Triggers: push to `main`, tags `v*` / `release-*`, `workflow_dispatch`. Jobs: `t
 - DB: `database.host hexbane-postgres-postgresql`, `database.name nakama`, `database.password` in values; Bitnami subchart values in `helm/hexbane/values/postgres.yaml` (`bitnamilegacy/postgresql:17.6.0`, 5 Gi PVC).
 - Service ClusterIP 7349/7350/7351. Ingress class `traefik`, `cert-manager.io/cluster-issuer: letsencrypt-prod`, TLS on: **`hexbane.elanon.pl`** → 7350 (API), **`hexbane-console.elanon.pl`** → 7351.
 - Resources: requests 100m/256Mi, limits 500m/512Mi. Probes: TCP on http port.
-- Argo CD `deploy/argocd/application.yaml`: Application `hexbane` in ns `argocd`, **multi-source** (chart from `https://github.com/elanon1/hexbane-server.git` path `helm/hexbane` at `HEAD`, plus `registry-1.docker.io/bitnamicharts/postgresql` 18.0.17 with values `$hexbane/helm/hexbane/values/postgres.yaml`), destination ns `hexbane`, `automated: {}` sync, `CreateNamespace`, `ServerSideApply`. The file is meant to be copied into the GitOps repo `elanonix/argocd` (`gitops/argo/apps/hexbane.yaml`); `repo-secret.yaml` is a placeholder template for a read PAT.
+- Argo CD `deploy/argocd/application.yaml`: Application `hexbane` in ns `argocd`, **multi-source** (chart from `https://github.com/elanon1/hexbane-server.git` path `helm/hexbane` at `HEAD`, plus `registry-1.docker.io/bitnamicharts/postgresql` 18.0.17 with values `$hexbane/helm/hexbane/values/postgres.yaml`), destination ns `hexbane`, `automated: {}` sync, `CreateNamespace`, `ServerSideApply`. The live copy is `elanon1/argocd` `gitops/argo/apps/hexbane.yaml` (adds `helm.parameters`: `image.tag` pinned to `sha-<7>` **and rewritten by CI since 2026-09-17**, `nakama.existingSecret=hexbane-google-credentials`, `HEXBANE_ENABLE_CUSTOM_QUEUE`, `HEXBANE_ENABLE_FALLBACK`); `deploy/argocd/application.yaml` in the server repo is a stale template without those parameters. `repo-secret.yaml` is a placeholder template for a read PAT.
 
 ## Prod URLs and client server list
 

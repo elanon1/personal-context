@@ -103,7 +103,7 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 
 ## Infra i assety (`docs/infra/`)
 
-- [[infra-and-deploy]] — lokalny stack, obraz, CI, Helm/Argo; wdrożono 2026-09-09, publiczne HTTPS zweryfikowane
+- [[infra-and-deploy]] — lokalny stack, obraz, CI, Helm/Argo; wdrożono 2026-09-09, publiczne HTTPS zweryfikowane; od 2026-09-17 auto-deploy z CI (bramka migracyjna + commit `image.tag` do GitOps)
 - [[android-asset-cleanup]] — rozmiar paczek Androida, usunięte assety, wykluczenia eksportu i weryfikacja.
 - [[assets-pipeline]] — aktualne drzewo Resources/ArtSource i pipeline grafiki, animacji oraz audio.
 - [[2026-09-15-resources-organization]] — porządki w zasobach, migracja ścieżek i weryfikacja Godot.
