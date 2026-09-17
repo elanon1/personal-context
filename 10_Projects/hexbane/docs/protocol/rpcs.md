@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-16
-verified: 2026-09-16
+updated: 2026-09-17
+verified: 2026-09-17
 tags: [hexbane, protocol, rpc, nakama]
 sources: ["server:RPCs.md", "server:docs/API-REFERENCE-v2.md", "server:docs/match/api-reference.md", "server:docs/progression/client/menu-rpc-requirements.md", "client:docs/Server/progression/menu-rpc-requirements.md", "server:docs/client/client-implementation-prompt.md"]
 ---
@@ -31,7 +31,7 @@ registered from `server:modules/main.go` via each module's `InitModule`. Unless 
 
 | Client calls | Server registers | Status |
 |---|---|---|
-| `create_character`, `get_my_character`, `get_character_by_id`, `allocate_stat_points`, `get_character_details`, `get_progression`, `tutorial`, `set_tutorial_completed`, `get_starter_spells`, `get_player_spells`, `get_spellbook`, `get_spell`, `learn_spell`, `get_races`, `find_friend`, `remove_friend`, `decline_match`, `create_ai_arcane_duel` | yes | OK (see per-RPC notes; `create_character_match_story` is broken server-side) |
+| `create_character`, `list_characters`, `select_character`, `get_my_character`, `get_character_by_id`, `allocate_stat_points`, `get_character_details`, `get_progression`, `tutorial`, `set_tutorial_completed`, `get_starter_spells`, `get_player_spells`, `get_spellbook`, `get_spell`, `learn_spell`, `get_races`, `find_friend`, `remove_friend`, `friend_status`, `duel_invite`, `duel_invites`, `duel_invite_reply`, `push_device`, `decline_match`, `create_ai_arcane_duel` | yes | OK (see per-RPC notes; `create_character_match_story` is broken server-side) |
 | `get_users` (`client:Application/Modules/Social/Queries/GetUsers/GetUsersQueryHandler.cs:44`) | **no** | dead client code, query never dispatched |
 | `start_story` (client removed 2026-09-08) | **no** (commented out in `server:modules/endless_story/init.go:13`) | client removed 2026-09-08 |
 | — | `debug_create_character`, `get_available_spells`, `get_entry_spells`, `get_my_spells`, `get_spell_lore`, `get_spell_details_yaml`, `get_race`, `create_playstyle`, `get_playstyles`, `update_playstyle`, `delete_playstyle`, `healthcheck`, `notifications_list`, `notifications_delete` | server-only (client uses Nakama SDK built-ins for friends/notifications) |
@@ -54,7 +54,7 @@ Prepared client primary/respec integration is described in [[duel-v2-client]]; d
   `progression.CreationPoints` = 400, each base stat ≥10; all races share these bounds and flat racial stat modifiers are zero → `spell_ids`: exactly
   `StartingSpellCount(race)` = 4 for `human`, 3 otherwise (`validate.go:106-111`), distinct, each
   `starter: true` and not `standard` (`validate.go:113-129`).
-- One character per user: `FindByUserId` first; if one exists → `{"success":false,"message":"Character already exists","character":{...existing}}`.
+- ~~One character per user~~ **Since 2026-09-17 (HEX-32) an account owns up to five characters.** The transaction locks the `users` row, refuses while the account is queued or match-locked (`"Leave the queue or finish your duel before changing character"`), refuses the sixth (`"Maximum of 5 characters per account"`, also enforced by a DB trigger), marks the new character **selected** and sets `tutorial_completed = true` for every character after the first. See *Multi-character* below.
 - Character row and `character_spells` rows are written in one transaction (`db.go:49-75`); no MP charged.
 - Response: `{"character": <Character>, "message":"Character created successfully", "success":true}`.
 - Full contract in [[race-selection]].
@@ -64,7 +64,7 @@ Prepared client primary/respec integration is described in [[duel-v2-client]]; d
 
 ### `get_my_character`
 - `init.go:30`, handler `rpc.go:125`. Client: `client:Application/Modules/Character/Queries/GetCurrentCharacter/GetCurrentCharacterQueryHandler.cs:37` (RpcName default in `GetCurrentCharacterQuery.cs:12`).
-- Request: ignored. Response: `{"character": <Character>|null, "message", "success"}`. No character → `"No character found for user"` (this string drives the client's create-character decision).
+- Request: ignored. Response: `{"character": <Character>|null, "message", "success"}`. No character → `"No character found for user"`. Since HEX-32 this returns the **selected** character (`characters.is_selected`); the client's post-login routing now uses `list_characters` instead.
 
 ### `get_character_by_id`
 - `init.go:25`, handler `rpc.go:157`. Client: `GetCharacterByIdQueryHandler.cs:38`.
@@ -316,3 +316,36 @@ Current catalog is `duel_v2.5` (combat protocol 2/ruleset unchanged). Spell YAML
 Player/details spell entries add `primary`, `meets_level_requirement`, `can_learn`; the starter response adds `level_requirement`. Level1: barrier, cleanse, firebolt, heavy_bolt, mend, poison; level5: regeneration, dispel; level10: greater_heal, consume_venom; level16: delayed_hex, paralysis. Optional spells still cost5 MP. Owned spells remain available even if their new acquisition requirement exceeds the owner's current level. Server creation/new bot generation validate eligibility; persisted player/bot ownership is preserved.
 
 Learning locks persistent character level/MP and derives price from the catalog in the same transaction as ownership/grant. Forged/stale request data cannot bypass the gate or price; duplicate/concurrent spending is covered by PostgreSQL tests. No HTTP/socket deployment validation was performed in this task.
+
+
+## Multi-character and friend duel invitations (HEX-30/32, 2026-09-17)
+
+Verified on 2026-09-17 against the rebuilt local plugin (`make dev`, migrations 12–13) over HTTP with the seeded `human@test.pl` / `elf@test.pl` accounts. Server side: `server:modules/character/selection.go`, `server:modules/social/invitations.go`, `push.go`. Client side: `client:Application/Modules/Character/Service/CharacterService.cs`, `client:Application/Modules/Social/Services/SocialService.cs`, `GetFriendsQueryHandler.cs`, `client:Game/Autoloads/DuelInvitationInbox.cs`, `MobilePushRegistration.cs`. All go through `client.RpcAsync(session, id, payload)` with generated JSON contexts (`SignInJsonContext` for characters, `SocialJsonContext` for invitations).
+
+### `list_characters`
+- Request `{}`. Response `{"success":true,"characters":[<Character>…],"limit":5}` ordered by `created_at`. Every `<Character>` carries `tutorial_completed`; the selected one is the one `get_my_character` returns.
+- Client: `LoginPanel.EnterGame` → 0 characters → creation/tutorial, 1 → enters it, ≥2 → `CharacterSelectionScreen`. `DevAutoLogin` does the same.
+
+### `select_character`
+- Request `{"character_id":"char_<user>_<unixnano>"}`. Success `{"success":true,"message":"Character selected","character":<Character>}`; selecting the already selected character is a no-op success.
+- Errors (`success:false`): `Choose a character` (empty id), `Character does not belong to this account`, `Leave the queue or finish your duel before changing character` (active `character_match_locks` or `fallback_queue` lease). Unauthenticated → gRPC 16.
+- Everything that resolved a character by `user_id` now filters on `is_selected`: character/details/progression/tutorial, spellbook, spell_system, playstyle, matchmaking queue. Match settlement binds to the character that holds the reward/lock row for that match, so a switch after a duel cannot move the reward.
+
+### `friend_status`
+- Request `{}`. Response `{"<friend user id>": true|false}` for up to 100 accepted friends; `true` = that account's selected character currently holds a match lock. Client merges it into `FriendDto.InMatch` → Social screen shows *In match* and disables INVITE.
+
+### `duel_invite`
+- Request `{"user_id":"<friend>"}`. Checks, in order, inside one transaction with both `users` rows locked in sorted order: not self (3), accepted friendship in both directions (`user_edge.state=0`, 7), caller and friend each have a selected character that is neither match-locked nor in the queue (9 `player is in a match or queue`), at most 5 invitations per sender per minute (8).
+- Response is the invitation object: `{"invite_id","sender_id","recipient_id","sender_name","state":"pending","match_id":"","expires_at"}`; expiry is **2 minutes**. Side effects: persistent Nakama notification **code 20** `Duel invitation` to the recipient, then best-effort push (see [[social]]).
+
+### `duel_invites`
+- Request `{}`. Response: array of the caller's non-expired `pending`/`accepted` invitations, sent or received, newest first, max 50. `declined` and expired ones disappear. `DuelInvitationInbox` polls this every 5 s (also recovers missed socket notifications and offline invitations).
+
+### `duel_invite_reply`
+- Request `{"invite_id":"…","accept":true|false}`. Recipient only (403 `recipient only`); expired → 400 `invitation expired`; already answered → 400 `invitation already answered`; unknown → 404 `invitation unavailable`. Repeating an accept returns the accepted invitation with the same `match_id`.
+- Accept re-checks friendship and availability, creates a `normal` match with params `{"friend_users":"[\"<sender>\",\"<recipient>\"]"}` (admission limited to those two ids, see [[matchmaking]]), reserves both selected characters in `character_match_locks` for 2 minutes, stores `state:"accepted"`, `match_id`, and sends notification **code 21** `Duel ready` to both. Decline stores `state:"declined"`.
+- Client: on accept (or when the poll finds an `accepted` invitation it has not joined) `MatchManager.JoinInvitation(match_id)` joins the socket match; refused while the client is already queued.
+
+### `push_device`
+- Request `{"token":"…","platform":"android"|"ios","remove":false}`; token 16–4096 chars. Upserts `push_devices` (token PK → current user) or deletes it with `remove:true`. Response `{"success":true}`; invalid → 3 `valid platform and device token required`.
+- Client: `MobilePushRegistration` registers once per token/owner when a native token exists (Android `HexbanePush` singleton, iOS `HexbanePush.framework`). Desktop never calls it.

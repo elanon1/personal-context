@@ -31,6 +31,7 @@ się wybór zaklęć, kolejkowanie akcji (cast time + recovery, brak cooldownów
 - **Serwer** — `~/GolandProjects/hexbane-server` (`elanon1/hexbane-server`, branch
   `feat/spell-system-redesign` = `main` + niezacommitowana praca): plugin Go do Nakama 3.27
   (`backend.so`), Postgres 17. → [[server-architecture]], [[dev-setup]]
+- **Konta i postacie (2026-09-17):** do 5 postaci na konto, jedna wybrana serwerowo (`is_selected`), zaproszenia znajomych na pojedynek (2 min) → [[character-selection]], [[social-invitations]].
 - **Reguły gry (stan duel_v2):** 6 ras, 14 zaklęć (2 standardowe zawsze dostępne + 6 starterów, z
   których przy tworzeniu postaci wybiera się 3, Human 4), HP/mana ze statystyk i ras, aktywne
   skille, regeneracje i odporności (szczegóły i ograniczenia metadanych: [[combat-stat-rules]]),
@@ -57,6 +58,10 @@ lub e-mail) → lokalny tutorial → kreator postaci (5 kroków, wybór 3/4 star
 **Content:** 13 zachowanych ikon pokrywa 14 obecnych zaklęć; VFX obejmuje wszystkie 14 zaklęć: Mirror Reflection z przywróconymi dźwiękami, Magic Arrow i Firebolt/Fireball ze wspólnym cyklem życia pocisku oraz 11 różnorodnych efektów na postaci z warstwami przed/za sylwetką. Nowe animacje castingu i presety zachowane. Stare VFX/SFX i assety generatora usunięte 2026-09-08. → [[spell-vfx-configuration]]
 
 ## Decisions log
+
+- **2026-09-17 — Konta z wieloma postaciami: max 5, serwerowa flaga `is_selected`, bez tutorialu dla kolejnych (HEX-32).** **Why:** wybór postaci musi być autorytatywny po stronie serwera (każdy RPC działa na wybranej postaci, blokada zmiany w kolejce/meczu, nagrody przypięte do postaci, która walczyła), a nie parametrem klienta; limit 5 egzekwuje trigger + transakcja, żeby równoległe `create_character` nie przebiły puli. Migracja 12 down celowo odmawia przy koncie z >1 postacią.
+- **2026-09-17 — Zaproszenia znajomych na pojedynek są serwerowe, ważne 2 min, klient odpytuje skrzynkę co 5 s; push FCM/APNs opcjonalny i domyślnie wyłączony (HEX-30).** **Why:** skrzynka (`duel_invites`) jest źródłem prawdy, więc odbiorca offline i zgubione powiadomienia socketowe nie gubią zaproszenia; mecz tworzy serwer z `friend_users`, a obie postacie dostają 2‑minutową blokadę, żeby kolejka nie porwała maga przed dołączeniem. Push wymaga poświadczeń operatora (service account FCM, klucz APNs) i buildu AAR/xcframework, więc jest za flagą `hexbane_push/enabled`, a nie w domyślnym eksporcie.
+- **2026-09-17 — Ekran Social bez danych testowych; rasa/poziom znajomego ukryte do czasu endpointu profilu (HEX-31).** **Why:** mocki maskowały puste konta i symulowały sukces akcji po błędzie serwera; lepiej pokazać pustą listę i komunikat o ponowieniu niż fikcję.
 
 - **2026-09-17 — Game Center: `teamPlayerID` + `fetchItemsForIdentityVerificationSignature`, bez username.** **Why:** Apple podpisuje `teamPlayerID` tym API, a Nakama weryfikuje podpis nad playerId+bundleId+timestamp+salt — z `gamePlayerID` weryfikacja RSA pada; username pomijamy jak w Google, bo alias GC nie jest unikalny ani zgodny z regułami Nakamy.
 

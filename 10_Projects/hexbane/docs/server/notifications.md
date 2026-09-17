@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-08
-verified: 2026-09-08
+updated: 2026-09-17
+verified: 2026-09-17
 tags: [hexbane, server, notifications, nakama]
 sources: ["server:modules/notifications/README.md", "client:docs/Server/Notifications.md", "server:docs/API-REFERENCE-v2.md"]
 ---
@@ -50,3 +50,8 @@ were not remapped; the unused Go declarations were removed.
 - `server:modules/notifications/init.go`, `rpc.go`, `types.go` — retained list/delete RPCs and response DTOs.
 - `server:modules/social/rpc.go` — the only custom notification actually sent.
 - `client:Application/Nakama/NakamaClientManager.cs`, `client:Application/Modules/Notifications/**` — client delivery and SDK calls.
+
+
+## Duel invitation codes (HEX-30, 2026-09-17)
+
+`server:modules/social/invitations.go` sends two more persistent notifications through `nk.NotificationSend`: code **20** subject `Duel invitation` (content `{invite_id, sender_name, expires_at}`, sender = inviter) to the recipient of `duel_invite`, and code **21** subject `Duel ready` (content `{invite_id, match_id}`, no sender) to both players when `duel_invite_reply` accepts. The client's `NotificationModule` has no listener for 20/21; `DuelInvitationInbox` polls `duel_invites` instead. Mobile push for the same events is handled separately by `push.go` (see [[social]]).

@@ -90,6 +90,8 @@ verified, tags, sources`; treść techniczna po angielsku; każda notatka kończ
 - [[duel-loading-screen]] — illustrated arena loading, real progress, random tip, responsive layout and verification
 - [[design-system]] — tokeny UI, fonty, motywy (`ui-designer` jest do niego przywiązany)
 - [[social-sign-in]] — Google sign-in na PC i Androidzie, konfiguracja, znane luki
+- [[character-selection]] — konta z wieloma postaciami (max 5): routing po logowaniu, ekran wyboru, przełączanie (HEX-32)
+- [[social-invitations]] — ekran Social bez mocków, zaproszenia na pojedynek, skrzynka i push FCM/APNs (HEX-30/31)
 - [[client-tutorial]] — lokalny tutorial
 - [[deploy-web]] — 2dog/.NET 10 browser build, from-scratch reconstruction, local verification and `$hexbane-web-build` skill.
 - [[deploy-ios]] — eksport iOS, symulator, reguły Native AOT (generowany JSON, bez `dynamic`), logi z symulatora, provisioning urządzenia

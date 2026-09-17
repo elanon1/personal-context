@@ -5,15 +5,15 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-12
-verified: 2026-09-12
+updated: 2026-09-17
+verified: 2026-09-17
 tags: [hexbane, server, social, friends, nakama]
 sources: ["server:modules/social/README.md", "client:docs/Server/Social.md", "server:docs/API-REFERENCE-v2.md"]
 ---
 
 # Social module (friends)
 
-Friends are Nakama's built-in friend graph (`user_edge`); the server plugin adds only two RPCs. Chat and
+Friends are Nakama's built-in friend graph (`user_edge`); the server plugin adds `find_friend`, `remove_friend` and, since 2026-09-17, the duel-invitation family (`friend_status`, `duel_invite`, `duel_invites`, `duel_invite_reply`, `push_device`; see below). Chat and
 status/presence are **not implemented** anywhere: the `social_*` RPC family and every chat/status helper
 in `server:modules/social/rpc.go` are commented out (`server:modules/social/init.go:22-104`), and the client
 never calls `FollowUsersAsync`/`JoinChatAsync`.
@@ -42,6 +42,9 @@ never calls `FollowUsersAsync`/`JoinChatAsync`.
 | List | SDK `client.ListFriendsAsync(session, state, 100, cursor)` (`Queries/GetFriends/GetFriendsQueryHandler.cs:43`). |
 | Block | SDK `client.BlockFriendsAsync` (`Commands/BlockUser/BlockUserCommandHandler.cs:36`, not awaited). |
 | Remove | RPC `remove_friend` (`Commands/RemoveFriend/RemoveFriendCommandHandler.cs:36-42`). |
+| In-match flag | RPC `friend_status` merged into `FriendDto.InMatch` by `GetFriendsQueryHandler` (state 0 only). |
+| Invite / inbox / reply | RPCs `duel_invite`, `duel_invites`, `duel_invite_reply` via `SocialService` (`Services/SocialService.cs`); inbox polled by `client:Game/Autoloads/DuelInvitationInbox.cs`. |
+| Push token | RPC `push_device` from `client:Game/Autoloads/MobilePushRegistration.cs` (mobile only). |
 | `get_users` | `Queries/GetUsers/GetUsersQueryHandler.cs:44` calls an RPC the server does not register; nothing dispatches this query. Dead. |
 
 Friend states (Nakama): `0` friends, `1` invite sent, `2` invite received, `3` blocked (`server:modules/social/types.go:8-13`).
@@ -67,3 +70,17 @@ Concurrent retries serialize under a transaction advisory lock. Once committed t
 - `server:modules/social/rpc.go`, `db.go`, `types.go` — handlers, name lookup, request/response structs.
 - `client:Application/Modules/Social/Services/SocialService.cs` — the operations the UI actually uses.
 - `client:Application/Modules/Social/Commands/*`, `Queries/*` — SDK vs RPC per operation.
+
+
+## Friend duel invitations and push (HEX-30, 2026-09-17)
+
+Source: `server:modules/social/invitations.go` (RPCs, registered from `init.go` via `registerInvitations`), `server:modules/social/push.go` (delivery), migration `000013_friend_invites` ([[database]]). Exact request/response contract: [[rpcs]] → *Multi-character and friend duel invitations*.
+
+**Model.** `friend_duel_invites(invite_id UUID PK, sender_id, recipient_id → users CASCADE, state pending|accepted|declined, match_id, created_at, expires_at = created + 2 min)`. An invitation is server-owned: the client only names a friend, never a match or an opponent identity. Creation and acceptance lock both `users` rows in sorted id order (the same order character selection and queue admission use), require `user_edge.state = 0` in both directions and a **selected** character on both sides that holds no active `character_match_locks` row and no live `fallback_queue` lease. Senders are rate-limited to 5 invitations per minute. Acceptance creates the `normal` match with `friend_users` (see [[matchmaking]]) and reserves both characters for 2 minutes so a stray queue join cannot steal either mage before both clients arrive; the normal acquisition path extends those locks when the players join.
+
+**Delivery.** Three channels, all best effort except the table itself:
+1. Nakama persistent notifications, code **20** `Duel invitation` (`{invite_id,sender_name,expires_at}`, sender = inviter) and **21** `Duel ready` (`{invite_id,match_id}`, both players). The client does not handle these codes yet; they are there for a future socket-driven inbox.
+2. The inbox RPC `duel_invites`, polled by the client every 5 s — the source of truth that survives offline recipients and missed sockets.
+3. Provider push for minimised phones, `sendInvitePush`: up to 10 devices per recipient from `push_devices` refreshed within 90 days. Android → FCM HTTP v1 with a service-account JWT (`HEXBANE_FCM_SERVICE_ACCOUNT` = path to the JSON key), high priority, channel `duel_invites`, TTL 120 s. iOS → APNs with an ES256 provider token (`HEXBANE_APNS_KEY_FILE` P-256 `.p8`, `HEXBANE_APNS_KEY_ID`, `HEXBANE_APNS_TEAM_ID`, `HEXBANE_APNS_TOPIC`, `HEXBANE_APNS_SANDBOX=true` for the sandbox host), expiry = invitation expiry. A platform whose variables are unset is skipped silently; `UNREGISTERED` / `BadDeviceToken` / 410 delete the token, other failures only log. **No credentials are configured anywhere yet** (local compose, Helm, GitOps), so push is dormant until an operator mounts them.
+
+**Verified 2026-09-17** over HTTP on the rebuilt local stack (`server:scripts/e2e_invitations.py`, two seeded accounts): invite → recipient inbox `pending`; decline → hidden from inbox, second reply 400; re-invite → accept creates match + locks, replay of accept returns the same match; sender replying → 403; unknown id → 404; invite while locked → 9; `friend_status` shows the busy friend; the recipient's notification list contains codes 20, 20, 21. Not exercised: two live Godot clients joining the created match on phones, real FCM/APNs delivery.

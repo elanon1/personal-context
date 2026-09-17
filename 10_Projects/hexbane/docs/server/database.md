@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-15
-verified: 2026-09-15
+updated: 2026-09-17
+verified: 2026-09-17
 tags: [hexbane, server, database, migrations, postgres]
 sources: ["server:docs/spell_system/database-v2.md", "server:docs/progression/progression.md", "client:docs/Server/progression/races_seed.sql"]
 ---
@@ -24,6 +24,9 @@ Startup order everywhere is Nakama migrations → application migrations → bac
 | `000001_initial_schema` | `races`, `characters`, `character_spells`, `playstyles`, `playstyle_slots`, `updated_at` trigger | drops all five tables and the function |
 | `000002_reference_data` | inserts the six races (values in [[progression]]) | deletes characters of those races (cascading spells/playstyles), then the races; Nakama accounts stay |
 | `000003_local_tutorial` | `account_tutorials`; backfills a row per existing character with training/reward done and `progression_completed = tutorial_completed` | drops the table |
+| `000004`–`000011` | progression redesign, races, fallback matchmaking, personas, match actions, news, commerce — see the dated sections below | |
+| `000012_multi_character` | drops `characters_user_id_key`, adds `characters.is_selected` (all existing rows selected), partial unique index `characters_one_selected (user_id) WHERE is_selected`, index `characters_account`, trigger `characters_limit` (BEFORE INSERT: lock the `users` row, refuse the 6th character, select the first) | restores the unique constraint — **fails on purpose** while any account owns more than one character |
+| `000013_friend_invites` | `friend_duel_invites`, `push_devices` + indexes | drops both tables |
 
 ## Tables (`server:db/migrations/000001_initial_schema.up.sql`, `000003_local_tutorial.up.sql`)
 
@@ -31,7 +34,7 @@ Startup order everywhere is Nakama migrations → application migrations → bac
 `race_id VARCHAR(50) PK`, `name UNIQUE`, `str_modifier`/`int_modifier`/`dex_modifier INT`, `casting_time_modifier REAL`, `spell_resistances JSONB '{}'`, `primary_element`/`secondary_element VARCHAR(50)`, `primary_element_bonus`/`secondary_element_bonus REAL`, `min_str`/`max_str`/`min_int`/`max_int`/`min_dex`/`max_dex INT ≥ 0` (0 = no limit, CHECK `max = 0 OR min <= max`), `traits JSONB '{}'`. Only `traits.spell_slot_bonus` affects play; the rest is creation/menu metadata.
 
 ### `characters`
-- Identity: `character_id VARCHAR(255) PK` (format `char_<user_id>_<unix>`, `server:modules/character/db.go:24`), `user_id UUID UNIQUE → users(id) ON DELETE CASCADE` (one character per account), `name VARCHAR(50)`, `avatar`, `race_id → races DEFAULT 'human'`.
+- Identity: `character_id VARCHAR(255) PK` (format `char_<user_id>_<unix>`, `server:modules/character/db.go:24`), `user_id UUID → users(id) ON DELETE CASCADE` (**was UNIQUE until migration 12**; now up to five characters per account, exactly one with `is_selected = TRUE`), `name VARCHAR(50)`, `avatar`, `race_id → races DEFAULT 'human'`.
 - Progression: `level ≥ 1 DEFAULT 1`, `experience ≥ 0`, `unspent_stat_points ≥ 0`, `magic_points`, `magic_points_spent` with CHECK `0 ≤ spent ≤ magic_points`, `spell_slots INT DEFAULT 3 CHECK BETWEEN 3 AND 7`.
 - Stats: `base_strength/…` DEFAULT 133/134/133 and effective `strength/intelligence/dexterity` DEFAULT 153/154/153 (all ≥ 1). Both are persisted; effective is recomputed by the server.
 - Skills: `skill_meditation`, `skill_spell_resistance`, `skill_magery REAL CHECK 0–100`.
@@ -96,3 +99,12 @@ Migration9 adds `news_administrators` (operator-granted account role) and `news_
 ## Commerce migration11 (HEX-23, 2026-09-15)
 
 `commerce_catalog` defines enabled/default products and bounded boost parameters; `commerce_entitlements` owns account/item expiry; `commerce_loadout` has one owned item per compatible slot; `commerce_receipts` binds an idempotency key to its original account/product. Receipt bindings survive account deletion; ownership and loadout cascade. SQL foreign keys and transactions enforce ownership/kind, while runtime validates active expiry. See [[commerce]].
+
+
+## Multi-character and invitations, migrations 12–13 (HEX-30/32, 2026-09-17)
+
+Migration 12 turns `characters` into a per-account roster: `is_selected BOOLEAN NOT NULL DEFAULT FALSE`, one selected row per `user_id` (partial unique index), and a trigger that raises `Maximum of 5 characters per account` on the sixth insert after `SELECT … FOR UPDATE` on `users`. The Go code repeats the count check and the selection flip inside its own transaction (`server:modules/character/db.go` `SaveWithStarterSpells`, `selection.go` `SelectCharacter`) so the trigger is only the last line of defence. `character_id` now uses `UnixNano` to avoid same-second collisions between concurrent creates. Every read path that used `WHERE user_id = $1` alone now adds `AND is_selected` (`character`, `spellbook`, `spell_system`, `playstyle`, `matchmaking`, `tutorial`); `rewards.go` resolves the settled character from `character_match_rewards` / `character_match_locks` for that match before falling back to the selected one. Integration test: `server:modules/character/selection_integration_test.go` (`MATCH_RESULT_TEST_DB_URL`, disposable `*_test` database; 10 concurrent creates on top of one → exactly 4 succeed).
+
+Migration 13 adds `friend_duel_invites` (state CHECK `pending|accepted|declined`, `sender_id <> recipient_id`, indexes on recipient+expiry and sender+created) and `push_devices(token TEXT PK, user_id, platform android|ios, updated_at)`. Contract: [[social]], [[rpcs]].
+
+Applied to the local compose stack on 2026-09-17 (`schema_migrations` = 13); **not yet applied to production** — deploy needs the standard migration step from [[infra-and-deploy]] and, for a rollback, migration 12 down refuses while any account has more than one character.

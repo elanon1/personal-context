@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-15
-verified: 2026-09-15
+updated: 2026-09-17
+verified: 2026-09-17
 tags: [hexbane, client, architecture, godot]
 sources: ["client:CLAUDE.md", "client:AGENTS.md", "client:project.godot", "client:Game/Autoloads/SceneManager.cs", "client:Game/DI/ServiceBootstrapper.cs"]
 ---
@@ -36,7 +36,7 @@ Dependencies flow `Game → Application → Core`. Tests live in `Tests/` and ar
 | 6 | MatchContext | `Game/Autoloads/MatchContext.cs` | `MatchId`, `IsAiMatch`, `Combat` (`DuelState`), `Me`/`Enemy`, `SpellSlotOrder` |
 | 7 | SceneManager | `Game/Autoloads/SceneManager.cs` | route table, history, Android Back handling |
 | 8 | MainThreadInvoker | `Game/Autoloads/MainThreadInvoker.cs` | marshals socket callbacks to the main thread |
-| 9 | NotificationManager | `Game/Autoloads/NotificationManager.cs` | Nakama notifications |
+| 9 | NotificationManager | `Game/Autoloads/NotificationManager.cs` | Nakama notifications; since 2026-09-17 also hosts `DuelInvitationInbox` (5 s poll of `duel_invites`, Accept/Decline dialog, match join) and through it `MobilePushRegistration` (`push_device` token upload on phones) |
 | 10 | MenuPlayer | `Game/Autoloads/MenuPlayer.cs` | menu/battle music |
 | 11 | DevAutoLogin | `Game/Autoloads/DevAutoLogin.cs` | `DEV_AUTO_LOGIN=true` + `DEV_AUTO_LOGIN_MODE=existing|new_character` (`DevAutoLogin.cs:21-29`) |
 | 12–14 | MCPScreenshot, MCPInputService, MCPGameInspector | `addons/godot_mcp/*.gd` | editor MCP tooling only |
@@ -92,7 +92,8 @@ Outgoing commands: `Application/Match/Outgoing/{CastSpell,ClientReady,Meditate,Q
 |---|---|---|
 | `login` | `Game/ScenesV3/Auth/AuthScreen.tscn` | main scene (`project.godot:18`) |
 | `dashboard`, `main_menu` | `Game/ScenesV3/Dashboard/DashboardScreen.tscn` | |
-| `character_creation` | `Game/ScenesV3/CreateCharacter/CreateCharacterScreen.tscn` | 5-step wizard |
+| `character_creation` | `Game/ScenesV3/CreateCharacter/CreateCharacterScreen.tscn` | 5-step wizard; Back on step 0 returns to the roster when the account already has a character |
+| (by file) `GoToCharacterSelection` | `Game/ScenesV3/CharacterSelection/CharacterSelectionScreen.tscn` | roster of up to 5 characters, PLAY / CREATE CHARACTER / SIGN OUT (2026-09-17, [[character-selection]]) |
 | `character_detail` | `Game/ScenesV3/CharacterDetail/CharacterDetailScreen.tscn` | Summary / Stats / Spellbook |
 | `news`, `settings`, `social` | `Game/ScenesV3/{News,Settings,Social}/*Screen.tscn` | |
 | `lobby` | `Game/ScenesV3/Lobby/LobbyScreen.tscn` | spell draft |
@@ -218,3 +219,8 @@ See [[duel-loading-screen]] for the persistent blue/emerald loading illustration
 `Core/Match/MatchAdmissionMessage.cs` recognizes `character_in_match` and legacy `character already in a match`. `ModeOverlay` handles both failed Accept and opcode 9 with a wait dialog and no automatic requeue. Only the newly offered match is declined; the existing server lease stays intact.
 
 `Tests/Matchmaking` covers reason classification. Headless `Game/ScenesV3/Dev/MatchBusyVerification.tscn` exercises the actual overlay using a fake manager: Accept rejection displays the Polish wait message, decline is called once, opcode 9 displays the same dialog, and no new search starts. PASS on Godot 4.5.2; shutdown reports an ObjectDB/resource leak warning. Client build passed with existing warnings. These checks do not prove an installed Android binary was updated.
+
+
+## Multi-character routing and invitations (HEX-30/32, 2026-09-17)
+
+After sign-in `LoginPanel.EnterGame` calls `ICharacterService.ListCharacters()` (`list_characters`): zero characters → `GoToCharacterCreation` (tutorial screen, then the wizard), exactly one → it becomes `GameContext.Character` and the tutorial screen routes as before, two or more → `GoToCharacterSelection`. `SceneManager.GoToDashboard` and `TutorialScreen` also treat `Character.TutorialCompleted == true` as "training done", which is what the server sets on every character after the first. The dashboard's LOGOUT button became CHARACTERS (→ selection screen); sign-out lives on the selection screen. Details: [[character-selection]], [[social-invitations]].
