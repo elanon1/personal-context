@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-08
-updated: 2026-09-14
-verified: 2026-09-14
+updated: 2026-09-17
+verified: 2026-09-17
 tags: [hexbane, client, ios, deploy]
 sources: ["client:export_presets.cfg", "client:hexbane.csproj"]
 ---
@@ -56,6 +56,16 @@ Overrides: `GODOT`, `SIMULATOR_ID`, `HEXBANE_IOS_OUTPUT`, `HEXBANE_IOS_CACHE`,
 Keep output outside the Godot project so generated assets are not scanned into the game.
 
 ### Why the ordinary export failed
+
+Symptom when this bites in Xcode (2026-09-17): building the **device** export
+(`../export/ios/hexbane.xcodeproj`) ends with `Undefined symbol: _main` for arm64. That only
+happens when the run destination is an **iOS Simulator**, not the plugged-in iPhone — the
+products dir in the build log reads `Release-iphonesimulator` and the linker warns
+`ignoring file ... libgodot.a(...)` for every engine object, because the stock simulator
+slice is x86_64-only and `main` lives in the engine library. The same project builds for
+`generic/platform=iOS` (verified with `xcodebuild -sdk iphoneos`, Xcode 26.6). Fix: pick the
+physical iPhone as destination; for the simulator use `deploy-ios-simulator.sh`, which
+supplies the ARM64 slice.
 
 - The stock Godot 4.5.2 and 4.7 .NET simulator `libgodot.a` is x86_64-only despite its
   XCFramework plist declaring both ARM64 and Intel. The C# AOT framework has both.
