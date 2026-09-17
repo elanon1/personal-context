@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-16
-verified: 2026-09-16
+updated: 2026-09-17
+verified: 2026-09-17
 tags: [hexbane, client, ui, design-system, themes]
 sources: ["client:docs/DESIGN_SYSTEM.md"]
 ---
@@ -211,3 +211,7 @@ The Primary tab replaces the previous horizontal tier buttons and level ladder w
 Inspecting a node does not mutate the path. The detail panel shows its actual effect, current saved build, candidate preview and eligibility. Choose explicitly changes a contiguous local path and discards later choices; Save persists it without MP cost. Only one save can be in flight across both primaries, and a response preserves the other primary's unsaved draft. The design follows the HEX-25 image's tree/detail composition without inventing its example mechanics or currencies.
 
 `PrimaryTree` keeps its own canvas extent and at least340px width so the global compact pass cannot clip later tiers or overlap sibling touch targets. Godot acceptance uses a fixture exported from server primaryResponse, checks touch inspection/choice/locks/revert, delayed save isolation, ordinary list filtering and level gates. Rendered at960×432,960×540 and1360×612; physical-device validation remains open.
+
+
+## Community links and compact guidance (HEX-33/35, 2026-09-17)
+Dashboard contains a centered community row with touch-sized Discord and Buy me a coffee buttons. Targets are the user-supplied `https://discord.gg/gVcpXjU73` and `https://buymeacoffee.com/elanon`, opened by the platform browser. Progression guidance is now a centered460px maximum tooltip with wrapped captions, rather than a full-width banner. Sources: `client:Game/ScenesV3/Dashboard/DashboardScreen.cs`, `client:Game/ScenesV3/Tutorial/TutorialOverlay.cs`.

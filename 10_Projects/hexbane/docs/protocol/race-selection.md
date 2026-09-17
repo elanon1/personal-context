@@ -5,8 +5,8 @@ area: protocol
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-08
-verified: 2026-09-08
+updated: 2026-09-17
+verified: 2026-09-17
 tags: [hexbane, protocol, races, character-creation]
 sources: ["server:docs/client/race-selection.md", "client:docs/client/race-selection.md", "server:docs/client/combat-v2.md", "server:docs/client/client-implementation-prompt.md", "server:RPCs.md"]
 ---
@@ -69,3 +69,7 @@ The dashboard opens the character sheet. `get_character_details`, `respec_stats`
 - `server:modules/spell_system/registry.go` (`GetStarter`), `server:data/spells/*.yaml` — starter/standard flags.
 - `client:Core/Characters/StatAllocation.cs`, `RaceCatalog.cs`, `RaceTraits.cs` — client maths and fallback roster.
 - `client:Game/ScenesV3/CreateCharacter/CreateCharacterScreen.cs` — wizard, pick count.
+
+
+## Fine stat adjustment (HEX-34, 2026-09-17)
+Creation +/- buttons now change their attribute by exactly one point. Sliders, shared minimum10 and total400 validation are unchanged. Source: `client:Game/ScenesV3/CreateCharacter/CreateCharacterScreen.cs` (`WireStatRow`, `NudgeStat`).

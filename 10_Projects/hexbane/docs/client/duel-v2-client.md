@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-13
-verified: 2026-09-13
+updated: 2026-09-17
+verified: 2026-09-17
 tags: [hexbane, client, duel-v2, combat, hud]
 sources: ["client:docs/opcodes/duel-v2.md", "client:docs/opcodes/duel-v2-verification.md", "client:docs/client/reference-duel/README.md"]
 ---
@@ -157,3 +157,9 @@ The arena now remains visible after MatchEnded: dead actors fall and hold their 
 Validation: `dotnet build hexbane.csproj --no-restore` passed with 0 errors / 11 existing warnings. `HitFeedbackVerification.tscn` passed 26 checks headless and with GPU rendering: separate simultaneous values, targeting, colours, duplicate/zero events, snapshot-only correction, expiry, three viewport sizes (844×390 / 1360×612 mobile profile and 1920×1080 desktop), clipping/overlap/background coverage/platform alignment, relayout during shake, reduced motion, casting and death priority. `CombatFeedbackVerification` passed 9 checks; `DuelEndingVerification` passed. GPU captures inspected under `client:verification/hit-feedback/`. Headless shutdown reports retained resources/ObjectDB warnings, also present in the earlier combat-feedback verifier. No physical Android installation, device playtest or live Nakama duel performed. Restart/rebuild the client to see the new assembly; existing installed APKs are unchanged.
 
 Source files: `client:Game/ScenesV3/GameHud/ArcaneDuel/Components/{Player,FloatingText}.cs`, `client:Game/ScenesV3/GameHud/ArcaneDuel/{UiMessageManager,CameraHandler}.cs`, `client:Game/ScenesV3/Components/{RaceSpriteAnimator.Hit.cs,GestureLighting.gdshader}`, `client:Game/ScenesV3/ReferenceDuel/ReferenceHud.cs`, `client:Game/ScenesV3/Dev/HitFeedbackVerification.{cs,tscn}`.
+
+
+## Combat communication cleanup (HEX-36/37, 2026-09-17)
+Passive health regeneration (`heal` with `reason: passive_regeneration`) still updates authoritative HP through snapshots but no longer creates floating health numbers or health-log entries. Spell healing remains visible even when only1 HP is restored.
+
+The technical center status listing player state, recovery timers and queue internals is hidden during normal play. Protocol failures still appear there, and reconnect/retry controls remain. Effect icons, cast bars, queue markers and the clear-queue action remain functional. A single combat history shows the latest two entries and can expand into a scrollable64-entry bounded history. Entries identify you/opponent and describe casts, damage, healing and barrier absorption; private rejected actions use readable messages. The history wraps and uses22px text with a shadow. Sources: `client:Application/Match/DuelProtocol.cs`, `client:Game/ScenesV3/GameHud/ArcaneDuel/Components/Player.cs`, `client:Game/ScenesV3/ReferenceDuel/ReferenceHud.cs`, `ReferenceHud.DuelV2.cs`, `ReferenceHud.Layout.cs`. Verification is tracked in [[2026-09-17-linear-30-37]].

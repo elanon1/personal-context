@@ -169,3 +169,5 @@ Raporty weryfikacji docs vs kod z 2026-09-07 — sekcje „code smells” i „o
 - [[website-structure]] — local promotional website scaffold, content sources, commands, and remaining work.
 
 - [[2026-09-15-monetization-foundation]] — HEX-23 implementation plan and validation checklist.
+
+- [[2026-09-17-linear-30-37]] — implementation and verification of the eight current Linear tasks, including character selection and invitations.

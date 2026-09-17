@@ -5,8 +5,8 @@ area: client
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-16
-verified: 2026-09-16
+updated: 2026-09-17
+verified: 2026-09-17
 tags: [hexbane, client, tutorial, onboarding]
 sources: ["client:docs/superpowers/specs/2026-09-06-tutorial-design.md", "client:docs/superpowers/plans/2026-09-06-local-tutorial.md", "client:docs/client/tutorial-verification.md"]
 ---
@@ -124,3 +124,7 @@ Validation: CharacterDevelopmentVerification initially failed on advancing after
 ### Level-gated optional spells (HEX-28/29, 2026-09-16)
 
 Progression replay and live spell choice now exclude primary spells from the normal spell grid and require the catalog `level_requirement` in addition to MP. If nothing is eligible, guidance lets the player keep MP and proceed to Summary. Combat tutorial retains the complete catalog, including Magic Arrow/Mirror Reflection. Existing HEX-26 allocation, reselection, descriptions and Summary steps remain unchanged.
+
+
+## Compact progression tooltip (HEX-35, 2026-09-17)
+Top-docked progression guidance is centered and capped at460 logical pixels, constrained to viewport width minus24. Progress caption, title and body wrap, so a long practice caption cannot expand the card. The existing reserved header inset follows the measured card height; target controls remain beneath it. This supersedes the full-width banner described above. Source: `client:Game/ScenesV3/Tutorial/TutorialOverlay.cs`. Verification is tracked in [[2026-09-17-linear-30-37]].
