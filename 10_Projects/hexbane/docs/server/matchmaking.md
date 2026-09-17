@@ -5,8 +5,8 @@ area: server
 domain: [projects]
 status: active
 created: 2026-09-07
-updated: 2026-09-16
-verified: 2026-09-16
+updated: 2026-09-17
+verified: 2026-09-17
 tags: [hexbane, server, matchmaking, nakama]
 sources: ["server:docs/match/matchmaking.md", "server:docs/match/api-reference.md", "server:docs/API-REFERENCE-v2.md"]
 ---
@@ -24,7 +24,7 @@ Both handlers run the shared engine at 10 ticks/s. Current normal fallback contr
 
 Built-in tickets accept `queue=normal` (omitted means normal), forced 2-player counts and server query `+properties.queue:normal`. Ranked requests fail with `queue unavailable` (code9), including stale matched cohorts. Unknown/mixed queues fail. Custom-enabled servers reject normal built-in tickets, including stale matched cohorts. Existing match invitation/join guards remain for already-created matches; no new ranked queue is exposed (HEX-20). Normal match initialization reads its invitation allowlist; socket admission rejects outsiders and synthetic IDs.
 
-The new queue selects a fallback deadline in 10–20 s, gives compatible humans priority before reservation, and presents one common match-found/accept flow. Details of reservation, leases and reconnect are in [[fallback-opponents]] and RPC shapes in [[rpcs]]. Ordinary human setup loads the current character, stats-derived combat profile, owned collection and race-specific slots; no fixed 200HP/100mana override.
+The new queue selects a fallback deadline in 10–20 s, gives waiting humans priority before reservation, and currently ignores character-level differences when pairing two humans. If no human opponent is available past the deadline, the existing fallback persona is still eligible. It presents one common match-found/accept flow. Details of reservation, leases and reconnect are in [[fallback-opponents]] and RPC shapes in [[rpcs]]. Ordinary human setup loads the current character, stats-derived combat profile, owned collection and race-specific slots; no fixed 200HP/100mana override.
 
 Explicit `ai_duel` uses synthetic ID `0000`, wire name `AI · Level N` (the client displays `AI`) and difficulty1–5 selected through `create_ai_arcane_duel`. Its draft waits0.3–0.6s per pick (up to0.7s including scheduling), independently of combat difficulty. It starts with standard spells only and drafts optional owned spells during the lobby; it no longer starts with a prefilled optional deck and appends a second copy. Its legacy slot copying is not used by fallback personas.
 

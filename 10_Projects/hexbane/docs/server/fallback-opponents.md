@@ -4,8 +4,8 @@ project: Hexbane
 area: server
 status: deployed
 created: 2026-09-12
-updated: 2026-09-15
-verified: 2026-09-15
+updated: 2026-09-17
+verified: 2026-09-17
 tags: [hexbane, matchmaking, fallback, ai]
 ---
 # Fallback opponents
@@ -19,7 +19,7 @@ Implemented on backend branch `feat/natural-fallback-player`, published as `b2e7
 
 Normal queue uses authenticated `queue_config`, `queue_join`, `queue_status`, `queue_cancel`, `queue_accept`, `queue_decline`. Ranked is disabled for new tickets/cohorts as of HEX-20 (2026-09-15); see [[matchmaking]]. Training retains explicit `ai_duel`.
 
-Each search gets a server-time triangular fallback deadline: minimum 10 s, mode 15 s, maximum 20 s. Compatible humans take priority before a synthetic allocation is reserved. Status polling (normally 1 s), database latency and match creation add to the visible wait; 20 s is not an unconditional UI deadline under failures/exhaustion. Queue pool is server region + mode + protocol. Queue RPCs, not per-search goroutines, drive progress.
+Each search gets a server-time triangular fallback deadline: minimum 10 s, mode 15 s, maximum 20 s. Any two waiting humans in the same normal pool take priority before a synthetic allocation is reserved; character-level differences are temporarily ignored. Status polling (normally 1 s), database latency and match creation add to the visible wait; 20 s is not an unconditional UI deadline under failures/exhaustion. Queue pool is server region + mode + protocol. Queue RPCs, not per-search goroutines, drive progress.
 
 PostgreSQL serializes reservation per pool. Creation runs outside the transaction; allocation generation and match ID fence publication and first admission. Only accepted, assigned humans may first join; synthetic UUIDs cannot join over a socket. Existing human reconnects restore their presence without re-accepting an expired offer. Cancellation/decline/timeout clean up reservations; request IDs and generation checks reject stale cancellation and late async responses. A counterpart can be returned to search with a higher generation of the same queue ID.
 
@@ -27,7 +27,7 @@ Leases: searching 10 s, allocation 10 s, offered acceptance 20 s, active match 1
 
 ## Stable personas
 
-Migration 7 persists 180 immutable personas: six races × levels 1–30. Each has a UUID, a 3–20 character nickname, legal build, owned spell collection, primary paths, stable style seed and version. Acquisition stays within ±2 levels; repeat avoidance prefers a different persona among the last 20 opponents/7 days. Exhaustion retries queue allocation instead of admitting an illegal build. A persona cannot hold two live assignment leases.
+Migration 7 persists 180 immutable personas: six races × levels 1–30. Each has a UUID, a 3–20 character nickname, legal build, owned spell collection, primary paths, stable style seed and version. Fallback acquisition remains level-aware within ±2 levels; repeat avoidance prefers a different persona among the last 20 opponents/7 days. Exhaustion retries queue allocation instead of admitting an illegal build. A persona cannot hold two live assignment leases.
 
 Name weights: 50% plain, 22% numeric, 12% country suffix, 8% separator+number, 6% case/prefix variant, 2% country+number. The curated base dictionary has 240 entries; collisions and reserved/confusable names are filtered. Country suffixes are only nickname text; they do not assert geolocation. Acquisition rechecks current character names. A concurrent character creation after this check can still choose that name: there is no shared cross-table uniqueness constraint.
 
