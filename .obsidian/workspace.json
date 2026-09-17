@@ -185,6 +185,7 @@
   },
   "active": "111b7bc93f46ae6d",
   "lastOpenFiles": [
+    "10_Projects/hexbane/docs/plans/2026-09-17-linear-30-37.md",
     "10_Projects/hexbane/docs/client/apple-signing.md",
     "10_Projects/hexbane/docs/client/ios-game-center-apple-auth.md",
     "10_Projects/hexbane/docs/audits/2026-09-16-match-resource-cost.md",
@@ -219,7 +220,6 @@
     "10_Projects/hexbane/docs/client/android-asset-cleanup.md",
     "10_Projects/hexbane/docs/client/spell-icon-art-direction.md",
     "10_Projects/hexbane/docs/audits/2026-09-12-fallback-verification.md",
-    "10_Projects/hexbane/docs/client/duel-ending.md",
-    "10_Projects/hexbane/docs/server/fallback-opponents.md"
+    "10_Projects/hexbane/docs/client/duel-ending.md"
   ]
 }
